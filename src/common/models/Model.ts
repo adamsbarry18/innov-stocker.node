@@ -10,9 +10,7 @@ import {
   AfterUpdate,
   BeforeSoftRemove,
   AfterSoftRemove,
-  ManyToOne,
   JoinColumn,
-  Column,
 } from 'typeorm';
 
 import logger from '@/lib/logger';
