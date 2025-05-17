@@ -10,6 +10,7 @@ import {
   AfterUpdate,
   BeforeSoftRemove,
   AfterSoftRemove,
+  JoinColumn,
 } from 'typeorm';
 
 import logger from '@/lib/logger';
@@ -32,6 +33,12 @@ export abstract class Model extends BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamp', name: 'updated_time' })
   updatedAt!: Date;
+
+  @JoinColumn({ name: 'created_by_user_id' })
+  createdByUserId?: number | null;
+
+  @JoinColumn({ name: 'updated_by__user_id' })
+  updatedByUserId?: number | null;
 
   @DeleteDateColumn({ type: 'timestamp', name: 'deleted_time', nullable: true })
   deletedAt!: Date | null;
