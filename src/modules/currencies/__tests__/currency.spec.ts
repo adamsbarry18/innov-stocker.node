@@ -101,7 +101,7 @@ describe('Currency API', () => {
       expect(res.body.meta.filters[0]).toMatchObject({
         field: 'isActive',
         operator: 'eq',
-        value: 'true',
+        value: true,
       });
     });
   });
