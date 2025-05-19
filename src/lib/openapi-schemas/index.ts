@@ -1,3 +1,6 @@
+import { addressSchemas } from './addresses/address.schema';
+import { companySchemas } from './compagny/compagny.schema';
+import { currencySchemas } from './currencies/currency.schema';
 import { authorizationSchemas } from './users/authorization.schemas';
 import { authSchemas } from './users/login.schemas';
 import { userSchemas } from './users/user.schemas';
@@ -6,6 +9,9 @@ export const schemas = {
   ...userSchemas,
   ...authSchemas,
   ...authorizationSchemas,
+  ...companySchemas,
+  ...addressSchemas,
+  ...currencySchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -13,3 +19,12 @@ export const getOpenAPIComponents = (): { components: { schemas: typeof schemas 
     schemas,
   },
 });
+
+export {
+  userSchemas,
+  authSchemas,
+  authorizationSchemas,
+  companySchemas,
+  addressSchemas,
+  currencySchemas,
+};

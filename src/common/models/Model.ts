@@ -15,11 +15,13 @@ import {
 
 import logger from '@/lib/logger';
 import { getRedisClient } from '@/lib/redis';
+import dayjs from 'dayjs';
 
-interface IModelDiff {
-  changed: string[];
-  newValues: Record<string, any>;
-}
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 /**
  * Classe de base pour les entités TypeORM, fournissant validation, gestion du cache et sérialisation.
@@ -43,58 +45,12 @@ export abstract class Model extends BaseEntity {
   @DeleteDateColumn({ type: 'timestamp', name: 'deleted_time', nullable: true })
   deletedAt!: Date | null;
 
-  // Propriétés statiques
-  static entityTrackedFields: string[] = [];
-
   /**
    * Formate une date en ISO ou retourne null.
    */
-  protected static formatISODate(date: Date | string | null): string | null {
+  static formatISODate(date: Date | null | undefined): string | null {
     if (!date) return null;
-
-    if (date instanceof Date && !isNaN(date.getTime())) {
-      return date.toISOString();
-    }
-
-    if (typeof date === 'string') {
-      const parsedDate = new Date(date);
-      if (!isNaN(parsedDate.getTime())) {
-        return parsedDate.toISOString();
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Retourne l'identifiant unique de l'entité
-   */
-  get entityIdentifier(): string {
-    return `${this.id}`;
-  }
-
-  /**
-   * Calcule les différences entre l'état actuel de l'entité et un nouveau modèle
-   */
-  getDiff(model: Partial<this>): IModelDiff {
-    const diff: IModelDiff = { changed: [], newValues: {} };
-    const constructor = this.constructor as typeof Model;
-
-    for (const key of Object.keys(model)) {
-      if (Object.prototype.hasOwnProperty.call(this, key)) {
-        const current = (this as any)[key];
-        const newValue = (model as any)[key];
-
-        if (current !== newValue && (current != null || newValue != null)) {
-          diff.changed.push(key);
-          if (constructor.entityTrackedFields.includes(key)) {
-            diff.newValues[key] = newValue;
-          }
-        }
-      }
-    }
-
-    return diff;
+    return dayjs(date).toISOString();
   }
 
   /**
@@ -115,9 +71,11 @@ export abstract class Model extends BaseEntity {
    * Convertit l'entité pour réponse API
    */
   toApi(): Record<string, any> {
-    const result: Record<string, any> = { ...this };
-    delete result.deletedAt;
-    return result;
+    return {
+      id: (this as any).id,
+      createdAt: Model.formatISODate(this.createdAt),
+      updatedAt: Model.formatISODate(this.updatedAt),
+    };
   }
 
   /**

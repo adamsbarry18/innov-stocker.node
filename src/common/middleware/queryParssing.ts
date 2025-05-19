@@ -105,7 +105,6 @@ export const parseFiltering =
   (allowedFields: boolean | string[] = true) =>
   (req: Request, res: Response, next: NextFunction): void => {
     req.filters = [];
-
     if (req.query.filter && typeof req.query.filter === 'object') {
       logger.debug({ filtersQuery: req.query.filter }, 'Parsing filters...');
       Object.entries(req.query.filter).forEach(([field, value]) => {
@@ -119,8 +118,8 @@ export const parseFiltering =
         if (req.filters) {
           req.filters.push({
             field,
-            operator: 'eq',
-            value,
+            operator: 'eq', // Assuming 'eq' operator for simplicity based on parseFiltering middleware
+            value: String(value), // Explicitly cast value to string
           });
         }
       });
@@ -140,8 +139,8 @@ export const parseFiltering =
 export const parseSearch =
   (allowedFields: boolean | string[] = true) =>
   (req: Request, res: Response, next: NextFunction): void => {
-    if (req.query.search && typeof req.query.search === 'string' && allowedFields) {
-      req.searchQuery = req.query.search.trim();
+    if (req.query.q && typeof req.query.q === 'string' && allowedFields) {
+      req.searchQuery = req.query.q.trim();
     }
 
     next();

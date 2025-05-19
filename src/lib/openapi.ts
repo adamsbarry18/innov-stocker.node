@@ -3,7 +3,14 @@ import path from 'path';
 import swaggerJSDoc from 'swagger-jsdoc';
 
 import config from '@/config';
-import { authSchemas, authorizationSchemas, userSchemas } from './openapi-schemas/users';
+import {
+  companySchemas,
+  authSchemas,
+  authorizationSchemas,
+  userSchemas,
+  addressSchemas,
+  currencySchemas,
+} from './openapi-schemas';
 
 const swaggerDefinition = {
   openapi: '3.0.3',
@@ -30,6 +37,9 @@ const swaggerDefinition = {
       ...userSchemas,
       ...authSchemas,
       ...authorizationSchemas,
+      ...addressSchemas,
+      ...currencySchemas,
+      companySchemas,
       ErrorResponse: {
         type: 'object',
         properties: {

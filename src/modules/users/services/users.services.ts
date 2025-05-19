@@ -48,8 +48,6 @@ export class UsersService {
   mapToApiResponse(user: User | null): UserApiResponse | null {
     if (!user) return null;
     const apiUser = user.toApi() as UserApiResponse;
-    if (user.createdAt) apiUser.createdTime = user.createdAt;
-    if (user.updatedAt) apiUser.updatedTime = user.updatedAt;
     return apiUser;
   }
 
