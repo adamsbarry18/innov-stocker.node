@@ -39,7 +39,7 @@ const swaggerDefinition = {
       ...authorizationSchemas,
       ...addressSchemas,
       ...currencySchemas,
-      companySchemas,
+      ...companySchemas,
       ErrorResponse: {
         type: 'object',
         properties: {
@@ -164,6 +164,47 @@ const swaggerDefinition = {
             },
           },
         },
+      },
+    },
+    parameters: {
+      pageQueryParam: {
+        name: 'page',
+        in: 'query',
+        schema: {
+          type: 'integer',
+          minimum: 1,
+          default: 1,
+        },
+        description: 'Page number for pagination',
+      },
+      limitQueryParam: {
+        name: 'limit',
+        in: 'query',
+        schema: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+          default: 10,
+        },
+        description: 'Number of items per page',
+      },
+      sortByQueryParam: {
+        name: 'sortBy',
+        in: 'query',
+        schema: {
+          type: 'string',
+        },
+        description: 'Field to sort by',
+      },
+      orderQueryParam: {
+        name: 'order',
+        in: 'query',
+        schema: {
+          type: 'string',
+          enum: ['ASC', 'DESC'],
+          default: 'ASC',
+        },
+        description: 'Sorting order (ASC or DESC)',
       },
     },
   },

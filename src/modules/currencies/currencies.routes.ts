@@ -58,7 +58,8 @@ export default class CurrencyRouter extends BaseRouter {
    *                 total:
    *                   type: integer
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
+   *
    */
   @Get('/currencies')
   @authorize({ level: SecurityLevel.USER }) // Accessible aux utilisateurs pour voir les devises disponibles
@@ -114,9 +115,10 @@ export default class CurrencyRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CurrencyApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
+   *
    */
   @Get('/currencies/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -151,11 +153,12 @@ export default class CurrencyRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CurrencyApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
+   *
    */
   @Post('/currencies')
   @authorize({ level: SecurityLevel.ADMIN })
@@ -194,13 +197,14 @@ export default class CurrencyRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CurrencyApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
+   *
    */
   @Put('/currencies/:id')
   @authorize({ level: SecurityLevel.ADMIN })
@@ -235,13 +239,14 @@ export default class CurrencyRouter extends BaseRouter {
    *       204:
    *         description: Currency deleted successfully (No Content)
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
+   *
    */
   @Delete('/currencies/:id')
   @authorize({ level: SecurityLevel.ADMIN })
@@ -287,13 +292,14 @@ export default class CurrencyRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CompanyApiResponse' # Returns the updated company settings
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
+   *
    */
   @Patch('/currencies/:id/set-default')
   @authorize({ level: SecurityLevel.ADMIN })

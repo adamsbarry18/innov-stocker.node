@@ -27,6 +27,7 @@ export default class CompanyRouter extends BaseRouter {
    *                 $ref: '#/components/schemas/CompanyApiResponse'
    *       403:
    *         description: Forbidden
+   *
    */
   @Get('/companies')
   @authorize({ level: SecurityLevel.USER })
@@ -59,6 +60,7 @@ export default class CompanyRouter extends BaseRouter {
    *               $ref: '#/components/schemas/CompanyApiResponse'
    *       404:
    *         description: Company information not found
+   *
    */
   @Get('/company/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -100,6 +102,7 @@ export default class CompanyRouter extends BaseRouter {
    *         description: Invalid data
    *       403:
    *         description: Forbidden
+   *
    */
   @Put('/company/:id')
   @authorize({ level: SecurityLevel.ADMIN })
