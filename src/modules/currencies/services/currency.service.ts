@@ -1,4 +1,4 @@
-import { CompanyRepository } from '@/modules/compagny/data/company.repository';
+import { CompanyRepository } from '@/modules/compagnies/data/company.repository';
 import { CurrencyRepository } from '../data/currency.repository';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import {
@@ -10,7 +10,7 @@ import {
 } from '../models/currency.entity';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
-import { type CompanyApiResponse } from '@/modules/compagny/models/company.entity';
+import { type CompanyApiResponse } from '@/modules/compagnies/models/company.entity';
 
 let instance: CurrencyService | null = null;
 

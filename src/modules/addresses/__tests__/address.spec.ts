@@ -15,15 +15,6 @@ describe('Address API', () => {
 
   let createdAddressId: number;
 
-  // Clean up the created address after tests
-  afterAll(async () => {
-    if (createdAddressId) {
-      await request(app)
-        .delete(`/api/v1/addresses/${createdAddressId}`)
-        .set('Authorization', `Bearer ${adminToken}`);
-    }
-  });
-
   describe('POST /addresses', () => {
     it('should create a new address (as admin)', async () => {
       const res = await request(app)
@@ -55,8 +46,6 @@ describe('Address API', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
-      // Depending on the validation implementation, you might check for specific error messages here
-      // expect(res.body.message).toContain('city');
     });
   });
 
@@ -128,7 +117,7 @@ describe('Address API', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.status).toBe('fail');
-      expect(res.body.message).toBe('Not found'); // Expect generic message due to pipe
+      expect(res.body.message).toBe('Not found');
     });
 
     it('should return 400 for an invalid address ID format (as admin)', async () => {
@@ -139,7 +128,7 @@ describe('Address API', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
-      expect(res.body.message).toBe('Bad request'); // Expect generic message due to pipe
+      expect(res.body.message).toBe('Bad request');
     });
 
     it('should fail to get a specific address without authentication', async () => {
@@ -180,7 +169,7 @@ describe('Address API', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.status).toBe('fail');
-      expect(res.body.message).toBe('Not found'); // Expect generic message due to pipe
+      expect(res.body.message).toBe('Not found');
     });
 
     it('should return 400 for an invalid address ID format (as admin)', async () => {
@@ -192,7 +181,7 @@ describe('Address API', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
-      expect(res.body.message).toBe('Bad request'); // Expect generic message due to pipe
+      expect(res.body.message).toBe('Bad request');
     });
 
     it('should return 400 for invalid update data (as admin)', async () => {
@@ -204,8 +193,6 @@ describe('Address API', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
-      // Depending on the validation implementation, you might check for specific error messages here
-      // expect(res.body.message).toContain('city');
     });
 
     it('should fail to update an address without authentication', async () => {
@@ -250,7 +237,7 @@ describe('Address API', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.status).toBe('fail');
-      expect(res.body.message).toBe('Not found'); // Expect generic message due to pipe
+      expect(res.body.message).toBe('Not found');
     });
 
     it('should return 400 for an invalid address ID format (as admin)', async () => {
@@ -261,7 +248,7 @@ describe('Address API', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
-      expect(res.body.message).toBe('Bad request'); // Expect generic message due to pipe
+      expect(res.body.message).toBe('Bad request');
     });
 
     it('should fail to delete an address without authentication', async () => {

@@ -3,7 +3,7 @@ import { DataSource, type DataSourceOptions } from 'typeorm';
 
 import config from '@/config';
 import { User } from '@/modules/users/models/users.entity';
-import { Company } from '@/modules/compagny/models/company.entity';
+import { Company } from '@/modules/compagnies/models/company.entity';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { Currency } from '@/modules/currencies/models/currency.entity';
 

@@ -1,5 +1,5 @@
 import { addressSchemas } from './addresses/address.schema';
-import { companySchemas } from './compagny/compagny.schema';
+import { companySchemas } from './compagnies/compagny.schema';
 import { currencySchemas } from './currencies/currency.schema';
 import { authorizationSchemas } from './users/authorization.schemas';
 import { authSchemas } from './users/login.schemas';

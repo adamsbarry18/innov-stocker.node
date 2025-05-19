@@ -2,7 +2,7 @@ import { BaseRouter } from '@/common/routing/BaseRouter';
 import { Get, Post, Put, Delete, authorize } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
 
-import { AuthorizationService } from '../auth/services/authorization.service';
+import { AuthorizationService } from './services/authorization.service';
 import { SecurityLevel } from '../users/models/users.entity';
 
 export default class AuthorizationRouter extends BaseRouter {
