@@ -13,8 +13,8 @@ import {
 } from '@/common/routing/decorators';
 import { NextFunction, Request, Response } from '@/config/http';
 import { SecurityLevel } from '../users/models/users.entity';
-import { FindOptionsOrder, FindOptionsWhere } from 'typeorm';
 import { BadRequestError } from '@/common/errors/httpErrors';
+import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 
 export default class CurrencyRouter extends BaseRouter {
   currencyService = CurrencyService.getInstance();
@@ -67,20 +67,7 @@ export default class CurrencyRouter extends BaseRouter {
   @sortable(['id', 'code', 'name', 'isActive', 'createdAt'])
   @filterable(['isActive', 'code'])
   async getAllCurrencies(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const filters: FindOptionsWhere<any> = {};
-    if (req.filters) {
-      req.filters.forEach((filter) => {
-        // Assuming 'eq' operator for simplicity based on parseFiltering middleware
-        (filters as any)[filter.field] = filter.value;
-      });
-    }
-
-    const sort: FindOptionsOrder<any> = {};
-    if (req.sorting) {
-      req.sorting.forEach((s) => {
-        (sort as any)[s.field] = s.direction;
-      });
-    }
+    const { filters, sort } = buildTypeORMCriteria(req);
     await this.pipe(res, req, next, () =>
       this.currencyService.findAll({
         limit: req.pagination?.limit,

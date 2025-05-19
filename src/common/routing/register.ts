@@ -45,6 +45,10 @@ export function registerRoutes(
   }
 
   routes.forEach((routeMeta: RouteMetadataArgs) => {
+    logger.debug(
+      { routeMeta: routeMeta },
+      `Processing route metadata for ${controllerClass.name}.${String(routeMeta.handlerName)}`,
+    );
     if (!routeMeta.method || !routeMeta.path || !routeMeta.handlerName) {
       logger.warn(
         `  Skipping incomplete route metadata for ${controllerClass.name}: ${JSON.stringify(routeMeta)}`, // Updated reference

@@ -15,6 +15,7 @@ import { Request, Response, NextFunction } from '@/config/http';
 
 import { SecurityLevel } from './models/users.entity';
 import { UsersService } from './services/users.services';
+import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 
 export default class UserRouter extends BaseRouter {
   usersService = UsersService.getInstance();
@@ -33,12 +34,46 @@ export default class UserRouter extends BaseRouter {
    *         name: page
    *         schema:
    *           type: integer
+   *           default: 1
    *         description: Page number for pagination
    *       - in: query
    *         name: limit
    *         schema:
    *           type: integer
+   *           default: 20
    *         description: Number of items per page
+   *       - in: query
+   *         name: sortBy
+   *         schema:
+   *           type: string
+   *         description: Field to sort by (e.g., "createdAt")
+   *       - in: query
+   *         name: order
+   *         schema:
+   *           type: string
+   *           enum: [asc, desc]
+   *           default: desc
+   *         description: Sort order
+   *       - in: query
+   *         name: level
+   *         schema:
+   *           type: string
+   *         description: Filter by user level (applied as filter[level]=value)
+   *       - in: query
+   *         name: internal
+   *         schema:
+   *           type: boolean
+   *         description: Filter by internal status (applied as filter[internal]=value)
+   *       - in: query
+   *         name: email
+   *         schema:
+   *           type: string
+   *         description: Filter by email (applied as filter[email]=value)
+   *       - in: query
+   *         name: q
+   *         schema:
+   *           type: string
+   *         description: Search term for email, firstName, lastName
    *     responses:
    *       200:
    *         description: List of users
@@ -50,10 +85,14 @@ export default class UserRouter extends BaseRouter {
   @filterable(['level', 'internal', 'email'])
   @searchable(['email', 'firstName', 'lastName'])
   async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { filters, sort } = buildTypeORMCriteria(req);
+
     await this.pipe(res, req, next, () =>
       this.usersService.findAll({
         limit: req.pagination?.limit,
         offset: req.pagination?.offset,
+        filters,
+        sort,
       }),
     );
   }

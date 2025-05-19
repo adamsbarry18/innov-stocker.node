@@ -1,5 +1,5 @@
-import { type FindOptionsWhere, type FindOptionsOrder } from 'typeorm';
 import { BaseRouter } from '@/common/routing/BaseRouter';
+import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 import { AddressService } from './services/address.service';
 import {
   authorize,
@@ -57,17 +57,17 @@ export default class AddressRouter extends BaseRouter {
    *         name: city
    *         schema:
    *           type: string
-   *         description: Filter by city
+   *         description: Filter by city (applied as filter[city]=value)
    *       - in: query
    *         name: country
    *         schema:
    *           type: string
-   *         description: Filter by country
+   *         description: Filter by country (applied as filter[country]=value)
    *       - in: query
    *         name: postalCode
    *         schema:
    *           type: string
-   *         description: Filter by postal code
+   *         description: Filter by postal code (applied as filter[postalCode]=value)
    *       - in: query
    *         name: q
    *         schema:
@@ -91,6 +91,7 @@ export default class AddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    *       403:
    *         $ref: '#/components/responses/Forbidden'
+   *
    */
   @Get('/addresses')
   @authorize({ level: SecurityLevel.USER })
@@ -99,20 +100,7 @@ export default class AddressRouter extends BaseRouter {
   @filterable(['city', 'country', 'postalCode'])
   @searchable(['streetLine1', 'city', 'postalCode'])
   async getAllAddresses(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const filters: FindOptionsWhere<any> = {};
-    if (req.filters) {
-      req.filters.forEach((filter) => {
-        // Assuming 'eq' operator for simplicity based on parseFiltering middleware
-        (filters as any)[filter.field] = filter.value;
-      });
-    }
-
-    const sort: FindOptionsOrder<any> = {};
-    if (req.sorting) {
-      req.sorting.forEach((s) => {
-        (sort as any)[s.field] = s.direction;
-      });
-    }
+    const { filters, sort } = buildTypeORMCriteria(req);
 
     await this.pipe(res, req, next, () =>
       this.addressService.findAll({
@@ -153,6 +141,7 @@ export default class AddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    *       404:
    *         $ref: '#/components/responses/NotFound'
+   *
    */
   @Get('/addresses/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -193,6 +182,7 @@ export default class AddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    *       403:
    *         $ref: '#/components/responses/Forbidden'
+   *
    */
   @Post('/addresses')
   @authorize({ level: SecurityLevel.ADMIN })
@@ -239,6 +229,7 @@ export default class AddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    *       404:
    *         $ref: '#/components/responses/NotFound'
+   *
    */
   @Put('/addresses/:id')
   @authorize({ level: SecurityLevel.ADMIN })
@@ -279,6 +270,7 @@ export default class AddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    *       404:
    *         $ref: '#/components/responses/NotFound'
+   *
    */
   @Delete('/addresses/:id')
   @authorize({ level: SecurityLevel.ADMIN })

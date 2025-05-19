@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 
 import dayjs from 'dayjs';
-import { type FindOptionsWhere } from 'typeorm';
+import { type FindOptionsWhere, type FindManyOptions } from 'typeorm';
 
 import {
   NotFoundError,
@@ -115,17 +115,26 @@ export class UsersService {
    * @param options Optional request context including pagination.
    * @returns Array of user API responses.
    */
-  async findAll(options?: { limit?: number; offset?: number }): Promise<UserApiResponse[]> {
+  async findAll(options?: {
+    limit?: number;
+    offset?: number;
+    filters?: FindOptionsWhere<User>;
+    sort?: FindManyOptions<User>['order'];
+  }): Promise<{ users: UserApiResponse[]; total: number }> {
     try {
-      const where: FindOptionsWhere<User> = {};
-      const { users } = await this.userRepository.findAll({
-        where,
+      const { users, count } = await this.userRepository.findAll({
+        where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
+        order: options?.sort,
       });
-      return users.map((user) => this.mapToApiResponse(user)).filter(Boolean) as UserApiResponse[];
+      const apiUsers = users
+        .map((user) => this.mapToApiResponse(user))
+        .filter(Boolean) as UserApiResponse[];
+      return { users: apiUsers, total: count };
     } catch (error) {
-      throw new ServerError(`Error finding all users ${error}`);
+      logger.error(`Error finding all users: ${error}`);
+      throw new ServerError('Error finding all users.');
     }
   }
 
