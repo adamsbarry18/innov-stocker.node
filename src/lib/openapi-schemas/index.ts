@@ -5,6 +5,8 @@ import { productCategorySchemas } from './product-categories/product-category.sc
 import { authorizationSchemas } from './users/authorization.schemas';
 import { authSchemas } from './users/login.schemas';
 import { userSchemas } from './users/user.schemas';
+import { customerGroupSchemas } from './customer-groups/customer-group.schema';
+import { supplierSchemas } from './suppliers/supplier.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -14,6 +16,8 @@ export const schemas = {
   ...addressSchemas,
   ...currencySchemas,
   ...productCategorySchemas,
+  ...customerGroupSchemas,
+  ...supplierSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -30,4 +34,6 @@ export {
   addressSchemas,
   currencySchemas,
   productCategorySchemas,
+  customerGroupSchemas,
+  supplierSchemas,
 };

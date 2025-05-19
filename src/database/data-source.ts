@@ -7,6 +7,8 @@ import { Company } from '@/modules/compagnies/models/company.entity';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { Currency } from '@/modules/currencies/models/currency.entity';
 import { ProductCategory } from '@/modules/product-categories/models/product-category.entity';
+import { CustomerGroup } from '@/modules/customer-groups/models/customer-group.entity';
+import { Supplier } from '@/modules/suppliers/models/supplier.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -18,7 +20,7 @@ export const appDataSourceOptions: DataSourceOptions = {
   synchronize: false,
   logging: ['error'],
   // Use glob pattern to automatically find all entities
-  entities: [User, Company, Address, Currency, ProductCategory],
+  entities: [User, Company, Address, Currency, ProductCategory, CustomerGroup, Supplier],
   migrations: [],
   subscribers: [],
   // namingStrategy: new SnakeNamingStrategy(), // Si besoin
