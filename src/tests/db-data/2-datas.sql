@@ -36,8 +36,8 @@ INSERT INTO currencies (id, code, name, symbol, exchange_rate_to_company_default
 -- -----------------------------------------------------
 -- Table company
 -- -----------------------------------------------------
-INSERT INTO company (id, name, trading_name, address_id, vat_number, siret_number, registration_number, email, phone_number, website, logo_url, default_currency_id, default_vat_rate_percentage, fiscal_year_start_month, fiscal_year_start_day, timezone, terms_and_conditions_default_purchase, terms_and_conditions_default_sale, bank_account_details_for_invoices, created_time, updated_time) VALUES
-(1, 'Innov Stocker SARL', 'InnovStocker', 1, 'FR123456789', '12345678900012', 'RCS Paris B 123 456 789', 'contact@innovstocker.com', '0123456789', 'https://www.innovstocker.com', 'https://www.innovstocker.com/logo.png', 1, 20.00, 1, 1, 'Europe/Paris', 'Paiement à 30 jours.', 'Paiement à réception de facture.', 'Banque Innov - FR76 XXXX XXXX XXXX XXXX XXXX XXX - BIC INOVFRPP', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO company (id, name, trading_name, address_id, vat_number, siret_number, registration_number, email, phone_number, website, logo_url, default_currency_id, default_vat_rate_percentage, fiscal_year_start_month, fiscal_year_start_day, timezone, terms_and_conditions_default_purchase, terms_and_conditions_default_sale, bank_account_details_for_invoices, created_time, updated_time, deleted_time) VALUES
+(1, 'Innov Stocker SARL', 'InnovStocker', 1, 'FR123456789', '12345678900012', 'RCS Paris B 123 456 789', 'contact@innovstocker.com', '0123456789', 'https://www.innovstocker.com', 'https://www.innovstocker.com/logo.png', 1, 20.00, 1, 1, 'Europe/Paris', 'Paiement à 30 jours.', 'Paiement à réception de facture.', 'Banque Innov - FR76 XXXX XXXX XXXX XXXX XXXX XXX - BIC INOVFRPP', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
 
 -- -----------------------------------------------------
 -- Table product_categories

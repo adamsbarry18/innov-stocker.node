@@ -3,7 +3,15 @@ import path from 'path';
 import swaggerJSDoc from 'swagger-jsdoc';
 
 import config from '@/config';
-import { authSchemas, authorizationSchemas, userSchemas } from './openapi-schemas/users';
+import {
+  companySchemas,
+  authSchemas,
+  authorizationSchemas,
+  userSchemas,
+  addressSchemas,
+  currencySchemas,
+  productCategorySchemas,
+} from './openapi-schemas';
 
 const swaggerDefinition = {
   openapi: '3.0.3',
@@ -30,6 +38,10 @@ const swaggerDefinition = {
       ...userSchemas,
       ...authSchemas,
       ...authorizationSchemas,
+      ...addressSchemas,
+      ...currencySchemas,
+      ...companySchemas,
+      ...productCategorySchemas,
       ErrorResponse: {
         type: 'object',
         properties: {
@@ -154,6 +166,47 @@ const swaggerDefinition = {
             },
           },
         },
+      },
+    },
+    parameters: {
+      pageQueryParam: {
+        name: 'page',
+        in: 'query',
+        schema: {
+          type: 'integer',
+          minimum: 1,
+          default: 1,
+        },
+        description: 'Page number for pagination',
+      },
+      limitQueryParam: {
+        name: 'limit',
+        in: 'query',
+        schema: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+          default: 10,
+        },
+        description: 'Number of items per page',
+      },
+      sortByQueryParam: {
+        name: 'sortBy',
+        in: 'query',
+        schema: {
+          type: 'string',
+        },
+        description: 'Field to sort by',
+      },
+      orderQueryParam: {
+        name: 'order',
+        in: 'query',
+        schema: {
+          type: 'string',
+          enum: ['ASC', 'DESC'],
+          default: 'ASC',
+        },
+        description: 'Sorting order (ASC or DESC)',
       },
     },
   },

@@ -65,8 +65,6 @@ export type UserApiResponse = {
   permissionsExpireAt: string | null;
   isActive: boolean;
   googleId?: string | null;
-  createdTime?: Date;
-  updatedTime?: Date;
 };
 
 // Interne type for decode overrides

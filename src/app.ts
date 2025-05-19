@@ -42,6 +42,9 @@ const bodyLimit = '5mb';
 app.use(express.json({ limit: bodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
+// Configure Express to use the 'qs' library for parsing query strings
+app.set('query parser', 'extended');
+
 // --- Custom Middlewares ---
 
 // HTTP Request Logging

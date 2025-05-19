@@ -5,6 +5,7 @@ import {
   IsNull,
   Not,
   type UpdateResult,
+  type FindManyOptions,
 } from 'typeorm';
 
 import { ServerError } from '@/common/errors/httpErrors';
@@ -24,8 +25,8 @@ interface FindAllUsersOptions {
   skip?: number;
   take?: number;
   where?: FindOptionsWhere<User>;
+  order?: FindManyOptions<User>['order'];
 }
-
 // Selectable fields for queries including the password hash
 const USER_WITH_PASSWORD_FIELDS: (keyof User)[] = [
   'id',
@@ -140,18 +141,14 @@ export class UserRepository {
    * Lists all active users with pagination and filtering.
    */
   async findAll(options: FindAllUsersOptions = {}): Promise<{ users: User[]; count: number }> {
-    try {
-      const where = { ...options.where, deletedAt: IsNull() };
-      const [users, count] = await this.repository.findAndCount({
-        where,
-        order: { createdAt: 'DESC' },
-        skip: options.skip,
-        take: options.take,
-      });
-      return { users, count };
-    } catch (error) {
-      throw new ServerError(`Find all users, ${error}`);
-    }
+    const where = { ...options.where, deletedAt: IsNull() };
+    const [users, count] = await this.repository.findAndCount({
+      where,
+      order: options.order || { createdAt: 'DESC' },
+      skip: options.skip,
+      take: options.take,
+    });
+    return { users, count };
   }
 
   /**

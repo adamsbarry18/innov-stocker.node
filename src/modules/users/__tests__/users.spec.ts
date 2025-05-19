@@ -272,8 +272,8 @@ describe('Users API', () => {
         expect(entry).toHaveProperty('level');
         expect(entry).toHaveProperty('isActive');
         expect(entry).toHaveProperty('permissionsExpireAt');
-        expect(entry).toHaveProperty('createdTime');
-        expect(entry).toHaveProperty('updatedTime');
+        expect(entry).toHaveProperty('createdAt');
+        expect(entry).toHaveProperty('updatedAt');
         expect(entry).toHaveProperty('preferences');
         expect(entry).toHaveProperty('id');
         expect(entry).not.toHaveProperty('password');
@@ -320,8 +320,8 @@ describe('Users API', () => {
       expect(entry.level).toBe(SecurityLevel.USER);
       expect(entry.isActive).toBe(true);
       expect(entry.permissionsExpireAt).not.toBeNull();
-      expect(entry).toHaveProperty('createdTime');
-      expect(entry).toHaveProperty('updatedTime');
+      expect(entry).toHaveProperty('createdAt');
+      expect(entry).toHaveProperty('updatedAt');
       expect(entry).toHaveProperty('preferences');
       expect(entry.preferences).toHaveProperty('hello', 'world');
       expect(entry).not.toHaveProperty('password');
@@ -377,8 +377,8 @@ describe('Users API', () => {
       expect(entry.level).toBe(SecurityLevel.USER);
       expect(entry.isActive).toBe(true);
       expect(entry.permissionsExpireAt).not.toBeNull();
-      expect(entry).toHaveProperty('createdTime');
-      expect(entry).toHaveProperty('updatedTime');
+      expect(entry).toHaveProperty('createdAt');
+      expect(entry).toHaveProperty('updatedAt');
       expect(entry).toHaveProperty('preferences');
       expect(entry).not.toHaveProperty('password');
     });

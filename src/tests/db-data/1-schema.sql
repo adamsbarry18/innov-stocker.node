@@ -51,7 +51,8 @@ CREATE TABLE `addresses` (
     `country` VARCHAR(255) NOT NULL,
     `notes` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -68,6 +69,7 @@ CREATE TABLE `currencies` (
     `is_active` TINYINT(1) DEFAULT 1,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     UNIQUE KEY `code_unique` (`code`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -96,6 +98,7 @@ CREATE TABLE `company` (
     `terms_and_conditions_default_purchase` TEXT DEFAULT NULL,
     `terms_and_conditions_default_sale` TEXT DEFAULT NULL,
     `bank_account_details_for_invoices` TEXT DEFAULT NULL,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_company_address` FOREIGN KEY (`address_id`) REFERENCES `addresses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -532,8 +535,6 @@ CREATE TABLE `stock_transfer_items` (
     CONSTRAINT `fk_sti_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_sti_variant` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
--- Continuer avec les modules Achats, Ventes, Finances, Transverses...
 
 -- =====================================================
 -- MODULE ACHATS
@@ -1027,10 +1028,7 @@ CREATE TABLE `customer_return_items` (
     `quantity` DECIMAL(15, 3) NOT NULL,
     `unit_price_at_return` DECIMAL(15, 4) DEFAULT NULL,
     `condition` VARCHAR(20) DEFAULT NULL, -- Possible values: new, used, damaged
-    `action_taken` VARCHAR(30) DEFAULT 'pending_inspection', -- Possible values: restock, discard, repair, pending_inspection
-    CONSTRAINT `fk_cri_return` FOREIGN KEY (`customer_return_id`) REFERENCES `customer_returns` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_cri_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_cri_variant` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    `action_taken` VARCHAR(30) DEFAULT 'pending_inspection' -- Possible values: restock, discard, repair, pending_inspection
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- =====================================================
@@ -1174,10 +1172,6 @@ CREATE TABLE `cash_register_transactions` (
     CONSTRAINT `fk_crt_order` FOREIGN KEY (`related_sales_order_id`) REFERENCES `sales_orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_crt_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
--- =====================================================
--- MODULES TRANSVERSES
--- =====================================================
 
 -- -----------------------------------------------------
 -- Table `user_activity_logs`
