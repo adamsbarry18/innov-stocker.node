@@ -1,6 +1,4 @@
-// src/libs/openapi-schemas/customers/customer.schema.ts
-
-// Re-using from supplier.schema.ts for brevity, or define them centrally
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const EmbeddedAddressDTOSchema = {
   type: 'object',
   properties: {
@@ -15,7 +13,7 @@ const EmbeddedAddressDTOSchema = {
     // createdAt: { type: 'string', format: 'date-time', nullable: true },
     // updatedAt: { type: 'string', format: 'date-time', nullable: true },
   },
-};
+}; // eslint-disable-next-line @typescript-eslint/naming-convention
 const EmbeddedCurrencyDTOSchema = {
   type: 'object',
   properties: {
@@ -25,6 +23,7 @@ const EmbeddedCurrencyDTOSchema = {
     symbol: { type: 'string' },
   },
 };
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const EmbeddedCustomerGroupDTOSchema = {
   type: 'object',
   properties: {
@@ -33,7 +32,7 @@ const EmbeddedCustomerGroupDTOSchema = {
     discountPercentage: { type: 'number', format: 'float', nullable: true },
   },
 };
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const CreateAddressInputSchema = {
   // Simplified from address module for inline creation
   type: 'object',
@@ -48,7 +47,7 @@ const CreateAddressInputSchema = {
     notes: { type: 'string', nullable: true },
   },
 };
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const CreateCustomerShippingAddressInputSchema = {
   type: 'object',
   required: ['addressLabel'],
@@ -65,7 +64,7 @@ const CreateCustomerShippingAddressInputSchema = {
   description: 'Either addressId or newAddress must be provided.',
   // Need to express oneOf logic or rely on service validation for (addressId XOR newAddress)
 };
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const UpdateCustomerShippingAddressInputSchema = {
   type: 'object',
   properties: {
@@ -77,7 +76,7 @@ const UpdateCustomerShippingAddressInputSchema = {
     isDefault: { type: 'boolean' },
   },
 };
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const CustomerShippingAddressApiResponseSchema = {
   type: 'object',
   properties: {

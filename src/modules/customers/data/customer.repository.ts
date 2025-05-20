@@ -5,6 +5,7 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
+  type EntityManager, // Import EntityManager
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { Customer } from '../models/customer.entity';
@@ -22,7 +23,8 @@ interface FindAllCustomersOptions {
 export class CustomerRepository {
   private readonly repository: Repository<Customer>;
 
-  constructor(dataSource: DataSource = appDataSource) {
+  // Accept optional EntityManager
+  constructor(dataSource: DataSource | EntityManager = appDataSource) {
     this.repository = dataSource.getRepository(Customer);
   }
 
@@ -88,6 +90,24 @@ export class CustomerRepository {
         'CustomerRepository.findAll',
       );
       throw new ServerError(`Error finding all customers.`);
+    }
+  }
+
+  /**
+   * Finds a customer by a specific criterion.
+   */
+  async findOneBy(where: FindOptionsWhere<Customer>): Promise<Customer | null> {
+    try {
+      return await this.repository.findOne({
+        where: { ...where, deletedAt: IsNull() },
+        relations: this.getDefaultRelations(),
+      });
+    } catch (error) {
+      logger.error(
+        { message: `Error finding customer by criteria`, error, where },
+        'CustomerRepository.findOneBy',
+      );
+      throw new ServerError(`Error finding customer by criteria.`);
     }
   }
 

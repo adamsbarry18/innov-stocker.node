@@ -5,6 +5,7 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
+  type EntityManager, // Import EntityManager
 } from 'typeorm';
 import { Address } from '../models/address.entity';
 import { appDataSource } from '@/database/data-source';
@@ -20,7 +21,8 @@ interface FindAllAddressesOptions {
 export class AddressRepository {
   private readonly repository: Repository<Address>;
 
-  constructor(dataSource: DataSource = appDataSource) {
+  // Accept optional EntityManager
+  constructor(dataSource: DataSource | EntityManager = appDataSource) {
     this.repository = dataSource.getRepository(Address);
   }
 

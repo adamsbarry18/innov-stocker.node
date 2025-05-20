@@ -1,4 +1,4 @@
-import { type FindManyOptions, type FindOptionsWhere, IsNull } from 'typeorm';
+import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { CustomerRepository } from '../data/customer.repository';
 import { CustomerShippingAddressService } from './customer-shipping-address.service';
 import { AddressRepository } from '../../addresses/data/address.repository';

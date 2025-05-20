@@ -7,6 +7,8 @@ import { authSchemas } from './users/login.schemas';
 import { userSchemas } from './users/user.schemas';
 import { customerGroupSchemas } from './customer-groups/customer-group.schema';
 import { supplierSchemas } from './suppliers/supplier.schema';
+import { customerSchemas } from './customers/customer.schema';
+import { customerShippingAddressSchemas } from './customer-shipping-address/csa.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -18,6 +20,8 @@ export const schemas = {
   ...productCategorySchemas,
   ...customerGroupSchemas,
   ...supplierSchemas,
+  ...customerSchemas,
+  ...customerShippingAddressSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -36,4 +40,6 @@ export {
   productCategorySchemas,
   customerGroupSchemas,
   supplierSchemas,
+  customerSchemas,
+  customerShippingAddressSchemas,
 };

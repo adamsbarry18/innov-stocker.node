@@ -61,9 +61,6 @@ export const customerShippingAddressValidationInputErrors: string[] = [];
 @Unique(['customerId', 'addressId']) // A customer cannot have the same address linked twice
 @Unique(['customerId', 'addressLabel']) // A customer cannot have two shipping addresses with the same label
 export class CustomerShippingAddress extends Model {
-  // id, createdAt, updatedAt, deletedAt are inherited from Model
-  // Note: The SQL schema uses AUTO_INCREMENT PRIMARY KEY `id` which is fine for Model.
-
   @Column({ type: 'int', name: 'customer_id' })
   customerId!: number;
 
