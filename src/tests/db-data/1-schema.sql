@@ -217,6 +217,7 @@ CREATE TABLE `customer_shipping_addresses` (
     `is_default` TINYINT(1) DEFAULT 0,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL, -- Ajout de la colonne deleted_time
     CONSTRAINT `fk_csa_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_csa_address` FOREIGN KEY (`address_id`) REFERENCES `addresses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
