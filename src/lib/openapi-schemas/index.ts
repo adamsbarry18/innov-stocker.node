@@ -10,6 +10,7 @@ import { supplierSchemas } from './suppliers/supplier.schema';
 import { customerSchemas } from './customers/customer.schema';
 import { customerShippingAddressSchemas } from './customer-shipping-address/csa.schema';
 import { paymentMethodSchemas } from './payment-methods/payment-method.schema';
+import { warehouseSchemas } from './warehouses/warehouse.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -24,6 +25,7 @@ export const schemas = {
   ...customerSchemas,
   ...customerShippingAddressSchemas,
   ...paymentMethodSchemas,
+  ...warehouseSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -45,4 +47,5 @@ export {
   customerSchemas,
   customerShippingAddressSchemas,
   paymentMethodSchemas,
+  warehouseSchemas,
 };
