@@ -13,6 +13,7 @@ import { Customer } from '@/modules/customers/models/customer.entity';
 import { CustomerShippingAddress } from '@/modules/customers/models/customer-shipping-addresses.entity';
 import { PaymentMethod } from '@/modules/payment-methods/models/payment-method.entity';
 import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
+import { Shop } from '@/modules/shops/models/shop.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -36,6 +37,7 @@ export const appDataSourceOptions: DataSourceOptions = {
     CustomerShippingAddress,
     PaymentMethod,
     Warehouse,
+    Shop,
   ],
   migrations: [],
   subscribers: [],
