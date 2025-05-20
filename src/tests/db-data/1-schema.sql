@@ -1087,6 +1087,7 @@ CREATE TABLE `cash_registers` (
     `currency_id` INT NOT NULL,
     `current_balance` DECIMAL(15, 4) DEFAULT 0.0000,
     `is_active` TINYINT(1) DEFAULT 1,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `name_unique` (`name`),
