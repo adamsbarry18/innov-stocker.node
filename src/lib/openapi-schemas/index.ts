@@ -12,6 +12,7 @@ import { customerShippingAddressSchemas } from './customer-shipping-address/csa.
 import { paymentMethodSchemas } from './payment-methods/payment-method.schema';
 import { warehouseSchemas } from './warehouses/warehouse.schema';
 import { shopSchemas } from './shops/shop.schema';
+import { bankAccountSchemas } from './bank-accounts/bank-account.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -28,6 +29,7 @@ export const schemas = {
   ...paymentMethodSchemas,
   ...warehouseSchemas,
   ...shopSchemas,
+  ...bankAccountSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -51,4 +53,5 @@ export {
   paymentMethodSchemas,
   warehouseSchemas,
   shopSchemas,
+  bankAccountSchemas,
 };
