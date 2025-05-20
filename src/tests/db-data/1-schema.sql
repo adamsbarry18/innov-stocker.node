@@ -1067,6 +1067,7 @@ CREATE TABLE `bank_accounts` (
     `currency_id` INT NOT NULL,
     `initial_balance` DECIMAL(15, 4) DEFAULT 0.0000,
     `current_balance` DECIMAL(15, 4) DEFAULT 0.0000,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `account_name_unique` (`account_name`),
