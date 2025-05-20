@@ -15,6 +15,7 @@ import {
   supplierSchemas,
   customerShippingAddressSchemas,
   customerSchemas,
+  paymentMethodSchemas,
 } from './openapi-schemas';
 
 const swaggerDefinition = {
@@ -50,6 +51,7 @@ const swaggerDefinition = {
       ...supplierSchemas,
       ...customerShippingAddressSchemas,
       ...customerSchemas,
+      ...paymentMethodSchemas,
       ErrorResponse: {
         type: 'object',
         properties: {

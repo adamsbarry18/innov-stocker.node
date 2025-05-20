@@ -9,6 +9,7 @@ import { customerGroupSchemas } from './customer-groups/customer-group.schema';
 import { supplierSchemas } from './suppliers/supplier.schema';
 import { customerSchemas } from './customers/customer.schema';
 import { customerShippingAddressSchemas } from './customer-shipping-address/csa.schema';
+import { paymentMethodSchemas } from './payment-methods/payment-method.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -22,6 +23,7 @@ export const schemas = {
   ...supplierSchemas,
   ...customerSchemas,
   ...customerShippingAddressSchemas,
+  ...paymentMethodSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -42,4 +44,5 @@ export {
   supplierSchemas,
   customerSchemas,
   customerShippingAddressSchemas,
+  paymentMethodSchemas,
 };

@@ -1046,6 +1046,7 @@ CREATE TABLE `payment_methods` (
     `name` VARCHAR(100) NOT NULL,
     `type` VARCHAR(20) NOT NULL, -- Possible values: cash, bank_transfer, check, card, other
     `is_active` TINYINT(1) DEFAULT 1,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `name_unique` (`name`)

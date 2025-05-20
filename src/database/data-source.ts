@@ -11,6 +11,7 @@ import { CustomerGroup } from '@/modules/customer-groups/models/customer-group.e
 import { Supplier } from '@/modules/suppliers/models/supplier.entity';
 import { Customer } from '@/modules/customers/models/customer.entity';
 import { CustomerShippingAddress } from '@/modules/customers/models/customer-shipping-addresses.entity';
+import { PaymentMethod } from '@/modules/payment-methods/models/payment-method.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -32,6 +33,7 @@ export const appDataSourceOptions: DataSourceOptions = {
     Supplier,
     Customer,
     CustomerShippingAddress,
+    PaymentMethod,
   ],
   migrations: [],
   subscribers: [],
