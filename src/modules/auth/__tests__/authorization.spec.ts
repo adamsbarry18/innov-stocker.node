@@ -2,7 +2,6 @@ import request from 'supertest';
 import { describe, it, expect, beforeAll } from 'vitest';
 
 import app from '@/app';
-import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { adminToken } from '@/tests/globalSetup';
 
 describe('Authorization API', () => {
@@ -19,7 +18,7 @@ describe('Authorization API', () => {
         firstName: 'AuthTest',
         lastName: 'User',
         password: 'TotoLeTesteur1!',
-        level: SecurityLevel.EXTERNAL,
+        level: 1,
       });
     expect(res.status).toBe(201);
     expect(res.body.data).toHaveProperty('id');
@@ -107,7 +106,7 @@ describe('Authorization API', () => {
       expect(res.body.data).toHaveProperty('level');
       expect(typeof res.body.data.authorisation).toBe('object');
       expect(typeof res.body.data.level).toBe('number');
-      expect(res.body.data.level).toBe(SecurityLevel.EXTERNAL);
+      expect(res.body.data.level).toBe(1);
     });
 
     it('should return 404 for a non-existent user ID', async () => {
