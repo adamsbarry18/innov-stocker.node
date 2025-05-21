@@ -327,6 +327,7 @@ CREATE TABLE `product_images` (
     `image_url` VARCHAR(2048) NOT NULL,
     `alt_text` VARCHAR(255) DEFAULT NULL,
     `is_primary` TINYINT(1) DEFAULT 0,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_product_images_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -374,6 +375,7 @@ CREATE TABLE `composite_product_items` (
     `component_product_id` INT NOT NULL,
     `component_variant_id` INT DEFAULT NULL,
     `quantity` DECIMAL(10, 3) NOT NULL,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `cpi_unique_item` (
@@ -400,6 +402,7 @@ CREATE TABLE `product_suppliers` (
     `purchase_price` DECIMAL(15, 4) NOT NULL,
     `currency_id` INT NOT NULL,
     `is_default_supplier` TINYINT(1) DEFAULT 0,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `product_supplier_unique` (
