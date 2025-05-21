@@ -16,6 +16,7 @@ import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop } from '@/modules/shops/models/shop.entity';
 import { BankAccount } from '@/modules/bank-accounts/models/bank-account.entity';
 import { CashRegister } from '@/modules/cash-registers/models/cash-register.entity';
+import { CashRegisterSession } from '@/modules/cash-register-sessions/models/cash-register-session.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -24,9 +25,8 @@ export const appDataSourceOptions: DataSourceOptions = {
   username: config.DB_USERNAME,
   password: config.DB_PASSWORD,
   database: config.DB_NAME,
-  synchronize: false,
+  synchronize: config.NODE_ENV === 'test' ? true : false,
   logging: ['error'],
-  // Use glob pattern to automatically find all entities
   entities: [
     User,
     Company,
@@ -42,10 +42,10 @@ export const appDataSourceOptions: DataSourceOptions = {
     Shop,
     BankAccount,
     CashRegister,
+    CashRegisterSession,
   ],
   migrations: [],
   subscribers: [],
-  // namingStrategy: new SnakeNamingStrategy(), // Si besoin
 };
 
 export const appDataSource = new DataSource(appDataSourceOptions);

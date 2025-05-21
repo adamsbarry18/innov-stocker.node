@@ -1113,6 +1113,9 @@ CREATE TABLE `cash_register_sessions` (
     `difference_amount` DECIMAL(15, 4) DEFAULT 0.0000, -- Application to calculate
     `status` VARCHAR(10) DEFAULT 'open' NOT NULL, -- Possible values: open, closed
     `notes` TEXT DEFAULT NULL,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_crs_register` FOREIGN KEY (`cash_register_id`) REFERENCES `cash_registers` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_crs_opened_by` FOREIGN KEY (`opened_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_crs_closed_by` FOREIGN KEY (`closed_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
@@ -1141,6 +1144,7 @@ CREATE TABLE `payments` (
     `reference_number` VARCHAR(255) DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
     `recorded_by_user_id` INT NOT NULL,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_p_currency` FOREIGN KEY (`currency_id`) REFERENCES `currencies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -1171,6 +1175,7 @@ CREATE TABLE `cash_register_transactions` (
     `payment_method_id` INT DEFAULT NULL, -- Utile si une dépense est faite par un autre moyen depuis la caisse (rare)
     `related_sales_order_id` INT DEFAULT NULL,
     `user_id` INT NOT NULL,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT `fk_crt_session` FOREIGN KEY (`cash_register_session_id`) REFERENCES `cash_register_sessions` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_crt_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_methods` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_crt_order` FOREIGN KEY (`related_sales_order_id`) REFERENCES `sales_orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
