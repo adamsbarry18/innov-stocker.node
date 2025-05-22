@@ -132,15 +132,15 @@ let config: z.infer<typeof envSchema>;
 
 try {
   config = envSchema.parse(process.env);
-  logger.info(`[Config] Configuration loaded successfully for NODE_ENV=${config.NODE_ENV}`); // Use console here
+  console.info(`[Config] Configuration loaded successfully for NODE_ENV=${config.NODE_ENV}`);
 } catch (error) {
   if (error instanceof z.ZodError) {
-    logger.error(
+    console.error(
       '❌ Invalid environment variables configuration:',
       JSON.stringify(error.format(), null, 2),
     );
   } else {
-    logger.error('❌ Unexpected error parsing environment variables:', error);
+    console.error('❌ Unexpected error parsing environment variables:', error);
   }
   process.exit(1);
 }

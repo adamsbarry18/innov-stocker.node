@@ -319,14 +319,6 @@ describe('PUT /users/:userId/password', () => {
     const loginRes = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: testEmail, password: currentPassword });
-
-    if (loginRes.status !== 200 || !loginRes.body.data.token) {
-      logger.error(
-        `Failed to login for PUT test setup. Status: ${loginRes.status}, Email: ${testEmail}, Password Used: ${currentPassword}`,
-        loginRes.body,
-      );
-      throw new Error('Login failed during beforeEach for PUT /users/:userId/password tests');
-    }
     currentTokenForPutTests = loginRes.body.data.token;
   });
 
