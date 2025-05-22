@@ -66,8 +66,8 @@ export class ProductImage extends Model {
 
   isValid(): boolean {
     const result = productImageSchemaValidation.safeParse({
-      // productId is not part of this basic validation, set by relation
-      imageUrl: this.imageUrl, // imageUrl is critical here
+      productId: this.productId, // Include productId in validation
+      imageUrl: this.imageUrl,
       altText: this.altText,
       isPrimary: this.isPrimary,
     });

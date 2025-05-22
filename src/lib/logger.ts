@@ -35,10 +35,11 @@ const logger = pino({
           ) {
             return;
           }
-          // Only log if method is debug, warn, error, or fatal
+          // Only log if method is info, debug, warn, error, or fatal
           if (
             method.name === 'debug' ||
             method.name === 'warn' ||
+            method.name === 'info' ||
             method.name === 'error' ||
             method.name === 'fatal'
           ) {
