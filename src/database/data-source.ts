@@ -17,6 +17,11 @@ import { Shop } from '@/modules/shops/models/shop.entity';
 import { BankAccount } from '@/modules/bank-accounts/models/bank-account.entity';
 import { CashRegister } from '@/modules/cash-registers/models/cash-register.entity';
 import { CashRegisterSession } from '@/modules/cash-register-sessions/models/cash-register-session.entity';
+import { Product } from '@/modules/products/models/product.entity';
+import { ProductImage } from '@/modules/product-images/models/product-image.entity';
+import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
+import { CompositeProductItem } from '@/modules/composite-product-items/models/composite-product-item.entity';
+import { ProductSupplier } from '@/modules/product-suppliers/models/product-supplier.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -43,6 +48,11 @@ export const appDataSourceOptions: DataSourceOptions = {
     BankAccount,
     CashRegister,
     CashRegisterSession,
+    Product,
+    ProductImage,
+    ProductVariant,
+    CompositeProductItem,
+    ProductSupplier,
   ],
   migrations: [],
   subscribers: [],

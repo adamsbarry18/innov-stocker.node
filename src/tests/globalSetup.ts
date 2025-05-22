@@ -11,14 +11,12 @@ export const adminCredentials = {
   password: 'Password123!',
 };
 export let adminToken: string;
-let isInitialized = false;
 beforeAll(async () => {
   // Assume DB and Redis are ready (docker-compose + test-with-clean-db.sh)
-  if (!isInitialized) {
+
+  if (!appDataSource.isInitialized) {
     console.log('Initializing shared connections...');
     await appDataSource.initialize();
-    await initializeRedis();
-    isInitialized = true;
   }
   if (!redisClient?.isReady) {
     await initializeRedis();
