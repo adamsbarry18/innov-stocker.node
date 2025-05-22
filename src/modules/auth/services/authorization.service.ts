@@ -214,20 +214,12 @@ export class AuthorizationService {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundError(`User with id ${userId} not found.`);
     if (!user.isActive) {
-      logger.debug(
-        `Authorization check for User ${userId}: User is inactive. Denying permission for Feature ${featureName}, Action ${actionName}.`,
-      );
       return false;
     }
 
     const permissions = await this.getEffectivePermissions(userId);
     const hasPermission =
       permissions?.permissions?.[featureName]?.actions.includes(actionName) || false;
-
-    logger.debug(
-      `Authorization check for User ${userId}, Feature ${featureName}, Action ${actionName}: ${hasPermission}`,
-    );
-
     return hasPermission;
   }
 
@@ -241,17 +233,9 @@ export class AuthorizationService {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundError(`User with id ${userId} not found.`);
     if (!user.isActive) {
-      logger.debug(
-        `Level access check for User ${userId}: User is inactive. Denying access regardless of level. Required: ${requiredLevel}.`,
-      );
       return false;
     }
     const hasAccess = user.level >= requiredLevel;
-
-    logger.debug(
-      `Level access check for User ${userId} (Level ${user.level}) vs Required ${requiredLevel}: ${hasAccess}`,
-    );
-
     return hasAccess;
   }
 
@@ -311,7 +295,6 @@ export class AuthorizationService {
     }
 
     if (!permissions) {
-      logger.debug(`Cache miss for user ${userId} authorizations. Calculating.`);
       permissions = await this.calculateEffectivePermissions(userId);
       if (permissions) {
         try {
@@ -320,13 +303,10 @@ export class AuthorizationService {
             AUTHORISATION_CACHE_TTL_SECONDS,
             JSON.stringify(permissions),
           );
-          logger.debug(`Authorizations for user ${userId} cached.`);
         } catch (error) {
           logger.error(error, `Error caching authorizations for userId: ${userId}`);
         }
       }
-    } else {
-      logger.debug(`Cache hit for user ${userId} authorizations.`);
     }
 
     return permissions;
@@ -338,7 +318,6 @@ export class AuthorizationService {
     try {
       const redisKey = this.getRedisAuthorisationKey(userId);
       await redisClient.del(redisKey);
-      logger.debug(`Authorization cache invalidated for user ${userId}`);
     } catch (error) {
       logger.error(error, `Failed to invalidate authorization cache for user ${userId}`);
     }
@@ -394,12 +373,8 @@ export class AuthorizationService {
           foundLevel !== undefined
             ? foundLevel
             : this.calculateDefaultMaskForLevel(featureId, baseLevel);
-        logger.debug(`User ${userId}, Feature ${featureName}: Using override mask ${finalMask}`);
       } else {
         finalMask = this.calculateDefaultMaskForLevel(featureId, baseLevel);
-        logger.debug(
-          `User ${userId}, Feature ${featureName}: Using default mask ${finalMask} for level ${baseLevel}`,
-        );
       }
 
       const allowedActions: string[] = [];

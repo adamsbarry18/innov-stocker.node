@@ -248,7 +248,6 @@ export class QuoteService {
           'items.productVariant', // Load variant for item description fallback
         ],
       });
-      logger.debug({ populatedQuote }, 'QuoteService.createQuote: populatedQuote after findById');
       const apiResponse = this.mapToApiResponse(populatedQuote);
       if (!apiResponse) {
         logger.error(
@@ -393,7 +392,6 @@ export class QuoteService {
             // Add new item
             itemEntity = itemRepoTx.create(itemEntityData as Partial<QuoteItem>);
           }
-
           if (!itemEntity.isValid()) {
             logger.error(
               { errors: quoteItemValidationInputErrors },
@@ -427,7 +425,21 @@ export class QuoteService {
 
       logger.info(`Quote ID ${id} updated successfully by user ${updatedByUserId}.`);
 
-      const populatedQuote = await this.quoteRepository.findById(id); // Use main repo for full default relations
+      // Re-fetch the quote using the transactional entity manager to ensure latest item data is included
+      const populatedQuote = await transactionalEntityManager.getRepository(Quote).findOne({
+        where: { id },
+        relations: [
+          'customer',
+          'currency',
+          'shippingAddress',
+          'billingAddress',
+          'createdByUser',
+          'updatedByUser',
+          'items',
+          'items.product',
+          'items.productVariant',
+        ],
+      });
       const apiResponse = this.mapToApiResponse(populatedQuote);
       if (!apiResponse) throw new ServerError(`Failed to map updated quote ${id}.`);
       return apiResponse;

@@ -258,7 +258,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Put('/quotes/:id')
-  @authorize({ level: SecurityLevel.USER }) // Sales role or similar
+  @authorize({ level: SecurityLevel.USER })
   async updateQuote(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
