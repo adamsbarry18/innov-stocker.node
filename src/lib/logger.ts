@@ -5,7 +5,7 @@ import config from '../config';
 const isTest = config.NODE_ENV === 'test';
 
 const logger = pino({
-  level: isTest ? 'warn' : config.LOG_LEVEL || 'info',
+  level: isTest ? 'debug' : config.LOG_LEVEL || 'info',
   transport:
     config.NODE_ENV === 'development'
       ? {
@@ -20,7 +20,7 @@ const logger = pino({
   hooks: isTest
     ? {
         logMethod(args, method) {
-          // Only log errors and warnings in test mode, and filter out noisy logs
+          // Only log errors, warnings, and debug in test mode, and filter out noisy logs
           const [msgOrObj, ...rest] = args;
           // Filter out repetitive/verbose logs in test mode
           if (
@@ -35,8 +35,13 @@ const logger = pino({
           ) {
             return;
           }
-          // Only log if method is warn, error, or fatal
-          if (method.name === 'error' || method.name === 'fatal' || method.name === 'warn') {
+          // Only log if method is debug, warn, error, or fatal
+          if (
+            method.name === 'debug' ||
+            method.name === 'warn' ||
+            method.name === 'error' ||
+            method.name === 'fatal'
+          ) {
             method.apply(this, args);
           }
         },

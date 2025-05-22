@@ -15,11 +15,11 @@ describe('Quotes API', () => {
 
   beforeAll(async () => {
     // Assuming these IDs exist in the seeded test database (2-datas.sql)
-    testCustomerId = 1; // Jean Dupont
-    testCurrencyId = 1; // EUR
-    testBillingAddressId = 4; // Client A - Facturation
-    testShippingAddressId = 5; // Client A - Livraison Principale
-    testProductId = 1; // Smartphone Modèle X
+    testCustomerId = 1;
+    testCurrencyId = 1;
+    testBillingAddressId = 4;
+    testShippingAddressId = 5;
+    testProductId = 1;
   });
 
   const testQuotePayloadBase = {
@@ -84,7 +84,7 @@ describe('Quotes API', () => {
     it('should fail to create a quote without items ', async () => {
       const payload = {
         ...testQuotePayloadBase,
-        items: [], // Empty items array
+        items: [],
         customerId: testCustomerId,
         currencyId: testCurrencyId,
         billingAddressId: testBillingAddressId,
@@ -93,13 +93,11 @@ describe('Quotes API', () => {
         .post('/api/v1/quotes')
         .set('Authorization', `Bearer ${adminToken}`)
         .send(payload);
-      // Expecting 400 based on the test description and common API validation
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
 
     it('should fail to create quote without authentication', async () => {
-      // Use a payload with valid FKs and items for this test
       const payload = {
         ...testQuotePayloadBase,
         customerId: testCustomerId,
@@ -133,11 +131,7 @@ describe('Quotes API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(res.body.data).toHaveProperty('id', createdQuoteId);
-      // This test might fail if previous tests created multiple items for quote 1 or 2
-      // Let's check if the items array is present and is an array
       expect(Array.isArray(res.body.data.items)).toBe(true);
-      // The exact number of items depends on the creation test, which now creates 1 item.
-      // So, expecting 1 item here is correct based on the corrected creation test.
       expect(res.body.data.items).toHaveLength(1);
     });
 
@@ -160,12 +154,12 @@ describe('Quotes API', () => {
       // Ensure existingQuote and its items are valid before proceeding
       expect(existingQuote).toHaveProperty('items');
       expect(Array.isArray(existingQuote.items)).toBe(true);
-      expect(existingQuote.items.length).toBeGreaterThan(0); // Should have at least one item from creation
+      expect(existingQuote.items.length).toBeGreaterThan(0);
 
       const itemsToUpdate = [
         {
-          id: existingQuote.items[0].id, // Use the actual ID of the item created earlier
-          productId: testProductId, // Ensure productId is included
+          id: existingQuote.items[0].id,
+          productId: testProductId,
           quantity: 3,
           unitPriceHt: 95.0,
           discountPercentage: 5,
@@ -185,10 +179,6 @@ describe('Quotes API', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ notes: 'Devis mis à jour avec nouvelles conditions.', items: itemsToUpdate });
 
-      // The service currently throws ForbiddenError if status is not DRAFT or SENT.
-      // The previous test sets the status to SENT. So, PUT should be allowed.
-      // If the status was somehow changed to ACCEPTED or CONVERTED, this would fail.
-      // Let's assume the PATCH test correctly set the status to SENT.
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(res.body.data.items).toHaveLength(2);
