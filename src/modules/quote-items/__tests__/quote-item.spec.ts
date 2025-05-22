@@ -2,7 +2,7 @@ import request from 'supertest';
 import { describe, it, expect, beforeAll } from 'vitest';
 import app from '@/app';
 import { adminToken } from '@/tests/globalSetup';
-import { QuoteStatus } from '../models/quote.entity';
+import { QuoteStatus } from '@/modules/quotes/models/quote.entity';
 
 describe('Quote Items API (nested under Quotes)', () => {
   let testProductId1: number;
