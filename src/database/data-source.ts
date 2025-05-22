@@ -22,8 +22,8 @@ import { ProductImage } from '@/modules/product-images/models/product-image.enti
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
 import { CompositeProductItem } from '@/modules/composite-product-items/models/composite-product-item.entity';
 import { ProductSupplier } from '@/modules/product-suppliers/models/product-supplier.entity';
-import { QuoteItem } from '@/modules/quotes/models/quote-item.entity';
 import { Quote } from '@/modules/quotes/models/quote.entity';
+import { QuoteItem } from '@/modules/quote-items/models/quote-item.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
