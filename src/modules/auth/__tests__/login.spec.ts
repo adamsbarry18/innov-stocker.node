@@ -321,7 +321,7 @@ describe('PUT /users/:userId/password', () => {
       .send({ email: testEmail, password: currentPassword });
 
     if (loginRes.status !== 200 || !loginRes.body.data.token) {
-      console.error(
+      logger.error(
         `Failed to login for PUT test setup. Status: ${loginRes.status}, Email: ${testEmail}, Password Used: ${currentPassword}`,
         loginRes.body,
       );

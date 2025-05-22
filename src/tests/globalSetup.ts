@@ -5,6 +5,7 @@ import app from '@/app';
 import { Errors } from '@/common/errors/httpErrors';
 import { appDataSource } from '@/database/data-source';
 import { redisClient, initializeRedis } from '@/lib/redis';
+import logger from '@/lib/logger';
 
 export const adminCredentials = {
   email: 'user.test1@example.com',
@@ -15,7 +16,7 @@ beforeAll(async () => {
   // Assume DB and Redis are ready (docker-compose + test-with-clean-db.sh)
 
   if (!appDataSource.isInitialized) {
-    console.log('Initializing shared connections...');
+    logger.info('Initializing shared connections...');
     await appDataSource.initialize();
   }
   if (!redisClient?.isReady) {

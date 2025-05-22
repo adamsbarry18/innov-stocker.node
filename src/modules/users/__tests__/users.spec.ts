@@ -51,14 +51,14 @@ const createAndLoginUser = async (
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ password });
     } else {
-      console.error(
+      logger.error(
         `Failed to retrieve existing user ${email} after creation attempt:`,
         getUserRes.body,
       );
       throw new Error(`Failed to retrieve existing user ${email}. Status: ${getUserRes.status}`);
     }
   } else {
-    console.error(`Failed to create user ${email} via /admin/users:`, userRes.body);
+    logger.error(`Failed to create user ${email} via /admin/users:`, userRes.body);
     throw new Error(
       `Failed to create or retrieve user ${email} via /admin/users. Status: ${userRes.status}`,
     );
@@ -66,7 +66,7 @@ const createAndLoginUser = async (
 
   const loginRes = await request(app).post('/api/v1/auth/login').send({ email, password });
   if (loginRes.status !== 200) {
-    console.error(`Failed to login user ${email}:`, loginRes.body);
+    logger.error(`Failed to login user ${email}:`, loginRes.body);
     throw new Error(`Failed to login user ${email}. Status: ${loginRes.status}`);
   }
   token = loginRes.body.data.token;
@@ -127,7 +127,7 @@ describe('Users API', () => {
         );
       }
     } catch (error) {
-      console.error('Error during beforeAll setup:', error);
+      logger.error('Error during beforeAll setup:', error);
       throw error;
     }
   });
