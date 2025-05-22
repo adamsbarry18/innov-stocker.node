@@ -3,7 +3,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
-  cacheDir: 'node_modules/.vite',
+  // cacheDir: 'node_modules/.vite',
   test: {
     globals: true,
     environment: 'node',
