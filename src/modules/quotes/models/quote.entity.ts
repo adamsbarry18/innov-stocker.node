@@ -6,10 +6,10 @@ import { Currency, CurrencyApiResponse } from '../../currencies/models/currency.
 import { Address, AddressApiResponse } from '../../addresses/models/address.entity';
 import { User, UserApiResponse } from '../../users/models/users.entity';
 import {
+  CreateQuoteItemInput,
   QuoteItem,
-  type CreateQuoteItemInput,
-  type QuoteItemApiResponse,
-} from './quote-item.entity';
+  QuoteItemApiResponse,
+} from '@/modules/quote-items/models/quote-item.entity';
 
 export enum QuoteStatus {
   DRAFT = 'draft',

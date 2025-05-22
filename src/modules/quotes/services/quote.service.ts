@@ -1,7 +1,6 @@
 import { appDataSource } from '@/database/data-source';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { QuoteRepository } from '../data/quote.repository';
-import { QuoteItemRepository } from '../data/quote-item.repository';
 import { CustomerRepository } from '../../customers/data/customer.repository';
 import { CurrencyRepository } from '../../currencies/data/currency.repository';
 import { AddressRepository } from '../../addresses/data/address.repository';
@@ -16,7 +15,6 @@ import {
   QuoteStatus,
   quoteValidationInputErrors,
 } from '../models/quote.entity';
-import { QuoteItem, quoteItemValidationInputErrors } from '../models/quote-item.entity';
 import {
   NotFoundError,
   BadRequestError,
@@ -26,6 +24,11 @@ import {
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
+import { QuoteItemRepository } from '@/modules/quote-items/data/quote-item.repository';
+import {
+  QuoteItem,
+  quoteItemValidationInputErrors,
+} from '@/modules/quote-items/models/quote-item.entity';
 
 // TODO: Dépendance - Importer SalesOrderService pour la conversion
 // import { SalesOrderService } from '../../sales-orders/services/sales_order.service';
@@ -398,7 +401,7 @@ export class QuoteService {
               `Validation failed for quote item (Product ID: ${itemInput.productId}).`,
             );
             throw new BadRequestError(
-              `Invalid data for quote item (Product ID: ${itemInput.productId}). Errors: ${quoteItemValidationInputErrors.join(', ')}`,
+              `Invalid data for quote item (Product ID: ${itemInput.productId}). Errors: ${quoteItemValidationInputErrors.join('; ')}`,
             );
           }
           itemsToUpdateOrAdd.push(itemEntity);
