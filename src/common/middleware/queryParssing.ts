@@ -119,8 +119,6 @@ export const parseFiltering =
 
     const queryParams = req.query;
 
-    logger.debug({ queryParams }, 'Parsing filters...');
-
     Object.entries(queryParams).forEach(([field, value]) => {
       // Ignore pagination, sorting, search, and order parameters
       if (['page', 'limit', 'sortBy', 'sortOrder', 'q', 'order'].includes(field)) {
@@ -180,9 +178,6 @@ export const parseFiltering =
         });
       }
     });
-
-    logger.debug({ parsedFilters: req.filters }, 'Parsed filters');
-
     next();
   };
 

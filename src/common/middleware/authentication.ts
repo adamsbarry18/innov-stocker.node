@@ -224,7 +224,6 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction): vo
         return next(new UnauthorizedError(message));
       }
       req.user = user;
-      logger.debug(`User ${req.user.id} authenticated. URL: ${req.originalUrl}`);
       next();
     },
   )(req, res, next);
@@ -249,9 +248,6 @@ export const requireLevel =
       );
       return next(new ForbiddenError(`Insufficient security level. Required: ${requiredLevel}.`));
     }
-    logger.debug(
-      `Level check successful for user ${req.user.id} (Level ${userLevel} >= Required ${requiredLevel}).`,
-    );
     next();
   };
 
@@ -282,7 +278,6 @@ export const requirePermission =
         );
         return next(new ForbiddenError(`Required permission: ${featureName}:${actionName}`));
       }
-      logger.debug(`Permission ${featureName}:${actionName} granted for user ${req.user.id}.`);
       next();
     } catch (error) {
       logger.error(
@@ -343,6 +338,5 @@ export const requireInternalUser = (req: Request, res: Response, next: NextFunct
     );
     return next(new ForbiddenError('Internal access only.'));
   }
-  logger.debug(`Internal route access granted for user ${req.user.id}.`);
   next();
 };

@@ -48,10 +48,6 @@ export class AuthorizationUtils {
 
           if (currentMask > 0) {
             featureMasks.set(featureConfig.id, currentMask);
-          } else {
-            logger.debug(
-              `Encode: No valid actions provided for feature '${featureName}', resulting mask is 0. Not storing override.`,
-            );
           }
         } else {
           logger.warn(`Encode: Unknown feature name '${featureName}'. Skipping feature.`);

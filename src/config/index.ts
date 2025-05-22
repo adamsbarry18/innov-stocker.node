@@ -3,6 +3,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 import 'reflect-metadata';
+import logger from '@/lib/logger';
 
 // Priority: .env.development, .env.production, etc. > .env (base)
 /**
@@ -102,7 +103,7 @@ const envSchema = z
   .refine(
     (data) => {
       if (data.NODE_ENV === 'production' && data.DB_SYNCHRONIZE === true) {
-        console.error('❌ FATAL SECURITY RISK: DB_SYNCHRONIZE cannot be true in production!');
+        logger.error('❌ FATAL SECURITY RISK: DB_SYNCHRONIZE cannot be true in production!');
         return false;
       }
       return true;
@@ -111,12 +112,12 @@ const envSchema = z
   )
   .refine((data) => {
     if (!data.API_URL && data.NODE_ENV !== 'test') {
-      console.warn(
+      logger.warn(
         '⚠️ WARNING: API_URL is not defined in .env. API Documentation links might be incorrect.',
       );
     }
     if (!data.FRONTEND_URL && data.NODE_ENV !== 'test') {
-      console.warn(
+      logger.warn(
         '⚠️ WARNING: FRONTEND_URL is not defined in .env. Email links might be incorrect.',
       );
     }
@@ -131,7 +132,7 @@ let config: z.infer<typeof envSchema>;
 
 try {
   config = envSchema.parse(process.env);
-  console.info(`[Config] Configuration loaded successfully for NODE_ENV=${config.NODE_ENV}`); // Use console here
+  console.info(`[Config] Configuration loaded successfully for NODE_ENV=${config.NODE_ENV}`);
 } catch (error) {
   if (error instanceof z.ZodError) {
     console.error(

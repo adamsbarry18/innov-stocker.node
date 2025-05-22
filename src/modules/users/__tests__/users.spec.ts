@@ -26,7 +26,7 @@ const createAndLoginUser = async (
   level: SecurityLevel,
   password = 'Password123!',
 ) => {
-  let userId: number;
+  let userId: number | undefined;
   let token: string;
 
   // Use the new admin route to create users with specific levels for testing setup
@@ -42,33 +42,22 @@ const createAndLoginUser = async (
     userRes.body?.data?.includes('Email address is already in use by an active user')
   ) {
     const getUserRes = await request(app)
-      .get(`/api/v1/users/${email}`) // Non-admin route is fine for GET by email if permitted
-      .set('Authorization', `Bearer ${adminToken}`); // Admin can get any user
+      .get(`/api/v1/users/${email}`)
+      .set('Authorization', `Bearer ${adminToken}`);
     if (getUserRes.status === 200) {
       userId = getUserRes.body.data.id;
       await request(app)
         .put(`/api/v1/users/${userId}/password`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ password });
-    } else {
-      console.error(
-        `Failed to retrieve existing user ${email} after creation attempt:`,
-        getUserRes.body,
-      );
-      throw new Error(`Failed to retrieve existing user ${email}. Status: ${getUserRes.status}`);
     }
-  } else {
-    console.error(`Failed to create user ${email} via /admin/users:`, userRes.body);
-    throw new Error(
-      `Failed to create or retrieve user ${email} via /admin/users. Status: ${userRes.status}`,
-    );
+  }
+
+  if (!userId) {
+    throw new Error('Failed to create or retrieve user');
   }
 
   const loginRes = await request(app).post('/api/v1/auth/login').send({ email, password });
-  if (loginRes.status !== 200) {
-    console.error(`Failed to login user ${email}:`, loginRes.body);
-    throw new Error(`Failed to login user ${email}. Status: ${loginRes.status}`);
-  }
   token = loginRes.body.data.token;
 
   return { userId, token };

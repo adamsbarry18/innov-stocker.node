@@ -153,9 +153,6 @@ export class LoginService {
     try {
       const res = await redisClient.get(redisKey);
       const isInvalidated = !!res;
-      logger.debug(
-        `Token invalidation check for key ${redisKey}: ${isInvalidated ? 'Invalidated' : 'Valid'}`,
-      );
       return isInvalidated;
     } catch (error) {
       logger.error(error, `Redis error checking token invalidation for key ${redisKey}`);

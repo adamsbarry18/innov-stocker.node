@@ -57,10 +57,6 @@ export class BankAccountService {
   }): Promise<{ accounts: BankAccountApiResponse[]; total: number }> {
     try {
       let whereClause = options?.filters ? { ...options.filters } : {};
-      if (options?.searchTerm) {
-        logger.warn('Search term functionality for bank accounts is basic.');
-        // Implement search logic if needed, e.g., on accountName, bankName, iban
-      }
       const { accounts, count } = await this.bankAccountRepository.findAll({
         where: whereClause,
         skip: options?.offset,
@@ -165,18 +161,12 @@ export class BankAccountService {
         if (!currency) {
           throw new BadRequestError(`New currency with ID ${input.currencyId} not found.`);
         }
-        // Note: Changing currency of an account with balance/transactions is complex.
-        // Usually disallowed or requires careful handling. For now, we allow changing ID.
         logger.warn(
           `Currency for bank account ${id} is being changed. Ensure this is intended and handle balance implications if any.`,
         );
       }
 
-      // currentBalance and initialBalance are not typically updated via this generic update
       const updateData = { ...input };
-      logger.debug('Updating bank account data without initialBalance (immutable field).');
-
-      // Ensure initialBalance is treated as a number for validation
       const tempAccountData = {
         ...account,
         initialBalance: Number(account.initialBalance),
