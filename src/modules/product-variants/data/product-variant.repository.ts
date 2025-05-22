@@ -1,4 +1,4 @@
-import { type DataSource, type Repository, IsNull, type UpdateResult } from 'typeorm';
+import { type DataSource, type Repository, IsNull, type UpdateResult, Not } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
@@ -9,6 +9,20 @@ export class ProductVariantRepository {
 
   constructor(dataSource: DataSource = appDataSource) {
     this.repository = dataSource.getRepository(ProductVariant);
+  }
+
+  public async findByBarcodeQrCodeVariant(
+    barcodeQrCodeVariant: string,
+    excludeId?: number,
+  ): Promise<ProductVariant | null> {
+    const where: any = {
+      barcodeQrCodeVariant,
+      deletedAt: IsNull(),
+    };
+    if (excludeId !== undefined) {
+      where.id = Not(excludeId);
+    }
+    return this.repository.findOneBy(where);
   }
 
   private getDefaultRelations(): string[] {
