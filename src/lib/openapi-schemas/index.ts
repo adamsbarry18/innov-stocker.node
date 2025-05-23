@@ -17,6 +17,7 @@ import { cashRegisterSchemas } from './cash-registers/cash-register.schema';
 import { cashRegisterSessionSchemas } from './cash-register-sessions/cash-register-session.schema';
 import { quoteSchemas } from './quotes/quote.schema';
 import { productSchemas } from './products/product.schema';
+import { purchaseOrderSchemas } from './purchase-orders/purchase-order.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -38,6 +39,7 @@ export const schemas = {
   ...cashRegisterSessionSchemas,
   ...quoteSchemas,
   ...productSchemas,
+  ...purchaseOrderSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -66,4 +68,5 @@ export {
   cashRegisterSessionSchemas,
   productSchemas,
   quoteSchemas,
+  purchaseOrderSchemas,
 };

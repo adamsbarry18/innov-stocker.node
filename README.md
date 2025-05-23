@@ -1,4 +1,4 @@
-# saas.template.node
+# innov-stocker.node
 
 # Starting redis server
 
@@ -10,7 +10,7 @@ sudo ss -tuln
 
 Remove-Item -Recurse -Force node_modules, package-lock.json; npm install
 
-- 📦saas.template.node
+- 📦innov-stocker.node
 - ┣ 📂build
 - ┃ ┗ 📂script
 - ┃ ┃ ┣ 📜deploy.sh
