@@ -100,7 +100,7 @@ jobs:
         with:
           # Construit le nom de l'image pour GHCR: ghcr.io/owner/repo
           # Vous pouvez ajouter un nom d'image spécifique si besoin: ghcr.io/${{ github.repository }}/api
-          images: ghcr.io/${{ github.repository }} # Ex: ghcr.io/adamsbarry18/saas.template.node
+          images: ghcr.io/${{ github.repository }} # Ex: ghcr.io/adamsbarry18/innov-stocker.node
           tags: |
             type=sha,prefix=,suffix=,format=short
             type=raw,value=latest,enable={{is_default_branch}}

@@ -24,6 +24,8 @@ import { CompositeProductItem } from '@/modules/composite-product-items/models/c
 import { ProductSupplier } from '@/modules/product-suppliers/models/product-supplier.entity';
 import { Quote } from '@/modules/quotes/models/quote.entity';
 import { QuoteItem } from '@/modules/quote-items/models/quote-item.entity';
+import { PurchaseOrder } from '@/modules/purchase-orders/models/purchase-order.entity';
+import { PurchaseOrderItem } from '@/modules/purchase-order-items/models/purchase-order-item.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -32,7 +34,7 @@ export const appDataSourceOptions: DataSourceOptions = {
   username: config.DB_USERNAME,
   password: config.DB_PASSWORD,
   database: config.DB_NAME,
-  synchronize: config.NODE_ENV === 'test' ? true : false,
+  synchronize: false, // Schema is managed by SQL scripts (1-schema.sql) for tests
   logging: ['error'],
   entities: [
     User,
@@ -57,6 +59,8 @@ export const appDataSourceOptions: DataSourceOptions = {
     ProductSupplier,
     QuoteItem,
     Quote,
+    PurchaseOrder,
+    PurchaseOrderItem,
   ],
   migrations: [],
   subscribers: [],

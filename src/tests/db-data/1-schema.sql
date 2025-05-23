@@ -565,6 +565,7 @@ CREATE TABLE `purchase_orders` (
     `shop_id_for_delivery` INT DEFAULT NULL,
     `created_by_user_id` INT NOT NULL,
     `approved_by_user_id` INT DEFAULT NULL,
+    `updated_by_user_id` INT DEFAULT NULL, -- Added for consistency with Model pattern
     `notes` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -576,7 +577,8 @@ CREATE TABLE `purchase_orders` (
     CONSTRAINT `fk_po_warehouse` FOREIGN KEY (`warehouse_id_for_delivery`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_po_shop` FOREIGN KEY (`shop_id_for_delivery`) REFERENCES `shops` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_po_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_po_approved_by` FOREIGN KEY (`approved_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT `fk_po_approved_by` FOREIGN KEY (`approved_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_po_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -595,6 +597,9 @@ CREATE TABLE `purchase_order_items` (
     `vat_rate_percentage` DECIMAL(5, 2) DEFAULT NULL,
     `total_line_amount_ht` DECIMAL(15, 4) DEFAULT 0.0000, -- Application to calculate
     `quantity_received` DECIMAL(15, 3) DEFAULT 0.000,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT `fk_poi_order` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_poi_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_poi_variant` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -782,6 +787,7 @@ CREATE TABLE `quotes` (
     `shipping_address_id` INT DEFAULT NULL,
     `billing_address_id` INT NOT NULL,
     `created_by_user_id` INT NOT NULL,
+    `updated_by_user_id` INT DEFAULT NULL, -- Added for consistency with Model pattern
     `notes` TEXT DEFAULT NULL,
     `terms_and_conditions` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -792,7 +798,8 @@ CREATE TABLE `quotes` (
     CONSTRAINT `fk_q_currency` FOREIGN KEY (`currency_id`) REFERENCES `currencies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_q_shipping_address` FOREIGN KEY (`shipping_address_id`) REFERENCES `addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_q_billing_address` FOREIGN KEY (`billing_address_id`) REFERENCES `addresses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_q_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `fk_q_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `fk_q_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
