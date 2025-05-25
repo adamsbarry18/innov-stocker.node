@@ -175,17 +175,6 @@ export class UsersService {
     const assignedLevel: SecurityLevel = SecurityLevel.USER;
     const assignedInternal: boolean = false;
 
-    if (inputLevel !== undefined && inputLevel !== SecurityLevel.USER) {
-      logger.warn(
-        `Attempt to set level to ${inputLevel} during public user creation for ${lowerCaseEmail}. Overriding to ${SecurityLevel.USER}.`,
-      );
-    }
-    if (restData.internal === true) {
-      logger.warn(
-        `Attempt to set internal to true during public user creation for ${lowerCaseEmail}. Overriding to false.`,
-      );
-    }
-
     const finalRestData = { ...restData, internal: assignedInternal };
 
     try {
@@ -401,16 +390,6 @@ export class UsersService {
         updatePayload.internal = input.internal;
       }
 
-      const finalAssignedLevel = updatePayload.level ?? user.level;
-      if (
-        updatePayload.internal === true &&
-        ![SecurityLevel.ADMIN, SecurityLevel.INTEGRATOR].includes(finalAssignedLevel)
-      ) {
-        logger.warn(
-          `Admin or process is attempting to set user ${id} to internal=true with a non-privileged level ${finalAssignedLevel}. This might be unintended.`,
-        );
-      }
-
       if (password) {
         if (!this.passwordService.isPasswordValid(password)) {
           throw new BadRequestError(
@@ -423,8 +402,6 @@ export class UsersService {
           updatePayload.passwordUpdatedAt = new Date();
           updatePayload.passwordStatus = PasswordStatus.VALIDATING;
           passwordChanged = true;
-        } else {
-          logger.warn(`User ${id} attempted to update with the same password.`);
         }
       }
       if (permissions !== undefined) {

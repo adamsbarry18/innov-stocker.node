@@ -14,7 +14,6 @@ export const errorHandler = (
   _next: NextFunction,
 ): void => {
   let error: BaseError;
-
   logger.error(
     {
       err,

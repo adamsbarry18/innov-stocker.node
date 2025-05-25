@@ -619,16 +619,19 @@ CREATE TABLE `purchase_receptions` (
     `warehouse_id` INT DEFAULT NULL,
     `shop_id` INT DEFAULT NULL,
     `received_by_user_id` INT NOT NULL,
+    `updated_by_user_id` INT DEFAULT NULL, -- Added for consistency with Model pattern
     `status` VARCHAR(30) DEFAULT 'complete' NOT NULL, -- Possible values: partial, complete, pending_quality_check
     `notes` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     UNIQUE KEY `reception_number_unique` (`reception_number`),
     CONSTRAINT `fk_pr_order` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_pr_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_pr_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_pr_shop` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_pr_received_by` FOREIGN KEY (`received_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `fk_pr_received_by` FOREIGN KEY (`received_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `fk_pr_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -647,6 +650,9 @@ CREATE TABLE `purchase_reception_items` (
     `lot_number` VARCHAR(100) DEFAULT NULL,
     `expiry_date` DATE DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT `fk_pri_reception` FOREIGN KEY (`purchase_reception_id`) REFERENCES `purchase_receptions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_pri_order_item` FOREIGN KEY (`purchase_order_item_id`) REFERENCES `purchase_order_items` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_pri_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,

@@ -8,8 +8,8 @@ import { SecurityLevel } from '../models/users.entity';
 
 let createdUserId: number;
 let zombieUserId: number;
-let standardUserId: number;
-let readerUserId: number;
+let standardUserId: number | undefined;
+let readerUserId: number | undefined;
 let userToken: string;
 let readerToken: string;
 
@@ -53,10 +53,6 @@ const createAndLoginUser = async (
     }
   }
 
-  if (!userId) {
-    throw new Error('Failed to create or retrieve user');
-  }
-
   const loginRes = await request(app).post('/api/v1/auth/login').send({ email, password });
   token = loginRes.body.data.token;
 
@@ -65,59 +61,48 @@ const createAndLoginUser = async (
 
 describe('Users API', () => {
   beforeAll(async () => {
-    try {
-      const standardUser = await createAndLoginUser(
-        standardUserEmail,
-        SecurityLevel.USER,
-        standardUserPassword,
-      );
-      standardUserId = standardUser.userId;
-      userToken = standardUser.token;
+    const standardUser = await createAndLoginUser(
+      standardUserEmail,
+      SecurityLevel.USER,
+      standardUserPassword,
+    );
+    standardUserId = standardUser.userId;
+    userToken = standardUser.token;
 
-      const readerUser = await createAndLoginUser(
-        readerUserEmail,
-        SecurityLevel.READER,
-        readerUserPassword,
-      );
-      readerUserId = readerUser.userId;
-      readerToken = readerUser.token;
+    const readerUser = await createAndLoginUser(
+      readerUserEmail,
+      SecurityLevel.READER,
+      readerUserPassword,
+    );
+    readerUserId = readerUser.userId;
+    readerToken = readerUser.token;
 
-      const mainUserRes = await request(app)
-        .post('/api/v1/admin/users')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-          email: userMail,
-          firstName: 'Main',
-          lastName: 'Test',
-          color: '#FAFAFA',
-          password: 'PasswordMain1!',
-          level: SecurityLevel.USER,
-          preferences: { hello: 'world' },
-          isActive: true,
-          permissionsExpireAt: new Date(Date.now() + 3600000 * 24).toISOString(), // Expires in 24 hours
-        });
-      if (mainUserRes.status === 201) {
-        createdUserId = mainUserRes.body.data.id;
-      } else if (
-        mainUserRes.status === 400 &&
-        mainUserRes.body?.message?.includes('already in use by an active user') // Message d'erreur mis à jour
-      ) {
-        const getMainUserRes = await request(app)
-          .get(`/api/v1/users/${userMail}`)
-          .set('Authorization', `Bearer ${adminToken}`);
-        if (getMainUserRes.status === 200) {
-          createdUserId = getMainUserRes.body.data.id;
-        } else {
-          throw new Error(`Failed to retrieve existing main user ${userMail}`);
-        }
-      } else {
-        throw new Error(
-          `Failed to create or retrieve main user ${userMail}. Status: ${mainUserRes.status}`,
-        );
+    const mainUserRes = await request(app)
+      .post('/api/v1/admin/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        email: userMail,
+        firstName: 'Main',
+        lastName: 'Test',
+        color: '#FAFAFA',
+        password: 'PasswordMain1!',
+        level: SecurityLevel.USER,
+        preferences: { hello: 'world' },
+        isActive: true,
+        permissionsExpireAt: new Date(Date.now() + 3600000 * 24).toISOString(), // Expires in 24 hours
+      });
+    if (mainUserRes.status === 201) {
+      createdUserId = mainUserRes.body.data.id;
+    } else if (
+      mainUserRes.status === 400 &&
+      mainUserRes.body?.message?.includes('already in use by an active user') // Message d'erreur mis à jour
+    ) {
+      const getMainUserRes = await request(app)
+        .get(`/api/v1/users/${userMail}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      if (getMainUserRes.status === 200) {
+        createdUserId = getMainUserRes.body.data.id;
       }
-    } catch (error) {
-      console.error('Error during beforeAll setup:', error);
-      throw error;
     }
   });
 

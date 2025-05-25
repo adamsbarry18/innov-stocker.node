@@ -20,9 +20,6 @@ async function initializeApiRouter(): Promise<Router> {
   const modulesPath = resolve(process.cwd(), 'src/modules');
   // Ensure cross-OS path compatibility
   const globPattern = resolve(modulesPath, '**/*.routes.{ts,js}').replace(/\\/g, '/');
-
-  logger.info(`Searching for route files using pattern: ${globPattern}`);
-
   let routeFiles: string[];
   try {
     // Use async glob
@@ -59,8 +56,7 @@ async function initializeApiRouter(): Promise<Router> {
         importedModule.default || importedModule[Object.keys(importedModule)[0]];
 
       if (typeof controllerClass === 'function' && controllerClass.prototype) {
-        const controllerName = controllerClass.name || '[Anonymous Controller]';
-        logger.info(`  Registering routes from ${relativePath} using controller ${controllerName}`);
+        controllerClass.name || '[Anonymous Controller]';
         registerRoutes(apiRouter, controllerClass);
       } else {
         logger.warn(
