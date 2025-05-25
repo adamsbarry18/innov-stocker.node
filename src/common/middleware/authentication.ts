@@ -328,7 +328,6 @@ export const validateRequest =
  */
 export const requireInternalUser = (req: Request, res: Response, next: NextFunction): void => {
   if (!req.user) {
-    logger.warn('Internal route access denied: not authenticated.');
     return next(new UnauthorizedError('Authentication required for internal route.'));
   }
   const isInternal = typeof req.user.internal === 'boolean' ? req.user.internal : false;

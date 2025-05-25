@@ -205,8 +205,8 @@ INSERT INTO purchase_receptions (id, reception_number, purchase_order_id, suppli
 -- Table purchase_reception_items
 -- -----------------------------------------------------
 INSERT INTO purchase_reception_items (id, purchase_reception_id, purchase_order_item_id, product_id, product_variant_id, quantity_ordered, quantity_received, lot_number, expiry_date, notes) VALUES
-(1, 1, 1, 1, NULL, 30.000, 30.000, 'LOT-SPX-20250514', NULL, 'Tous les smartphones OK'),
-(2, 2, 2, 3, NULL, 20.000, 15.000, 'LOT-CHG-20250518', NULL, '5 chargeurs en attente');
+(1, 1, 1, 1, NULL, 30.000, 25.000, 'LOT-SPX-20250514', NULL, 'Tous les smartphones OK'),
+(2, 2, 2, 3, NULL, 20.000, 10.000, 'LOT-CHG-20250518', NULL, '5 chargeurs en attente');
 
 -- -----------------------------------------------------
 -- Table supplier_invoices

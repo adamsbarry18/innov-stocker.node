@@ -26,6 +26,8 @@ import { Quote } from '@/modules/quotes/models/quote.entity';
 import { QuoteItem } from '@/modules/quote-items/models/quote-item.entity';
 import { PurchaseOrder } from '@/modules/purchase-orders/models/purchase-order.entity';
 import { PurchaseOrderItem } from '@/modules/purchase-order-items/models/purchase-order-item.entity';
+import { PurchaseReception } from '@/modules/purchase-receptions/models/purchase-reception.entity';
+import { PurchaseReceptionItem } from '@/modules/purchase-reception-items/models/purchase-reception-item.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -61,6 +63,8 @@ export const appDataSourceOptions: DataSourceOptions = {
     Quote,
     PurchaseOrder,
     PurchaseOrderItem,
+    PurchaseReception,
+    PurchaseReceptionItem,
   ],
   migrations: [],
   subscribers: [],

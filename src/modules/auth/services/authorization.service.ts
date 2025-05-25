@@ -242,7 +242,6 @@ export class AuthorizationService {
   private async getEffectivePermissions(userId: number): Promise<DecodedAuthorisations | null> {
     const userForStatusCheck = await this.userRepository.findById(userId);
     if (!userForStatusCheck) {
-      logger.warn(`User with ID ${userId} not found when starting to get effective permissions.`);
       return null;
     }
 
@@ -273,7 +272,6 @@ export class AuthorizationService {
     }
 
     if (!redisClient?.isReady) {
-      logger.warn('Redis unavailable for retrieving authorizations. Calculating directly.');
       return this.calculateEffectivePermissions(userId);
     }
 
@@ -285,7 +283,6 @@ export class AuthorizationService {
       if (cached) {
         permissions = JSON.parse(cached);
         if (permissions?.expiresAt && dayjs(permissions.expiresAt).isBefore(dayjs())) {
-          logger.info(`Authorization cache expired for user ${userId}. Recalculating.`);
           permissions = null;
           await redisClient.del(redisKey);
         }
@@ -328,7 +325,6 @@ export class AuthorizationService {
   ): Promise<DecodedAuthorisations | null> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      logger.warn(`User with ID ${userId} not found when calculating permissions.`);
       return null;
     }
 
@@ -422,9 +418,6 @@ export class AuthorizationService {
       try {
         const numAuth = parseInt(part, 10) ?? 0;
         if (isNaN(numAuth) || numAuth < 0) {
-          logger.warn(
-            `Invalid non-numeric or negative part found in authorisationOverrides: '${part}'. Skipping.`,
-          );
           continue;
         }
         const bitAuth = numAuth.toString(2).padStart(32, '0');
@@ -432,16 +425,11 @@ export class AuthorizationService {
         const permissionMask = parseInt(bitAuth.substring(16), 2);
 
         if (isNaN(featureId) || isNaN(permissionMask)) {
-          logger.warn(`Failed to parse featureId or permissionMask from part '${part}'. Skipping.`);
           continue;
         }
 
         if (featuresProcessedFlagsMap.has(featureId)) {
           decoded.set(featureId, permissionMask);
-        } else {
-          logger.warn(
-            `Decoded unknown feature ID ${featureId} from authorisationOverrides part '${part}'. Ignoring.`,
-          );
         }
       } catch (error) {
         logger.error(error, `Error decoding authorisationOverrides part '${part}'. Skipping.`);
@@ -453,7 +441,6 @@ export class AuthorizationService {
   private calculateDefaultMaskForLevel(featureId: number, userLevel: SecurityLevel): number {
     const featureInfo = featuresProcessedFlagsMap.get(featureId);
     if (!featureInfo) {
-      logger.warn(`Default mask calculation: Feature ID ${featureId} not found in config.`);
       return 0;
     }
 
@@ -490,15 +477,11 @@ export class AuthorizationService {
       if (Object.prototype.hasOwnProperty.call(permissions, featureName)) {
         const featureId = featureNameToIdMap.get(featureName);
         if (featureId === undefined) {
-          logger.warn(`Encoding permissions: Unknown feature name '${featureName}'. Skipping.`);
           continue;
         }
 
         const featureInfo = featuresProcessedFlagsMap.get(featureId);
         if (!featureInfo) {
-          logger.warn(
-            `Encoding permissions: Feature ID ${featureId} (${featureName}) not found in processed map. Skipping.`,
-          );
           continue;
         }
 
@@ -509,16 +492,9 @@ export class AuthorizationService {
             const actionConfig = featureInfo.flags[actionName];
             if (actionConfig) {
               permissionMask |= actionConfig.combinedMask;
-            } else {
-              logger.warn(
-                `Encoding permissions: Unknown action name '${actionName}' for feature '${featureName}'. Skipping.`,
-              );
             }
           }
         } else {
-          logger.warn(
-            `Encoding permissions: Invalid action list for feature '${featureName}'. Expected array, got ${typeof allowedActions}. Skipping.`,
-          );
           continue;
         }
         const combined = (featureId << 16) | permissionMask;

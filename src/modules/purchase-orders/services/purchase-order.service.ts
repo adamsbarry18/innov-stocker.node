@@ -205,6 +205,7 @@ export class PurchaseOrderService {
 
         // Validate the main entity instance
         const tempOrderForValidation = this.orderRepository.create(orderEntity);
+
         if (!tempOrderForValidation.isValid()) {
           throw new BadRequestError(
             `Purchase order data is invalid. Errors: ${purchaseOrderValidationInputErrors.join(', ')}`,

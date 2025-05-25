@@ -95,7 +95,6 @@ export class CustomerShippingAddressService {
             savedShippingAddress.id,
           );
         } else {
-          logger.warn('Saved shipping address did not have an ID immediately after save.');
           const otherAddresses =
             await this.customerShippingAddressRepository.findByCustomerId(customerId);
           for (const addr of otherAddresses) {
@@ -174,7 +173,6 @@ export class CustomerShippingAddressService {
             shippingAddress.id,
           );
         } else {
-          logger.warn('Updated shipping address did not have an ID.');
           const otherAddresses =
             await this.customerShippingAddressRepository.findByCustomerId(customerId);
           for (const addr of otherAddresses) {
@@ -306,7 +304,6 @@ export class CustomerShippingAddressService {
           shippingAddressToSetDefault.id,
         );
       } else {
-        logger.warn('Shipping address to set as default did not have an ID.');
         const currentDefaults =
           await this.customerShippingAddressRepository.findByCustomerId(customerId);
         for (const addr of currentDefaults) {
