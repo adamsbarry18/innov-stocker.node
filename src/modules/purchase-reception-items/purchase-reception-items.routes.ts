@@ -61,7 +61,9 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
 
     const input: CreatePurchaseReceptionItemInput = req.body;
     const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
+    if (!userId) {
+      return next(new UnauthorizedError('User ID is required for this operation.'));
+    }
 
     await this.pipe(
       res,
@@ -203,7 +205,9 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
 
     const input: UpdatePurchaseReceptionItemInput = req.body;
     const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
+    if (!userId) {
+      return next(new UnauthorizedError('User ID is required for this operation.'));
+    }
 
     await this.pipe(
       res,
@@ -252,7 +256,9 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
       return next(new BadRequestError('Invalid Purchase Reception or Item ID in path.'));
 
     const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
+    if (!userId) {
+      return next(new UnauthorizedError('User ID is required for this operation.'));
+    }
 
     await this.pipe(
       res,

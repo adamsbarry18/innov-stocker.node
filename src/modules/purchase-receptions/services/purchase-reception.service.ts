@@ -77,11 +77,20 @@ export class PurchaseReceptionService {
     // TODO: this.stockMovementService = stockMovementService;
   }
 
+  /**
+   * Maps a PurchaseReception entity to its API response format.
+   * @param reception The PurchaseReception entity or null.
+   * @returns The mapped API response or null.
+   */
   mapToApiResponse(reception: PurchaseReception | null): PurchaseReceptionApiResponse | null {
     if (!reception) return null;
     return reception.toApi();
   }
 
+  /**
+   * Generates a unique reception number based on the current date and sequence.
+   * @returns The generated reception number as a string.
+   */
   private async generateReceptionNumber(): Promise<string> {
     const datePrefix = dayjs().format('YYYYMMDD');
     const prefix = `REC-${datePrefix}-`;
@@ -209,10 +218,9 @@ export class PurchaseReceptionService {
 
           const totalReceivedIncludingCurrentUpdate =
             totalReceivedForThisPoItemExcludingCurrent + Number(itemInput.quantityReceived);
-
           if (totalReceivedIncludingCurrentUpdate > Number(poItem.quantity)) {
             throw new BadRequestError(
-              `Quantity received (${itemInput.quantityReceived}) for PO item ${itemInput.purchaseOrderItemId}`,
+              `Quantity received (${itemInput.quantityReceived}) for PO item ${itemInput.purchaseOrderItemId} exceeds remaining quantity (${Number(poItem.quantity) - totalReceivedForThisPoItemExcludingCurrent}).`,
             );
           }
         }
@@ -221,6 +229,12 @@ export class PurchaseReceptionService {
     return { purchaseOrder };
   }
 
+  /**
+   * Calculates the total quantity received for a given purchase order item, optionally excluding a specific reception.
+   * @param purchaseOrderItemId The ID of the purchase order item.
+   * @param excludeReceptionId The ID of a reception to exclude from the calculation.
+   * @returns The total quantity received.
+   */
   async calculateTotalReceivedForPOItem(
     purchaseOrderItemId: number,
     excludeReceptionId?: number,
@@ -233,6 +247,12 @@ export class PurchaseReceptionService {
     return Number(result?.total || 0);
   }
 
+  /**
+   * Creates a new purchase reception and its items.
+   * @param input The input data for the reception.
+   * @param receivedByUserId The ID of the user who received the goods.
+   * @returns The created reception as an API response.
+   */
   async createReception(
     input: CreatePurchaseReceptionInput,
     receivedByUserId: number,
@@ -327,6 +347,11 @@ export class PurchaseReceptionService {
     });
   }
 
+  /**
+   * Finds a purchase reception by its ID.
+   * @param id The ID of the reception.
+   * @returns The found reception as an API response.
+   */
   async findReceptionById(id: number): Promise<PurchaseReceptionApiResponse> {
     try {
       const reception = await this.receptionRepository.findById(id, {
@@ -354,6 +379,11 @@ export class PurchaseReceptionService {
     }
   }
 
+  /**
+   * Finds all purchase receptions with optional filters, pagination, and sorting.
+   * @param options Optional query options (limit, offset, filters, sort, searchTerm).
+   * @returns An object containing the list of receptions and the total count.
+   */
   async findAllReceptions(options?: {
     limit?: number;
     offset?: number;
@@ -380,6 +410,13 @@ export class PurchaseReceptionService {
     }
   }
 
+  /**
+   * Updates an existing purchase reception and its items.
+   * @param id The ID of the reception to update.
+   * @param input The update data.
+   * @param updatedByUserId The ID of the user performing the update.
+   * @returns The updated reception as an API response.
+   */
   async updateReception(
     id: number,
     input: UpdatePurchaseReceptionInput,
@@ -514,10 +551,6 @@ export class PurchaseReceptionService {
           if (itemsToCreate.length > 0) {
             await itemRepoTx.save(itemsToCreate);
           }
-        } else if (input.items) {
-          logger.warn(
-            `Attempt to update items for reception ID ${id} in status ${reception.status} was ignored.`,
-          );
         }
 
         const populatedReception = await receptionRepoTx.findOne({
@@ -554,6 +587,12 @@ export class PurchaseReceptionService {
     }
   }
 
+  /**
+   * Validates a purchase reception, updates related purchase order items, and changes statuses.
+   * @param receptionId The ID of the reception to validate.
+   * @param validatedByUserId The ID of the user validating the reception.
+   * @returns The validated reception as an API response.
+   */
   async validateReception(
     receptionId: number,
     validatedByUserId: number,
@@ -592,10 +631,6 @@ export class PurchaseReceptionService {
             poItem.quantityReceived =
               Number(poItem.quantityReceived || 0) + Number(recItem.quantityReceived);
             await poItemRepoTx.save(poItem);
-          } else {
-            logger.warn(
-              `PO Item ID ${recItem.purchaseOrderItemId} linked to reception item ${recItem.id} not found during validation.`,
-            );
           }
         }
         // TODO: Dépendance - Create StockMovement
@@ -660,6 +695,12 @@ export class PurchaseReceptionService {
     });
   }
 
+  /**
+   * Deletes a purchase reception if it is not processed.
+   * @param id The ID of the reception to delete.
+   * @param deletedByUserId The ID of the user performing the deletion.
+   * @returns A promise that resolves when the deletion is complete.
+   */
   async deleteReception(id: number, deletedByUserId: number): Promise<void> {
     const reception = await this.receptionRepository.findById(id, { relations: ['items'] });
     if (!reception) throw new NotFoundError(`Purchase reception with id ${id} not found.`);
@@ -694,6 +735,10 @@ export class PurchaseReceptionService {
     }
   }
 
+  /**
+   * Returns a singleton instance of the PurchaseReceptionService.
+   * @returns The singleton instance.
+   */
   static getInstance(): PurchaseReceptionService {
     if (!instance) {
       instance = new PurchaseReceptionService();

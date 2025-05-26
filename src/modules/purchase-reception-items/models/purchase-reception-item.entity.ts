@@ -52,7 +52,7 @@ export const purchaseReceptionItemValidationInputErrors: string[] = [];
 @Index(['purchaseReceptionId', 'productId', 'productVariantId', 'purchaseOrderItemId'], {
   unique: true,
   where: `"deleted_time" IS NULL`,
-}) // Prevent duplicate product line from same PO line
+})
 export class PurchaseReceptionItem extends Model {
   @Column({ type: 'int', name: 'purchase_reception_id' })
   purchaseReceptionId!: number;
@@ -113,7 +113,7 @@ export class PurchaseReceptionItem extends Model {
       quantityOrdered: this.quantityOrdered !== null ? Number(this.quantityOrdered) : null,
       quantityReceived: Number(this.quantityReceived),
       lotNumber: this.lotNumber,
-      expiryDate: Model.formatISODate(this.expiryDate), // formatISODate handles null
+      expiryDate: Model.formatISODate(this.expiryDate),
       notes: this.notes,
       createdAt: Model.formatISODate(this.createdAt),
       updatedAt: Model.formatISODate(this.updatedAt),

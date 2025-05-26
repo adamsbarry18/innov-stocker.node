@@ -19,7 +19,7 @@ export class PurchaseReceptionItemRepository {
     this.repository = dataSource.getRepository(PurchaseReceptionItem);
   }
 
-  private getDefaultRelations(): string[] {
+  public getDefaultRelations(): string[] {
     return [
       'product',
       'productVariant',
