@@ -199,14 +199,16 @@ INSERT INTO sales_order_items (id, sales_order_id, product_id, product_variant_i
 -- -----------------------------------------------------
 INSERT INTO purchase_receptions (id, reception_number, purchase_order_id, supplier_id, reception_date, warehouse_id, shop_id, received_by_user_id, status, notes, created_time, updated_time) VALUES
 (1, 'REC-2025-00001', 1, 1, '2025-05-14', 1, NULL, 1, 'complete', 'Réception complète PO-2025-00001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'REC-2025-00002', 2, 2, '2025-05-18', 1, NULL, 1, 'partial', 'Réception partielle PO-2025-00002, manque 5 chargeurs', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 'REC-2025-00002', 2, 2, '2025-05-18', 1, NULL, 1, 'partial', 'Réception partielle PO-2025-00002, manque 5 chargeurs', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'REC-2025-00003', 2, 2, '2025-05-20', 1, NULL, 1, 'pending_quality_check', 'Réception en attente de contrôle qualité pour tests', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- -----------------------------------------------------
 -- Table purchase_reception_items
 -- -----------------------------------------------------
 INSERT INTO purchase_reception_items (id, purchase_reception_id, purchase_order_item_id, product_id, product_variant_id, quantity_ordered, quantity_received, lot_number, expiry_date, notes) VALUES
 (1, 1, 1, 1, NULL, 30.000, 25.000, 'LOT-SPX-20250514', NULL, 'Tous les smartphones OK'),
-(2, 2, 2, 3, NULL, 20.000, 10.000, 'LOT-CHG-20250518', NULL, '5 chargeurs en attente');
+(2, 2, 2, 3, NULL, 20.000, 10.000, 'LOT-CHG-20250518', NULL, '5 chargeurs en attente'),
+(3, 3, 2, 3, NULL, 20.000, 5.000, 'LOT-CHG-20250520', NULL, 'Item initial pour tests de modification');
 
 -- -----------------------------------------------------
 -- Table supplier_invoices
