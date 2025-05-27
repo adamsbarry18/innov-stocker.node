@@ -28,6 +28,7 @@ import { PurchaseOrder } from '@/modules/purchase-orders/models/purchase-order.e
 import { PurchaseOrderItem } from '@/modules/purchase-order-items/models/purchase-order-item.entity';
 import { PurchaseReception } from '@/modules/purchase-receptions/models/purchase-reception.entity';
 import { PurchaseReceptionItem } from '@/modules/purchase-reception-items/models/purchase-reception-item.entity';
+import { StockMovement } from '@/modules/stock-movements/models/stock-movement.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -65,6 +66,7 @@ export const appDataSourceOptions: DataSourceOptions = {
     PurchaseOrderItem,
     PurchaseReception,
     PurchaseReceptionItem,
+    StockMovement,
   ],
   migrations: [],
   subscribers: [],

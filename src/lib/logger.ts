@@ -39,13 +39,10 @@ const COLORS = {
 };
 
 class ConsoleLogger implements Logger {
-  private isMuted: boolean = process.env.NODE_ENV === 'test';
+  // private isMuted: boolean = process.env.NODE_ENV === 'test';
   private logs: { level: string; message: any; optionalParams: any[] }[] = [];
 
   private colorize(level: string, message: string): string {
-    if (process.env.NODE_ENV === 'test') {
-      return message; // No colors in test environment
-    }
     switch (level) {
       case 'info':
         return `${COLORS.FgBlue}${message}${COLORS.Reset}`;
@@ -66,26 +63,24 @@ class ConsoleLogger implements Logger {
 
   private captureLog(level: string, message?: any, optionalParams: any[] = []): void {
     this.logs.push({ level, message, optionalParams });
-    if (!this.isMuted) {
-      const coloredMessage = this.colorize(level, message);
-      switch (level) {
-        case 'info':
-          console.info(coloredMessage, ...optionalParams);
-          break;
-        case 'log':
-          console.log(coloredMessage, ...optionalParams);
-          break;
-        case 'warn':
-          console.warn(coloredMessage, ...optionalParams);
-          break;
-        case 'debug':
-          console.debug(coloredMessage, ...optionalParams);
-          break;
-        case 'error':
-        case 'fatal':
-          console.error(coloredMessage, ...optionalParams);
-          break;
-      }
+    const coloredMessage = this.colorize(level, message);
+    switch (level) {
+      case 'info':
+        console.info(coloredMessage, ...optionalParams);
+        break;
+      case 'log':
+        console.log(coloredMessage, ...optionalParams);
+        break;
+      case 'warn':
+        console.warn(coloredMessage, ...optionalParams);
+        break;
+      case 'debug':
+        console.debug(coloredMessage, ...optionalParams);
+        break;
+      case 'error':
+      case 'fatal':
+        console.error(coloredMessage, ...optionalParams);
+        break;
     }
   }
 
@@ -113,14 +108,6 @@ class ConsoleLogger implements Logger {
     this.captureLog('fatal', message, optionalParams);
   }
 
-  mute(): void {
-    this.isMuted = true;
-  }
-
-  unmute(): void {
-    this.isMuted = false;
-  }
-
   getLogs(): { level: string; message: any; optionalParams: any[] }[] {
     return this.logs;
   }
@@ -131,8 +118,6 @@ class ConsoleLogger implements Logger {
 }
 
 const logger: Logger & {
-  mute: () => void;
-  unmute: () => void;
   getLogs: () => any[];
   clearLogs: () => void;
 } = new ConsoleLogger();
