@@ -124,11 +124,7 @@ export class SupplierService {
 
     try {
       const savedSupplier = await this.supplierRepository.save(supplierEntity);
-      logger.info(
-        `Supplier '${savedSupplier.name}' (ID: ${savedSupplier.id}) created successfully.`,
-      );
 
-      // Re-fetch to get populated relations if not automatically handled by save or if toApi needs them fresh
       const populatedSupplier = await this.supplierRepository.findById(savedSupplier.id);
       const apiResponse = this.mapToApiResponse(populatedSupplier);
       if (!apiResponse) {
@@ -139,7 +135,7 @@ export class SupplierService {
       return apiResponse;
     } catch (error) {
       logger.error({ message: `Error creating supplier`, error, input }, 'SupplierService.create');
-      if (error instanceof BadRequestError) throw error; // Erreur de duplication gérée par le repo
+      if (error instanceof BadRequestError) throw error;
       throw new ServerError('Failed to create supplier.');
     }
   }
@@ -201,7 +197,6 @@ export class SupplierService {
       const updatedSupplier = await this.supplierRepository.findById(id); // Re-fetch to get populated relations
       if (!updatedSupplier) throw new ServerError('Failed to re-fetch supplier after update.');
 
-      logger.info(`Supplier '${updatedSupplier.name}' (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedSupplier);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated supplier ${id} to API response.`);
@@ -232,9 +227,6 @@ export class SupplierService {
       await this.supplierRepository.softDelete(id);
       // Log who deleted it if audit is extended
       // await this.auditLogService.logAction(deletedByUserId, 'delete', 'supplier', id, { name: supplier.name });
-      logger.info(
-        `Supplier '${supplier.name}' (ID: ${id}) successfully soft-deleted by user ${deletedByUserId}.`,
-      );
     } catch (error) {
       logger.error({ message: `Error deleting supplier ${id}`, error }, 'SupplierService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

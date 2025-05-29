@@ -98,9 +98,6 @@ export class PaymentMethodService {
 
     try {
       const savedMethod = await this.methodRepository.save(methodEntity);
-      logger.info(
-        `Payment method '${savedMethod.name}' (ID: ${savedMethod.id}) created successfully.`,
-      );
 
       const apiResponse = this.mapToApiResponse(savedMethod);
       if (!apiResponse)
@@ -161,7 +158,6 @@ export class PaymentMethodService {
       const updatedMethod = await this.methodRepository.findById(id);
       if (!updatedMethod) throw new ServerError('Failed to re-fetch payment method after update.');
 
-      logger.info(`Payment method '${updatedMethod.name}' (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedMethod);
       if (!apiResponse)
         throw new ServerError(`Failed to map updated method ${id} to API response.`);
@@ -195,7 +191,6 @@ export class PaymentMethodService {
       }
 
       await this.methodRepository.softDelete(id);
-      logger.info(`Payment method '${method.name}' (ID: ${id}) successfully soft-deleted.`);
     } catch (error) {
       logger.error(
         { message: `Error deleting payment method ${id}`, error },

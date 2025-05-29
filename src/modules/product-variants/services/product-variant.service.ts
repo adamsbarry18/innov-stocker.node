@@ -86,11 +86,7 @@ export class ProductVariantService {
 
     try {
       const savedVariant = await this.variantRepository.save(variantEntity);
-      logger.info(
-        `Variant '${savedVariant.nameVariant}' for product ${productId} created successfully.`,
-      );
-
-      const populatedVariant = await this.variantRepository.findById(savedVariant.id); // Re-fetch with relations
+      const populatedVariant = await this.variantRepository.findById(savedVariant.id);
       const apiResponse = this.mapToApiResponse(populatedVariant);
       if (!apiResponse) throw new ServerError('Failed to map created product variant.');
       return apiResponse;
@@ -201,7 +197,6 @@ export class ProductVariantService {
 
     const updatePayload: Partial<ProductVariant> = { ...input, updatedByUserId };
     if (Object.keys(updatePayload).length <= 1 && updatePayload.updatedByUserId !== undefined) {
-      logger.info(`No substantive changes for product variant ${variantId}.`);
       return this.mapToApiResponse(variant) as ProductVariantApiResponse;
     }
 
@@ -217,9 +212,6 @@ export class ProductVariantService {
       if (!updatedVariant)
         throw new ServerError('Failed to re-fetch product variant after update.');
 
-      logger.info(
-        `Variant '${updatedVariant.nameVariant}' (ID: ${variantId}) updated successfully.`,
-      );
       const apiResponse = this.mapToApiResponse(updatedVariant);
       if (!apiResponse)
         throw new ServerError(`Failed to map updated product variant ${variantId}.`);
@@ -260,9 +252,6 @@ export class ProductVariantService {
     try {
       await this.variantRepository.softDelete(variantId);
       // await this.variantRepository.update(variantId, { updatedByUserId: deletedByUserId }); // Audit
-      logger.info(
-        `Variant '${variant.nameVariant}' (ID: ${variantId}) for product ${productId} soft-deleted.`,
-      );
     } catch (error) {
       logger.error({ message: `Error deleting variant ${variantId}`, error });
       throw new ServerError('Error deleting product variant.');

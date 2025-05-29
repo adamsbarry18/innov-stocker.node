@@ -97,9 +97,6 @@ export class ProductSupplierService {
 
     try {
       const savedPs = await this.productSupplierRepository.save(psEntity);
-      logger.info(
-        `Supplier ${input.supplierId} added to product ${productId} (Link ID: ${savedPs.id}).`,
-      );
       const populatedPs = await this.productSupplierRepository.findById(savedPs.id);
       const apiResponse = this.mapToApiResponse(populatedPs);
       if (!apiResponse) throw new ServerError('Failed to map created product supplier link.');
@@ -155,9 +152,6 @@ export class ProductSupplierService {
 
     try {
       const savedPs = await this.productSupplierRepository.save(psEntity);
-      logger.info(
-        `Supplier ${input.supplierId} added to variant ${variantId} (Link ID: ${savedPs.id}).`,
-      );
       const populatedPs = await this.productSupplierRepository.findById(savedPs.id);
       const apiResponse = this.mapToApiResponse(populatedPs);
       if (!apiResponse)
@@ -261,7 +255,6 @@ export class ProductSupplierService {
       if (!updatedLink)
         throw new ServerError('Failed to re-fetch product supplier link after update.');
 
-      logger.info(`Product supplier link ID ${linkId} updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedLink);
       if (!apiResponse) throw new ServerError('Failed to map updated product supplier link.');
       return apiResponse;
@@ -280,7 +273,6 @@ export class ProductSupplierService {
     // No specific dependencies to check for deletion of the link itself, as it's a linking table record.
     try {
       await this.productSupplierRepository.softDelete(linkId);
-      logger.info(`Product supplier link ID ${linkId} soft-deleted successfully.`);
     } catch (error) {
       logger.error({ message: `Error deleting product supplier link ${linkId}`, error });
       throw new ServerError('Error deleting product supplier link.');

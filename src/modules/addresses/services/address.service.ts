@@ -77,7 +77,6 @@ export class AddressService {
 
     try {
       const savedAddress = await this.addressRepository.save(addressEntity);
-      logger.info(`Address ${savedAddress.id} created successfully.`);
 
       const apiResponse = this.mapToApiResponse(savedAddress);
       if (!apiResponse) {
@@ -118,7 +117,6 @@ export class AddressService {
       const updatedAddress = await this.addressRepository.findById(id);
       if (!updatedAddress) throw new ServerError('Failed to re-fetch address after update.');
 
-      logger.info(`Address ${id} updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedAddress);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated address ${id} to API response.`);
@@ -145,7 +143,6 @@ export class AddressService {
       await this.addressRepository.softDelete(id);
       // Optionnellement, logguer qui a fait la suppression
       // await this.auditLogService.logAction(deletedByUserId, 'delete', 'address', id);
-      logger.info(`Address ${id} successfully soft-deleted.`);
     } catch (error) {
       logger.error(`Error deleting address ${id}: ${error}`);
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

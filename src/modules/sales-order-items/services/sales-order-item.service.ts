@@ -119,7 +119,7 @@ export class SalesOrderItemService {
   async addItemToSalesOrder(
     salesOrderId: number,
     input: CreateSalesOrderItemInput,
-    createdByUserId: number, // For audit on SO if item creation updates SO's updatedByUserId
+    createdByUserId: number,
   ): Promise<SalesOrderItemApiResponse> {
     const validationResult = createSalesOrderItemSchema.safeParse(input);
     if (!validationResult.success) {
@@ -136,7 +136,7 @@ export class SalesOrderItemService {
 
       const order = await this.getOrderAndCheckStatus(
         salesOrderId,
-        [SalesOrderStatus.DRAFT, SalesOrderStatus.PENDING_APPROVAL], // Example editable statuses
+        [SalesOrderStatus.DRAFT, SalesOrderStatus.PENDING_APPROVAL],
         transactionalEntityManager,
       );
 
@@ -154,12 +154,11 @@ export class SalesOrderItemService {
         unitPriceHt:
           validatedInput.unitPriceHt !== undefined
             ? validatedInput.unitPriceHt
-            : productDefaultPrice || 0, // Use provided price or default from product/variant
+            : productDefaultPrice || 0,
         vatRatePercentage:
           validatedInput.vatRatePercentage !== undefined
             ? validatedInput.vatRatePercentage
             : defaultVat,
-        // createdByUserId: createdByUserId, // If SalesOrderItem has audit fields
       });
 
       if (!itemEntity.isValid()) {
@@ -167,23 +166,19 @@ export class SalesOrderItemService {
           `Sales order item data is invalid (internal check). Errors: ${salesOrderItemValidationInputErrors.join(', ')}`,
         );
       }
-      // Recalculate totalLineAmountHt if not a generated column by DB
-      // itemEntity.totalLineAmountHt = itemEntity.getCalculatedTotalLineAmountHt(); // If SQL doesn't generate it
 
       const savedItem = await itemRepoTx.save(itemEntity);
 
-      // Recalculate sales order totals
       const itemsForTotal = await itemRepoTx.find({ where: { salesOrderId } });
       order.items = itemsForTotal;
       order.calculateTotals();
       order.updatedByUserId = createdByUserId;
       await orderRepoTx.save(order);
 
-      logger.info(
-        `Item (Product ID: ${validatedInput.productId}) added to SO ${salesOrderId}. Item ID: ${savedItem.id}.`,
-      );
-
-      const populatedItem = await this.itemRepository.findById(savedItem.id); // Use main repo for full relations
+      const populatedItem = await itemRepoTx.findOne({
+        where: { id: savedItem.id },
+        relations: ['product', 'productVariant'],
+      });
       const apiResponse = this.mapToApiResponse(populatedItem);
       if (!apiResponse) throw new ServerError('Failed to map created sales order item.');
       return apiResponse;
@@ -243,7 +238,7 @@ export class SalesOrderItemService {
       const errors = validationResult.error.issues.map(
         (issue) => `${issue.path.join('.')}: ${issue.message}`,
       );
-      throw new BadRequestError(`Invalid item update data. Errors: ${errors.join(', ')}`);
+      throw new BadRequestError(`Invalid sales order item data. Errors: ${errors.join(', ')}`);
     }
     const validatedInput = validationResult.data;
 
@@ -253,46 +248,58 @@ export class SalesOrderItemService {
 
       const order = await this.getOrderAndCheckStatus(
         salesOrderId,
-        [SalesOrderStatus.DRAFT, SalesOrderStatus.PENDING_APPROVAL], // Example editable statuses
+        [SalesOrderStatus.DRAFT, SalesOrderStatus.PENDING_APPROVAL],
         transactionalEntityManager,
       );
-      const item = await itemRepoTx.findOne({ where: { id: itemId, salesOrderId } });
+
+      const item = await itemRepoTx.findOne({
+        where: { id: itemId, salesOrderId },
+        relations: ['product', 'productVariant'],
+      });
+
       if (!item) {
         throw new NotFoundError(
           `Sales order item with ID ${itemId} not found for SO ${salesOrderId}.`,
         );
       }
 
-      // Apply updates from validatedInput
-      if (validatedInput.description !== undefined) item.description = validatedInput.description;
-      if (validatedInput.quantity !== undefined) item.quantity = validatedInput.quantity;
-      if (validatedInput.unitPriceHt !== undefined) item.unitPriceHt = validatedInput.unitPriceHt;
-      if (validatedInput.discountPercentage !== undefined)
-        item.discountPercentage = validatedInput.discountPercentage;
-      if (validatedInput.vatRatePercentage !== undefined)
-        item.vatRatePercentage = validatedInput.vatRatePercentage;
-      // item.updatedByUserId = updatedByUserId; // If audit on SalesOrderItem
+      // Apply updates from input
+      Object.assign(item, validatedInput);
+
+      // If quantity or unitPriceHt are updated, ensure they are valid
+      if (validatedInput.quantity !== undefined && validatedInput.quantity <= 0) {
+        throw new BadRequestError('Quantity must be positive.');
+      }
+      if (validatedInput.unitPriceHt !== undefined && validatedInput.unitPriceHt < 0) {
+        throw new BadRequestError('Unit price cannot be negative.');
+      }
+
+      // If product or productVariant are changed (though schema omits them, good to be defensive)
+      // This part might need adjustment if productId/productVariantId can be updated via other means
+      // For now, assuming they are not directly updatable via UpdateSalesOrderItemInput based on schema.
+      // If they were, we'd need to re-validate product/variant existence and update description/defaultVat/unitPriceHt.
 
       if (!item.isValid()) {
         throw new BadRequestError(
-          `Updated sales order item data is invalid (internal check). Errors: ${salesOrderItemValidationInputErrors.join(', ')}`,
+          `Sales order item data is invalid (internal check). Errors: ${salesOrderItemValidationInputErrors.join(', ')}`,
         );
       }
-      // Recalculate totalLineAmountHt if not a generated column by DB
-      // item.totalLineAmountHt = item.getCalculatedTotalLineAmountHt();
 
       const savedItem = await itemRepoTx.save(item);
 
+      // Recalculate sales order totals
       const itemsForTotal = await itemRepoTx.find({ where: { salesOrderId } });
       order.items = itemsForTotal;
       order.calculateTotals();
       order.updatedByUserId = updatedByUserId;
       await orderRepoTx.save(order);
 
-      logger.info(`SO item ID ${itemId} for SO ${salesOrderId} updated successfully.`);
-      const populatedItem = await this.itemRepository.findById(savedItem.id);
+      const populatedItem = await itemRepoTx.findOne({
+        where: { id: savedItem.id },
+        relations: ['product', 'productVariant'],
+      });
       const apiResponse = this.mapToApiResponse(populatedItem);
-      if (!apiResponse) throw new ServerError('Failed to map updated SO item.');
+      if (!apiResponse) throw new ServerError('Failed to map updated sales order item.');
       return apiResponse;
     });
   }
@@ -331,8 +338,6 @@ export class SalesOrderItemService {
       order.calculateTotals();
       order.updatedByUserId = deletedByUserId;
       await orderRepoTx.save(order);
-
-      logger.info(`SO item ID ${itemId} removed from SO ${salesOrderId}.`);
     });
   }
 

@@ -56,14 +56,10 @@ export class LoginService {
     }
 
     if (!user.isActive) {
-      logger.warn(`Login attempt for inactive user ID: ${user.id} (${user.email}).`);
       throw new UnauthorizedError('Account is inactive.');
     }
 
     if (user.permissionsExpireAt && dayjs(user.permissionsExpireAt).isBefore(dayjs())) {
-      logger.warn(
-        `Login attempt for user ID: ${user.id} (${user.email}) whose permissions have expired on ${user.permissionsExpireAt.toISOString()}.`,
-      );
       throw new UnauthorizedError('Account permissions have expired.');
     }
 

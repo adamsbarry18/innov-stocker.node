@@ -197,9 +197,6 @@ export class UsersService {
       };
 
       if (deletedUser) {
-        logger.info(
-          `Reactivating deleted user with email ${lowerCaseEmail} (ID: ${deletedUser.id})`,
-        );
         Object.assign(deletedUser, userData);
         deletedUser.deletedAt = null;
         deletedUser.uid = deletedUser.uid ?? randomUUID();
@@ -214,7 +211,6 @@ export class UsersService {
         );
       }
       const savedUser = await this.userRepository.save(userEntity);
-      logger.info(`User ${savedUser.id} ${deletedUser ? 'reactivated' : 'created'} successfully.`);
       const apiResponse = this.mapToApiResponse(savedUser);
       if (!apiResponse) {
         throw new ServerError(
@@ -283,9 +279,6 @@ export class UsersService {
         throw new BadRequestError(`Invalid security level provided by admin: ${inputLevel}.`);
       }
     } else {
-      logger.warn(
-        `Admin creating user ${lowerCaseEmail} did not specify a level, defaulting to USER.`,
-      );
       assignedLevel = SecurityLevel.USER;
     }
 
@@ -312,9 +305,6 @@ export class UsersService {
       };
 
       if (deletedUser) {
-        logger.info(
-          `Admin reactivating deleted user with email ${lowerCaseEmail} (ID: ${deletedUser.id})`,
-        );
         Object.assign(deletedUser, userData);
         deletedUser.deletedAt = null;
         deletedUser.uid = deletedUser.uid ?? randomUUID();
@@ -329,9 +319,7 @@ export class UsersService {
         );
       }
       const savedUser = await this.userRepository.save(userEntity);
-      logger.info(
-        `User ${savedUser.id} ${deletedUser ? 'reactivated' : 'created'} by admin successfully.`,
-      );
+
       const apiResponse = this.mapToApiResponse(savedUser);
       if (!apiResponse) {
         throw new ServerError(
@@ -447,7 +435,6 @@ export class UsersService {
         const emailLanguage = updatedUser.preferences?.language === 'fr' ? 'fr' : 'en';
         await this.passwordService.sendPasswordConfirmationEmail(updatedUser, emailLanguage);
       }
-      logger.info(`User ${id} updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedUser);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated user ${id} to API response.`);
@@ -544,7 +531,6 @@ export class UsersService {
       if (!user) throw new NotFoundError(`User with id ${id} not found.`);
       const anonymizedEmail = `${user.email}_deleted_${Date.now()}`;
       await this.userRepository.softDelete(id, anonymizedEmail);
-      logger.info(`User ${id} successfully soft-deleted.`);
     } catch (error) {
       if (
         error instanceof BadRequestError ||
@@ -594,7 +580,6 @@ export class UsersService {
     // 1. Try to find user by Google ID
     let user = await this.userRepository.findByGoogleId(googleId);
     if (user) {
-      logger.info(`User found by Google ID: ${googleId} (User ID: ${user.id})`);
       let detailsChanged = false;
       if (firstName && user.firstName !== firstName) {
         user.firstName = firstName;
@@ -606,14 +591,11 @@ export class UsersService {
       }
       if (detailsChanged) {
         await this.userRepository.save(user);
-        logger.info(`User details updated from Google profile for User ID: ${user.id}`);
       }
       return user;
     }
 
-    // 2. No user by Google ID, try to find by email
-    logger.info(`No user found by Google ID ${googleId}. Trying by email: ${email}`);
-    user = await this.userRepository.findByEmailWithGoogleId(email.toLowerCase()); // Ensure email is normalized
+    user = await this.userRepository.findByEmailWithGoogleId(email.toLowerCase());
 
     if (user) {
       if (user.googleId && user.googleId !== googleId) {
@@ -628,15 +610,13 @@ export class UsersService {
       if (!user.googleId) {
         user.googleId = googleId;
         if (firstName && user.firstName !== firstName) user.firstName = firstName;
-        if (lastName && user.lastName !== lastName) user.lastName = lastName; // handles null from profile
+        if (lastName && user.lastName !== lastName) user.lastName = lastName;
 
         await this.userRepository.save(user);
-        logger.info(`Linked Google ID ${googleId} to existing user ${user.email} (ID: ${user.id})`);
       }
       return user;
     }
 
-    logger.info(`No user found by email ${email}. Creating new user with Google ID ${googleId}.`);
     const newUser = this.userRepository.create({
       googleId,
       email: email.toLowerCase(),
@@ -672,13 +652,9 @@ export class UsersService {
 
     try {
       const savedUser = await this.userRepository.save(newUser);
-      logger.info(`New user created via Google OAuth: ${savedUser.email} (ID: ${savedUser.id})`);
       return savedUser;
     } catch (error: any) {
       if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('unique constraint')) {
-        logger.warn(
-          `Race condition or duplicate entry on Google user save for email ${email} or Google ID ${googleId}. Attempting to re-fetch.`,
-        );
         const existingByGoogleId = await this.userRepository.findByGoogleId(googleId);
         if (existingByGoogleId) return existingByGoogleId;
         const existingByEmail = await this.userRepository.findByEmailWithGoogleId(

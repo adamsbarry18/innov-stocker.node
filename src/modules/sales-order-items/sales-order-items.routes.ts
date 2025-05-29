@@ -104,7 +104,10 @@ export default class SalesOrderItemRouter extends BaseRouter {
   async listSalesOrderItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     if (isNaN(orderId)) return next(new BadRequestError('Invalid Sales Order ID in path.'));
-    await this.pipe(res, req, next, () => this.itemService.getSalesOrderItems(orderId));
+    await this.pipe(res, req, next, async () => {
+      const items = await this.itemService.getSalesOrderItems(orderId);
+      return { items }; // Wrap the array in an object with an 'items' key
+    });
   }
 
   /**

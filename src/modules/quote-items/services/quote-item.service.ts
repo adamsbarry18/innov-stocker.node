@@ -132,10 +132,6 @@ export class QuoteItemService {
       quote.updatedByUserId = createdByUserId; // Audit for quote update
       await quoteRepoTx.save(quote);
 
-      logger.info(
-        `Item (Product ID: ${validatedInput.productId}) added to quote ${quoteId}. Item ID: ${savedItem.id}.`,
-      );
-
       const populatedItem = await itemRepoTx.findOne({
         where: { id: savedItem.id },
         relations: ['product', 'productVariant'],
@@ -216,7 +212,6 @@ export class QuoteItemService {
       quote.updatedByUserId = updatedByUserId;
       await quoteRepoTx.save(quote);
 
-      logger.info(`Quote item ID ${itemId} for quote ${quoteId} updated successfully.`);
       const populatedItem = await itemRepoTx.findOne({
         where: { id: savedItem.id },
         relations: ['product', 'productVariant'],
@@ -241,16 +236,13 @@ export class QuoteItemService {
         throw new NotFoundError(`Quote item with ID ${itemId} not found for quote ${quoteId}.`);
       }
 
-      await itemRepoTx.remove(item); // Hard delete of the item
+      await itemRepoTx.remove(item);
 
-      // Recalculate quote totals
-      const itemsForTotal = await itemRepoTx.find({ where: { quoteId } }); // Get remaining items
+      const itemsForTotal = await itemRepoTx.find({ where: { quoteId } });
       quote.items = itemsForTotal;
       quote.calculateTotals();
       quote.updatedByUserId = deletedByUserId;
       await quoteRepoTx.save(quote);
-
-      logger.info(`Quote item ID ${itemId} removed from quote ${quoteId}.`);
     });
   }
 

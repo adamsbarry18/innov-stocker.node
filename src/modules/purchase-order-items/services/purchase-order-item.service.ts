@@ -220,8 +220,6 @@ export class PurchaseOrderItemService {
       order.calculateTotals();
       order.updatedByUserId = updatedByUserId;
       await orderRepoTx.save(order);
-
-      logger.info(`PO item ID ${itemId} for PO ${purchaseOrderId} updated successfully.`);
       const populatedItem = await this.itemRepository.findById(savedItem.id, {
         transactionalEntityManager: transactionalEntityManager,
       });
@@ -258,8 +256,6 @@ export class PurchaseOrderItemService {
       order.calculateTotals();
       order.updatedByUserId = deletedByUserId;
       await orderRepoTx.save(order);
-
-      logger.info(`PO item ID ${itemId} removed from PO ${purchaseOrderId}.`);
     });
   }
 

@@ -144,10 +144,6 @@ export class ProductCategoryService {
 
     try {
       const savedCategory = await this.categoryRepository.save(categoryEntity);
-      logger.info(
-        `Product category '${savedCategory.name}' (ID: ${savedCategory.id}) created successfully.`,
-      );
-
       const apiResponse = this.mapToApiResponse(savedCategory);
       if (!apiResponse) {
         throw new ServerError(
@@ -241,7 +237,6 @@ export class ProductCategoryService {
       if (!updatedCategory)
         throw new ServerError('Failed to re-fetch product category after update.');
 
-      logger.info(`Product category '${updatedCategory.name}' (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedCategory);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated category ${id} to API response.`);
@@ -265,22 +260,14 @@ export class ProductCategoryService {
       const category = await this.categoryRepository.findById(id);
       if (!category) throw new NotFoundError(`Product category with id ${id} not found.`);
 
-      // Check if category is used by products (ON DELETE RESTRICT from products table)
-      // This check should ideally use ProductRepository.
-      // const isUsed = await this.productRepository.count({ where: { productCategoryId: id, deletedAt: IsNull() } });
-      const isUsed = await this.categoryRepository.isCategoryUsedByProducts(id); // Placeholder, needs real implementation
+      const isUsed = await this.categoryRepository.isCategoryUsedByProducts(id);
       if (isUsed) {
         throw new BadRequestError(
           `Category '${category.name}' is in use by products and cannot be deleted. Please reassign products first.`,
         );
       }
 
-      // Children's parentCategoryId will be set to NULL due to ON DELETE SET NULL constraint
-      // No need to manually update children here if that's the desired behavior.
-      // If children should also be deleted, it's a different logic (cascade or recursive delete).
-
       await this.categoryRepository.softDelete(id);
-      logger.info(`Product category '${category.name}' (ID: ${id}) successfully soft-deleted.`);
     } catch (error) {
       logger.error(`Error deleting product category ${id}: ${error}`);
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

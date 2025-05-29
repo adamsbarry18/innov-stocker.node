@@ -171,10 +171,6 @@ export class CustomerShippingAddressService {
           await customerRepo.save(customerToUpdate);
         }
       }
-
-      logger.info(
-        `Shipping address '${savedShippingAddress.addressLabel}' for customer ${validatedInput.customerId} created successfully.`,
-      );
       const populatedSA = await shippingAddressRepo.findById(savedShippingAddress.id, {
         relations: ['address'],
       }); // Re-fetch avec address
@@ -289,7 +285,6 @@ export class CustomerShippingAddressService {
         }
       }
 
-      logger.info(`Shipping address link ${id} for customer ${customerId} updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedSA);
       if (!apiResponse)
         throw new ServerError('Failed to map updated shipping address to API response.');
@@ -331,7 +326,6 @@ export class CustomerShippingAddressService {
           await customerRepo.save(customerToUpdate);
         }
       }
-      logger.info(`Shipping address link ${id} for customer ${customerId} soft-deleted.`);
     });
   }
 
@@ -365,7 +359,6 @@ export class CustomerShippingAddressService {
         await customerRepo.save(customerToUpdate);
       }
 
-      logger.info(`Shipping address link ${id} set as default for customer ${customerId}.`);
       const populatedSAWithAddress = await shippingAddressRepo.findById(id, {
         relations: ['address'],
       });

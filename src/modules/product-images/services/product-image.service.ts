@@ -66,7 +66,6 @@ export class ProductImageService {
 
     try {
       const savedImage = await this.imageRepository.save(imageEntity);
-      logger.info(`Image added successfully to product ${productId} (Image ID: ${savedImage.id}).`);
 
       const apiResponse = this.mapToApiResponse(savedImage);
       if (!apiResponse) throw new ServerError('Failed to map created product image.');
@@ -147,7 +146,6 @@ export class ProductImageService {
       const updatedImage = await this.imageRepository.findById(imageId);
       if (!updatedImage) throw new ServerError('Failed to re-fetch product image after update.');
 
-      logger.info(`Image ID ${imageId} for product ${productId} updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedImage);
       if (!apiResponse) throw new ServerError('Failed to map updated product image.');
       return apiResponse;
@@ -180,8 +178,6 @@ export class ProductImageService {
 
     try {
       await this.imageRepository.softDelete(imageId);
-      // Add audit log if necessary
-      logger.info(`Image ID ${imageId} for product ${productId} soft-deleted successfully.`);
     } catch (error) {
       logger.error({ message: `Error deleting image ${imageId} for product ${productId}`, error });
       throw new ServerError('Error deleting product image.');
@@ -215,7 +211,6 @@ export class ProductImageService {
     });
 
     const updatedImage = await this.imageRepository.findById(imageId);
-    logger.info(`Image ID ${imageId} set as primary for product ${productId}.`);
     return this.mapToApiResponse(updatedImage) as ProductImageApiResponse;
   }
 

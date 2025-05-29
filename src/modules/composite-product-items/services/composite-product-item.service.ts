@@ -94,11 +94,6 @@ export class CompositeProductItemService {
 
     try {
       const savedItem = await this.itemRepository.save(itemEntity);
-      logger.info(
-        `Component ${input.componentProductId} added to composite product ${compositeProductId} (Link ID: ${savedItem.id}).`,
-      );
-
-      // Re-fetch with relations for the response
       const populatedItem = await this.itemRepository.findById(savedItem.id);
       const apiResponse = this.mapToApiResponse(populatedItem);
       if (!apiResponse) throw new ServerError('Failed to map created composite item.');
@@ -182,9 +177,6 @@ export class CompositeProductItemService {
       const updatedItem = await this.itemRepository.findById(itemId);
       if (!updatedItem) throw new ServerError('Failed to re-fetch component item after update.');
 
-      logger.info(
-        `Component link ID ${itemId} for composite product ${compositeProductId} updated.`,
-      );
       const apiResponse = this.mapToApiResponse(updatedItem);
       if (!apiResponse) throw new ServerError('Failed to map updated component item.');
       return apiResponse;
@@ -209,9 +201,6 @@ export class CompositeProductItemService {
 
     try {
       await this.itemRepository.removeByEntityId(itemId);
-      logger.info(
-        `Component link ID ${itemId} removed from composite product ${compositeProductId}.`,
-      );
     } catch (error) {
       logger.error({ message: `Error removing component link ${itemId}`, error });
       throw new ServerError('Error removing component from composite product.');

@@ -98,7 +98,7 @@ export class BankAccountService {
 
     const accountEntity = this.bankAccountRepository.create({
       ...input,
-      currentBalance: input.initialBalance || 0, // currentBalance starts as initialBalance
+      currentBalance: input.initialBalance || 0,
       // createdByUserId: createdByUserId, // Si audit
     });
 
@@ -110,9 +110,6 @@ export class BankAccountService {
 
     try {
       const savedAccount = await this.bankAccountRepository.save(accountEntity);
-      logger.info(
-        `Bank account '${savedAccount.accountName}' (ID: ${savedAccount.id}) created successfully.`,
-      );
 
       const populatedAccount = await this.bankAccountRepository.findById(savedAccount.id);
       const apiResponse = this.mapToApiResponse(populatedAccount);
@@ -196,7 +193,6 @@ export class BankAccountService {
       const updatedAccount = await this.bankAccountRepository.findById(id);
       if (!updatedAccount) throw new ServerError('Failed to re-fetch bank account after update.');
 
-      logger.info(`Bank account '${updatedAccount.accountName}' (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedAccount);
       if (!apiResponse) throw new ServerError(`Failed to map updated bank account ${id}.`);
       return apiResponse;
@@ -231,7 +227,6 @@ export class BankAccountService {
       }
 
       await this.bankAccountRepository.softDelete(id);
-      logger.info(`Bank account '${account.accountName}' (ID: ${id}) successfully soft-deleted.`);
     } catch (error) {
       logger.error(
         { message: `Error deleting bank account ${id}`, error },

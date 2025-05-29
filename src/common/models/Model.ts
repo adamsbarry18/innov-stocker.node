@@ -96,10 +96,8 @@ export abstract class Model extends BaseEntity {
       const listKeys = await redisClient.keys(listPattern);
       if (listKeys.length > 0) {
         await redisClient.del([entityKey, ...listKeys]);
-        logger.info(`Cache invalidated for ${entityName}:${this.id} and ${listKeys.length} lists`);
       } else {
         await redisClient.del(entityKey);
-        logger.info(`Cache invalidated for ${entityName}:${this.id}`);
       }
     } catch (error) {
       logger.error(`Cache invalidation failed for ${this.constructor.name}:${this.id}: ${error}`);

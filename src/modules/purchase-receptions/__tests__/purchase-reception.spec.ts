@@ -239,7 +239,6 @@ describe('Purchase Receptions API', () => {
         .post('/api/v1/purchase-receptions')
         .set('Authorization', `Bearer ${adminToken}`)
         .send(payload);
-      logger.debug(`Created reception for update test: ${JSON.stringify(res.body.data)}`);
       expect(res.status).toBe(201);
       receptionToUpdateId = res.body.data.id;
       initialReceptionItemId = res.body.data.items[0].id;

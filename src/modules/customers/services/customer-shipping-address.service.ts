@@ -257,9 +257,6 @@ export class CustomerShippingAddressService {
         }
         await customerRepo.save(customer);
       }
-      logger.info(
-        `Customer shipping address ${customerShippingAddressId} for customer ${customerId} soft-deleted.`,
-      );
     });
   }
 
