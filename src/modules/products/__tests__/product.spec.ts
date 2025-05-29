@@ -189,6 +189,4 @@ describe('Products API', () => {
       expect(res.status).toBe(401);
     });
   });
-
-  // Vous pouvez ajouter d'autres tests pour les routes images, stock, etc.
 });
