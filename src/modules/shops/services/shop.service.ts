@@ -137,7 +137,6 @@ export class ShopService {
       }
 
       const savedShop = await shopRepoTx.save(shopEntity);
-      logger.info(`Shop '${savedShop.name}' (ID: ${savedShop.id}) created successfully.`);
 
       const populatedShop = await shopRepoTx.findOne({
         where: { id: savedShop.id },
@@ -216,7 +215,6 @@ export class ShopService {
         Object.keys(updatePayload).length === 1 &&
         updatePayload.updatedByUserId !== undefined
       ) {
-        logger.info(`No substantive changes detected for shop ${id}. Skipping database update.`);
         return this.mapToApiResponse(shopToUpdate) as ShopApiResponse;
       }
 
@@ -224,7 +222,6 @@ export class ShopService {
       if (result.affected === 0) {
         const stillExists = await this.shopRepository.findById(id);
         if (!stillExists) throw new NotFoundError(`Shop with id ${id} not found during update.`);
-        logger.info(`Shop ${id} update resulted in 0 affected rows, possibly no data change.`);
       }
 
       const updatedShop = await shopRepoTx.findOne({
@@ -233,7 +230,6 @@ export class ShopService {
       });
       if (!updatedShop) throw new ServerError('Failed to re-fetch shop after update.');
 
-      logger.info(`Shop '${updatedShop.name}' (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedShop);
       if (!apiResponse) throw new ServerError(`Failed to map updated shop ${id}.`);
       return apiResponse;
@@ -252,9 +248,6 @@ export class ShopService {
       }
 
       await this.shopRepository.softDelete(id);
-      logger.info(
-        `Shop '${shop.name}' (ID: ${id}) successfully soft-deleted by user ${deletedByUserId}.`,
-      );
     } catch (error) {
       logger.error({ message: `Error deleting shop ${id}`, error }, 'ShopService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

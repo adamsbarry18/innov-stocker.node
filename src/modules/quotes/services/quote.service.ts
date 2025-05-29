@@ -226,17 +226,11 @@ export class QuoteService {
         }
         quoteItems.push(itemEntity);
       }
-      await itemRepoTx.save(quoteItems); // Bulk save items
-      savedQuote.items = quoteItems; // Attach to the quote entity for total calculation
+      await itemRepoTx.save(quoteItems);
+      savedQuote.items = quoteItems;
 
       savedQuote.calculateTotals();
-      await quoteRepoTx.save(savedQuote); // Save again to update totals
-
-      logger.info(
-        `Quote '${savedQuote.quoteNumber}' created successfully by user ${createdByUserId}.`,
-      );
-
-      // Use main repo to get full relations for API response
+      await quoteRepoTx.save(savedQuote);
       const populatedQuote = await transactionalEntityManager.getRepository(Quote).findOne({
         where: { id: savedQuote.id },
         relations: [
@@ -247,8 +241,8 @@ export class QuoteService {
           'createdByUser',
           'updatedByUser',
           'items',
-          'items.product', // Load product for item description fallback
-          'items.productVariant', // Load variant for item description fallback
+          'items.product',
+          'items.productVariant',
         ],
       });
       const apiResponse = this.mapToApiResponse(populatedQuote);
@@ -411,7 +405,6 @@ export class QuoteService {
         }
       }
 
-      // Re-fetch the quote with potentially updated items to calculate totals
       const quoteForTotals = await quoteRepoTx.findOne({
         where: { id },
         relations: ['items', 'items.product', 'items.productVariant'],
@@ -423,12 +416,8 @@ export class QuoteService {
         totalAmountHt: quoteForTotals.totalAmountHt,
         totalVatAmount: quoteForTotals.totalVatAmount,
         totalAmountTtc: quoteForTotals.totalAmountTtc,
-        updatedByUserId, // Ensure updatedByUserId is part of final update
+        updatedByUserId,
       });
-
-      logger.info(`Quote ID ${id} updated successfully by user ${updatedByUserId}.`);
-
-      // Re-fetch the quote using the transactional entity manager to ensure latest item data is included
       const populatedQuote = await transactionalEntityManager.getRepository(Quote).findOne({
         where: { id },
         relations: [
@@ -468,13 +457,6 @@ export class QuoteService {
       // }
 
       await this.quoteRepository.softDelete(id);
-      // Soft delete on Quote will cascade to QuoteItems due to TypeORM relation config if `onDelete: 'CASCADE'`
-      // and if QuoteItem entity also uses soft delete. If not, items might need manual soft delete.
-      // Our QuoteItem does not extend Model with soft delete, so `remove` is used which is hard delete for items.
-      // If items should be soft-deleted, QuoteItem should extend Model with soft delete.
-      logger.info(
-        `Quote '${quote.quoteNumber}' (ID: ${id}) successfully soft-deleted by user ${deletedByUserId}.`,
-      );
     } catch (error) {
       logger.error({ message: `Error deleting quote ${id}`, error }, 'QuoteService.deleteQuote');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -490,8 +472,6 @@ export class QuoteService {
     const quote = await this.quoteRepository.findById(id);
     if (!quote) throw new NotFoundError(`Quote with id ${id} not found.`);
 
-    // TODO: Implémenter la logique de transition de statut (ex: on ne peut pas passer de DRAFT à CONVERTED)
-    // Pour l'instant, on permet le changement.
     if (!Object.values(QuoteStatus).includes(status)) {
       throw new BadRequestError(`Invalid status: ${status}`);
     }
@@ -500,8 +480,7 @@ export class QuoteService {
     quote.updatedByUserId = updatedByUserId;
 
     try {
-      await this.quoteRepository.save(quote); // Save for status update
-      logger.info(`Status for quote ID ${id} updated to ${status} by user ${updatedByUserId}.`);
+      await this.quoteRepository.save(quote);
 
       const populatedQuote = await this.quoteRepository.findById(id, {
         relations: [

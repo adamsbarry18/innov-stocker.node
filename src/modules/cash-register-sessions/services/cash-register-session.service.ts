@@ -152,9 +152,6 @@ export class CashRegisterSessionService {
 
     try {
       const savedSession = await this.sessionRepository.save(sessionEntity);
-      logger.info(
-        `Cash register session ID ${savedSession.id} for register '${register.name}' opened successfully by user ${openedByUserId}.`,
-      );
 
       // Re-fetch with relations
       const populatedSession = await this.sessionRepository.findById(savedSession.id);
@@ -243,11 +240,6 @@ export class CashRegisterSessionService {
           `Cash register ${savedSession.cashRegisterId} not found during session closing for balance update.`,
         );
       }
-
-      logger.info(
-        `Cash register session ID ${savedSession.id} closed successfully by user ${closedByUserId}.`,
-      );
-
       const populatedSession = await sessionTypeOrmRepoTx.findOne({
         where: { id: savedSession.id },
         relations: ['cashRegister', 'openedByUser', 'closedByUser', 'cashRegister.currency'],

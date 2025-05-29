@@ -633,10 +633,6 @@ export class PurchaseReceptionService {
             await poItemRepoTx.save(poItem);
           }
         }
-        // TODO: Dépendance - Create StockMovement
-        logger.info(
-          `TODO: Create StockMovement for validated reception item ${recItem.id}: Product ${recItem.productId}, Qty ${recItem.quantityReceived} to Warehouse/Shop ${reception.warehouseId || reception.shopId} by user ${validatedByUserId}`,
-        );
       }
 
       if (reception.purchaseOrder) {

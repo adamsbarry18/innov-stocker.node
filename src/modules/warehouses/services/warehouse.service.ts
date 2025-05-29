@@ -105,7 +105,6 @@ export class WarehouseService {
     input: CreateWarehouseInput,
     createdByUserId: number,
   ): Promise<WarehouseApiResponse> {
-    // Initial checks outside transaction (can use custom repo methods)
     const existingByName = await this.warehouseRepository.findByName(input.name);
     if (existingByName) {
       throw new BadRequestError(`Warehouse with name '${input.name}' already exists.`);
@@ -123,7 +122,6 @@ export class WarehouseService {
     }
 
     return appDataSource.transaction(async (transactionalEntityManager) => {
-      // Inside transaction, use transactional repositories obtained via getRepository
       const warehouseRepoTx = transactionalEntityManager.getRepository(Warehouse);
       const addressRepoTx = transactionalEntityManager.getRepository(Address);
 
@@ -136,12 +134,11 @@ export class WarehouseService {
             'Provide either addressId or newAddress for warehouse, not both.',
           );
         }
-        const addressEntity = addressRepoTx.create(newAddress as CreateAddressInput); // Cast if needed
-        // TODO: if (addressEntity.isValid()) ... // Assuming Address entity has isValid
+        const addressEntity = addressRepoTx.create(newAddress as CreateAddressInput);
         const savedAddress = await addressRepoTx.save(addressEntity);
         finalAddressId = savedAddress.id;
       } else if (inputAddressId) {
-        const address = await this.addressRepository.findById(inputAddressId); // Check existence with non-transactional repo
+        const address = await this.addressRepository.findById(inputAddressId);
         if (!address) throw new BadRequestError(`Address with ID ${inputAddressId} not found.`);
       } else {
         throw new BadRequestError('Either addressId or newAddress is required for warehouse.');
@@ -155,8 +152,7 @@ export class WarehouseService {
         updatedByUserId: createdByUserId,
       });
 
-      // Validate the entity instance before saving
-      const tempWarehouseForValidation = this.warehouseRepository.create(warehouseEntity); // Use custom repo's create for prototype methods
+      const tempWarehouseForValidation = this.warehouseRepository.create(warehouseEntity);
       if (!tempWarehouseForValidation.isValid()) {
         throw new BadRequestError(
           `Warehouse data is invalid. Errors: ${warehouseValidationInputErrors.join(', ')}`,
@@ -164,12 +160,6 @@ export class WarehouseService {
       }
 
       const savedWarehouse = await warehouseRepoTx.save(warehouseEntity);
-      logger.info(
-        `Warehouse '${savedWarehouse.name}' (ID: ${savedWarehouse.id}) created successfully.`,
-      );
-
-      // Re-fetch with relations using the main repository (outside transaction or with new transactional one)
-      // For simplicity, we'll use the main repo. If relations are set by the transaction, this is fine.
       const populatedWarehouse = await warehouseRepoTx.findOne({
         where: { id: savedWarehouse.id },
         relations: ['address', 'manager'],
@@ -186,7 +176,6 @@ export class WarehouseService {
     input: UpdateWarehouseInput,
     updatedByUserId: number,
   ): Promise<WarehouseApiResponse> {
-    // Initial checks outside transaction
     const warehouseToUpdate = await this.warehouseRepository.findById(id);
     if (!warehouseToUpdate) throw new NotFoundError(`Warehouse with id ${id} not found.`);
 
@@ -207,9 +196,7 @@ export class WarehouseService {
       if (!address) throw new BadRequestError(`New address with ID ${input.addressId} not found.`);
     }
     if (input.hasOwnProperty('managerId')) {
-      // Check if managerId is explicitly being set (even to null)
       if (input.managerId === null) {
-        // Setting manager to null is allowed
       } else if (input.managerId !== warehouseToUpdate.managerId) {
         const manager = await this.userRepository.findById(input.managerId as number);
         if (!manager)
@@ -220,7 +207,6 @@ export class WarehouseService {
     return appDataSource.transaction(async (transactionalEntityManager) => {
       const warehouseRepoTx = transactionalEntityManager.getRepository(Warehouse);
 
-      // Create a temporary entity with merged data for validation
       const tempWarehouseData = { ...warehouseToUpdate, ...input };
       const tempWarehouseForValidation = this.warehouseRepository.create(tempWarehouseData);
       if (!tempWarehouseForValidation.isValid()) {
@@ -230,14 +216,12 @@ export class WarehouseService {
       }
 
       const updatePayload: Partial<Warehouse> = { ...input, updatedByUserId };
-      // Ensure nulls are passed correctly if intended
       if (input.hasOwnProperty('code') && input.code === null) updatePayload.code = null;
       if (input.hasOwnProperty('managerId') && input.managerId === null)
         updatePayload.managerId = null;
       if (input.hasOwnProperty('capacityNotes') && input.capacityNotes === null)
         updatePayload.capacityNotes = null;
 
-      // Check if there are actual changes to be made besides audit field
       let hasChanges = false;
       for (const key in input) {
         if (input.hasOwnProperty(key) && (input as any)[key] !== (warehouseToUpdate as any)[key]) {
@@ -250,29 +234,22 @@ export class WarehouseService {
         Object.keys(updatePayload).length === 1 &&
         updatePayload.updatedByUserId !== undefined
       ) {
-        logger.info(
-          `No substantive changes detected for warehouse ${id}. Skipping database update, returning current state.`,
-        );
         return this.mapToApiResponse(warehouseToUpdate) as WarehouseApiResponse;
       }
 
       const result = await warehouseRepoTx.update(id, updatePayload);
       if (result.affected === 0) {
-        // This might happen if the record was deleted between the initial findById and the update attempt
         const stillExists = await this.warehouseRepository.findById(id);
         if (!stillExists)
           throw new NotFoundError(`Warehouse with id ${id} not found during update.`);
-        // If it exists but affected is 0, it means no actual data change was needed by DB (e.g. same values)
-        logger.info(`Warehouse ${id} update resulted in 0 affected rows, possibly no data change.`);
       }
 
       const updatedWarehouse = await warehouseRepoTx.findOne({
         where: { id },
         relations: ['address', 'manager'],
-      }); // Re-fetch with relations using transactional repo
+      });
       if (!updatedWarehouse) throw new ServerError('Failed to re-fetch warehouse after update.');
 
-      logger.info(`Warehouse '${updatedWarehouse.name}' (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedWarehouse);
       if (!apiResponse) throw new ServerError(`Failed to map updated warehouse ${id}.`);
       return apiResponse;
@@ -291,12 +268,8 @@ export class WarehouseService {
         );
       }
 
-      // Add updatedByUserId to the entity before soft deleting if your Model's softDelete doesn't handle it
       // await this.warehouseRepository.update(id, { updatedByUserId: deletedByUserId }); // Optional audit before delete
       await this.warehouseRepository.softDelete(id);
-      logger.info(
-        `Warehouse '${warehouse.name}' (ID: ${id}) successfully soft-deleted by user ${deletedByUserId}.`,
-      );
     } catch (error) {
       logger.error({ message: `Error deleting warehouse ${id}`, error }, 'WarehouseService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

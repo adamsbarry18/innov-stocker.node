@@ -145,11 +145,6 @@ export class SalesOrderItem extends Model {
           (issue) => `Item(${this.productId || 'new'}): ${issue.path.join('.')}: ${issue.message}`,
         ),
       );
-      logger.warn({
-        message: 'SalesOrderItem entity basic validation failed',
-        errors: salesOrderItemValidationInputErrors,
-        data: dataToValidate,
-      });
       return false;
     }
     if (this.quantity !== undefined && this.quantity <= 0) {

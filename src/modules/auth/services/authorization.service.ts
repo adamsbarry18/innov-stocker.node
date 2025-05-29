@@ -246,7 +246,6 @@ export class AuthorizationService {
     }
 
     if (!userForStatusCheck.isActive) {
-      logger.info(`User ${userId} is inactive. No effective permissions will be granted.`);
       return {
         userId: userId,
         level: userForStatusCheck.level,
@@ -259,9 +258,6 @@ export class AuthorizationService {
       userForStatusCheck.permissionsExpireAt &&
       dayjs(userForStatusCheck.permissionsExpireAt).isBefore(dayjs())
     ) {
-      logger.info(
-        `Permissions for user ${userId} have globally expired at ${userForStatusCheck.permissionsExpireAt.toISOString()}. No effective permissions.`,
-      );
       await this.invalidateAuthCache(userId);
       return {
         userId: userId,
@@ -339,9 +335,6 @@ export class AuthorizationService {
       permissionExpiryDate.isBefore(dayjs())
     ) {
       areOverridesExpired = true;
-      logger.info(
-        `Authorisation overrides for user ${userId} have expired (Expiry: ${permissionExpiryDate.toISOString()}). Using default level permissions.`,
-      );
     }
 
     if (user.authorisationOverrides && !areOverridesExpired) {

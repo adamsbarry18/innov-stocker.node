@@ -129,7 +129,6 @@ export const parseFiltering =
       if (field === 'filter' && typeof value === 'object') {
         Object.entries(value as Record<string, any>).forEach(([filterField, filterValue]) => {
           if (Array.isArray(allowedFields) && !allowedFields.includes(filterField)) {
-            logger.warn(`Filtering ignored for unauthorized field: ${filterField}`);
             return;
           }
 

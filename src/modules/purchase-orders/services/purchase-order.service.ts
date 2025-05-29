@@ -498,8 +498,6 @@ export class PurchaseOrderService {
       reloadedOrder.calculateTotals();
       await orderRepoTx.save(reloadedOrder);
 
-      logger.info(`Purchase Order ID ${id} updated successfully by user ${updatedByUserId}.`);
-
       const populatedOrder = await orderRepoTx.findOne({
         where: { id, deletedAt: IsNull() },
         relations: this.orderRepository['getDefaultRelationsForFindOne'](),
@@ -551,9 +549,6 @@ export class PurchaseOrderService {
     // }
 
     await this.orderRepository.update(id, updatePayload);
-    logger.info(
-      `Status for Purchase Order ID ${id} updated to ${status} by user ${updatedByUserId}.`,
-    );
 
     const updatedOrder = await this.orderRepository.findById(id);
     const apiResponse = this.mapToApiResponse(updatedOrder);
@@ -587,9 +582,6 @@ export class PurchaseOrderService {
       // If cascade remove is set on PO.items, this will hard delete items.
       await this.orderRepository.softDelete(id);
       // await this.orderRepository.update(id, { updatedByUserId: deletedByUserId }); // Audit
-      logger.info(
-        `Purchase Order '${order.orderNumber}' (ID: ${id}) successfully soft-deleted by user ${deletedByUserId}.`,
-      );
     } catch (error) {
       logger.error(
         { message: `Error deleting purchase order ${id}`, error },

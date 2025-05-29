@@ -447,10 +447,6 @@ export default class LoginRouter extends BaseRouter {
         }
 
         if (!user || !user.id) {
-          logger.warn(
-            'Google OAuth callback: Authentication failed by strategy or user not found/created.',
-            info,
-          );
           return res.jsend.fail({
             message: 'Google authentication failed. User not processed or access denied.',
             details: info?.message || 'No specific error message from provider.',

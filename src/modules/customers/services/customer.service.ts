@@ -230,10 +230,6 @@ export class CustomerService {
         }
       }
 
-      logger.info(
-        `Customer '${savedCustomer.getDisplayName()}' (ID: ${savedCustomer.id}) created successfully.`,
-      );
-      // Re-fetch avec toutes les relations pour la réponse
       const fullCustomer = await this.customerRepository.findById(savedCustomer.id);
       const apiResponse = this.mapToApiResponse(fullCustomer);
       if (!apiResponse) {
@@ -335,10 +331,6 @@ export class CustomerService {
 
       const updatedCustomer = await this.customerRepository.findById(id);
       if (!updatedCustomer) throw new ServerError('Failed to re-fetch customer after update.');
-
-      logger.info(
-        `Customer '${updatedCustomer.getDisplayName()}' (ID: ${id}) updated successfully.`,
-      );
       const apiResponse = this.mapToApiResponse(updatedCustomer);
       if (!apiResponse)
         throw new ServerError(`Failed to map updated customer ${id} to API response.`);
@@ -358,9 +350,6 @@ export class CustomerService {
       // }
 
       await this.customerRepository.softDelete(id);
-      logger.info(
-        `Customer '${customer.getDisplayName()}' (ID: ${id}) successfully soft-deleted by user ${deletedByUserId}.`,
-      );
     } catch (error) {
       logger.error({ message: `Error deleting customer ${id}`, error }, 'CustomerService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

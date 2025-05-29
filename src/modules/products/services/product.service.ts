@@ -142,9 +142,6 @@ export class ProductService {
 
     try {
       const savedProduct = await this.productRepository.save(productEntity);
-      logger.info(
-        `Product '${savedProduct.name}' (SKU: ${savedProduct.sku}) created successfully.`,
-      );
 
       const populatedProduct = await this.productRepository.findById(savedProduct.id, {
         relations: this.productRepository['getDefaultRelationsForFindOne'](),
@@ -261,7 +258,6 @@ export class ProductService {
 
     const updatePayload: Partial<Product> = { ...input, updatedByUserId };
     if (Object.keys(updatePayload).length <= 1 && updatePayload.updatedByUserId !== undefined) {
-      logger.info(`No substantive changes for product ${productId}.`);
       return this.mapProductToApiResponse(product, {
         includeRelations: true,
       }) as ProductApiResponse;
@@ -280,7 +276,6 @@ export class ProductService {
       });
       if (!updatedProduct) throw new ServerError('Failed to re-fetch product after update.');
 
-      logger.info(`Product '${updatedProduct.name}' (ID: ${productId}) updated successfully.`);
       const apiResponse = this.mapProductToApiResponse(updatedProduct, { includeRelations: true });
       if (!apiResponse) throw new ServerError(`Failed to map updated product ${productId}.`);
       return apiResponse;
@@ -311,7 +306,6 @@ export class ProductService {
       await this.productRepository.softDelete(productId);
       // Also set updatedByUserId if Model doesn't do it on softDelete
       // await this.productRepository.update(productId, { updatedByUserId: deletedByUserId });
-      logger.info(`Product '${product.name}' (ID: ${productId}) soft-deleted successfully.`);
     } catch (error) {
       logger.error(
         { message: `Error deleting product ${productId}`, error },
@@ -426,12 +420,10 @@ export class ProductService {
 
   // --- Stock Information Methods (Stubs) ---
   async getProductStockMovements(productId: number, options?: any): Promise<any[]> {
-    // TODO: Dépendance - Implémenter avec StockMovementRepository
-    logger.warn(`ProductService.getProductStockMovements for product ${productId} is a STUB.`);
     if (!(await this.productRepository.findById(productId))) {
       throw new NotFoundError(`Product with id ${productId} not found.`);
     }
-    return []; // Placeholder
+    return [];
   }
 
   async getProductCurrentStock(
@@ -439,12 +431,10 @@ export class ProductService {
     warehouseId?: number,
     shopId?: number,
   ): Promise<any> {
-    // TODO: Dépendance - Implémenter avec StockMovementRepository/Service ou table de niveaux de stock
-    logger.warn(`ProductService.getProductCurrentStock for product ${productId} is a STUB.`);
     if (!(await this.productRepository.findById(productId))) {
       throw new NotFoundError(`Product with id ${productId} not found.`);
     }
-    return { productId, warehouseId, shopId, quantity: 0, lastUpdated: new Date().toISOString() }; // Placeholder
+    return { productId, warehouseId, shopId, quantity: 0, lastUpdated: new Date().toISOString() };
   }
 
   static getInstance(): ProductService {

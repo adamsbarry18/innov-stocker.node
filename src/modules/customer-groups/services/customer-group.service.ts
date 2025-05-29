@@ -99,10 +99,6 @@ export class CustomerGroupService {
 
     try {
       const savedGroup = await this.groupRepository.save(groupEntity);
-      logger.info(
-        `Customer group '${savedGroup.name}' (ID: ${savedGroup.id}) created successfully.`,
-      );
-
       const apiResponse = this.mapToApiResponse(savedGroup);
       if (!apiResponse) {
         throw new ServerError(
@@ -115,7 +111,7 @@ export class CustomerGroupService {
         { message: `Error creating customer group`, error, input },
         'CustomerGroupService.create',
       );
-      if (error instanceof BadRequestError) throw error; // Erreur de duplication gérée par le repo
+      if (error instanceof BadRequestError) throw error;
       throw new ServerError('Failed to create customer group.');
     }
   }
@@ -163,7 +159,6 @@ export class CustomerGroupService {
       const updatedGroup = await this.groupRepository.findById(id);
       if (!updatedGroup) throw new ServerError('Failed to re-fetch customer group after update.');
 
-      logger.info(`Customer group '${updatedGroup.name}' (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedGroup);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated group ${id} to API response.`);
@@ -198,7 +193,6 @@ export class CustomerGroupService {
       }
 
       await this.groupRepository.softDelete(id);
-      logger.info(`Customer group '${group.name}' (ID: ${id}) successfully soft-deleted.`);
     } catch (error) {
       logger.error(
         { message: `Error deleting customer group ${id}`, error },

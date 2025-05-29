@@ -167,7 +167,6 @@ export class BankAccountRepository {
 
   // TODO: Dépendance - Implémenter avec PaymentRepository
   async isBankAccountInUse(accountId: number): Promise<boolean> {
-    logger.warn('BankAccountRepository.isBankAccountInUse is a placeholder.');
     // Example:
     // const paymentRepo = this.repository.manager.getRepository(Payment);
     // const count = await paymentRepo.count({where: {bankAccountId: accountId}});

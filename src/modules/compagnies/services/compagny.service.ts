@@ -106,7 +106,6 @@ export class CompanyService {
         ...input,
         id: id,
       } as Partial<Company>);
-      logger.info(`Company details for ID ${id} updated successfully.`);
 
       const fullSavedCompany = await this.companyRepository.findCompanyById(savedCompany.id);
       if (!fullSavedCompany) throw new ServerError('Failed to re-fetch company after update.');

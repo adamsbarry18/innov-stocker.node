@@ -107,7 +107,6 @@ export class CurrencyService {
 
     try {
       const savedCurrency = await this.currencyRepository.save(currencyEntity);
-      logger.info(`Currency ${savedCurrency.code} created successfully.`);
 
       const apiResponse = this.mapToApiResponse(savedCurrency);
       if (!apiResponse) {
@@ -155,7 +154,6 @@ export class CurrencyService {
       const updatedCurrency = await this.currencyRepository.findById(id);
       if (!updatedCurrency) throw new ServerError('Failed to re-fetch currency after update.');
 
-      logger.info(`Currency ${updatedCurrency.code} (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedCurrency);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated currency ${id} to API response.`);
@@ -179,17 +177,14 @@ export class CurrencyService {
       const currency = await this.currencyRepository.findById(id);
       if (!currency) throw new NotFoundError(`Currency with id ${id} not found.`);
 
-      // Vérifier si la devise est utilisée (ex: comme devise par défaut de l'entreprise ou dans des transactions)
       const companySettings = await this.companyRepository.getCompanySettings();
       if (companySettings?.defaultCurrencyId === id) {
         throw new BadRequestError(
           `Cannot delete currency '${currency.code}' as it is the default company currency. Please set a different default currency first.`,
         );
       }
-      // Ajouter d'autres vérifications si nécessaire (ex: transactions existantes avec cette devise)
 
       await this.currencyRepository.softDelete(id);
-      logger.info(`Currency ${currency.code} (ID: ${id}) successfully soft-deleted.`);
     } catch (error) {
       logger.error(`Error deleting currency ${id}: ${error}`);
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -214,46 +209,34 @@ export class CurrencyService {
     }
 
     if (company.defaultCurrencyId === currencyId) {
-      logger.info(`Currency ${currencyToSetDefault.code} is already the default company currency.`);
-      // Re-fetch company to return its current state with populated relations
       const currentCompany = await this.companyRepository.getCompanySettings();
-      if (!currentCompany) throw new ServerError('Failed to fetch company details.'); // Should not happen
-      const apiResponse = currentCompany.toApi(); // Assuming Company entity has toApi
+      if (!currentCompany) throw new ServerError('Failed to fetch company details.');
+      const apiResponse = currentCompany.toApi();
       if (
         !(apiResponse as any).defaultCurrency ||
         (apiResponse as any).defaultCurrency.id !== currencyId
       ) {
         (apiResponse as any).defaultCurrency = currencyToSetDefault.toApi();
       }
-      return apiResponse as CompanyApiResponse; // Cast to specific DTO if Company has one
+      return apiResponse as CompanyApiResponse;
     }
 
     company.defaultCurrencyId = currencyId;
-    // company.updatedByUserId = updatedByUserId; // Si audit sur Company
 
     try {
-      await this.companyRepository.saveCompany(company); // saveCompany doit gérer l'update
+      await this.companyRepository.saveCompany(company);
 
-      // Optionnel: Mettre à jour le taux de change de la nouvelle devise par défaut à 1
-      // Et notifier que les autres taux doivent être revus.
       if (currencyToSetDefault.exchangeRateToCompanyDefault !== 1.0) {
         currencyToSetDefault.exchangeRateToCompanyDefault = 1.0;
         await this.currencyRepository.save(currencyToSetDefault);
-        // TODO: Potentiellement une logique pour notifier l'admin de revoir les autres taux.
       }
 
-      logger.info(
-        `Currency ${currencyToSetDefault.code} (ID: ${currencyId}) set as default for the company.`,
-      );
-
-      // Re-fetch company to return its current state with populated relations
       const updatedCompany = await this.companyRepository.getCompanySettings();
       if (!updatedCompany) throw new ServerError('Failed to fetch company details after update.');
 
       const apiResponse = updatedCompany.toApi();
-      // Assurer que la devise par défaut est bien populée dans la réponse
       (apiResponse as any).defaultCurrency = currencyToSetDefault.toApi();
-      return apiResponse as CompanyApiResponse; // Cast to specific DTO if Company has one
+      return apiResponse as CompanyApiResponse;
     } catch (error) {
       logger.error(`Error setting default company currency: ${error}`);
       throw new ServerError('Failed to set default company currency.');

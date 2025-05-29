@@ -70,7 +70,6 @@ export function passportAuthenticationMiddleware(): void {
             const userApiResponse = await userService.findById(userId);
 
             if (!userApiResponse) {
-              logger.warn(`User not found (ID: ${userId}) for active token. Invalidating token.`);
               try {
                 await loginService.logout(rawToken);
               } catch (err) {
@@ -81,9 +80,6 @@ export function passportAuthenticationMiddleware(): void {
             }
 
             if (!userApiResponse.isActive) {
-              logger.warn(
-                `Authentication attempt for inactive user ID: ${userId} (${userApiResponse.email}). Invalidating token.`,
-              );
               try {
                 await loginService.logout(rawToken);
               } catch (err) {
@@ -97,9 +93,6 @@ export function passportAuthenticationMiddleware(): void {
               userApiResponse.permissionsExpireAt &&
               new Date(userApiResponse.permissionsExpireAt).getTime() < Date.now()
             ) {
-              logger.warn(
-                `Authentication attempt for user ID: ${userId} (${userApiResponse.email}) whose permissions have expired on ${userApiResponse.permissionsExpireAt}. Invalidating token.`,
-              );
               try {
                 await loginService.logout(rawToken);
               } catch (err) {
@@ -132,7 +125,6 @@ export function passportAuthenticationMiddleware(): void {
       },
     ),
   );
-  logger.info('Passport JWT strategy configured (token + Redis invalidation check).');
 
   // Google OAuth2.0 Strategy
   if (config.GOOGLE_CLIENT_ID && config.GOOGLE_CLIENT_SECRET && config.GOOGLE_CALLBACK_URL) {
@@ -191,15 +183,9 @@ export function passportAuthenticationMiddleware(): void {
               }
             }
           };
-          // Call the async logic and explicitly void its promise to satisfy ESLint
           void processGoogleAuth();
         },
       ),
-    );
-    logger.info('Passport Google OAuth2.0 strategy configured.');
-  } else {
-    logger.warn(
-      'Google OAuth strategy not configured due to missing GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, or GOOGLE_CALLBACK_URL in environment variables.',
     );
   }
 }

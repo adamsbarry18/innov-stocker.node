@@ -66,10 +66,6 @@ export class CashRegisterService {
   }): Promise<{ registers: CashRegisterApiResponse[]; total: number }> {
     try {
       let whereClause = options?.filters ? { ...options.filters } : {};
-      if (options?.searchTerm) {
-        logger.warn('Search term functionality for cash registers is basic.');
-        // Example: whereClause.name = ILike(`%${options.searchTerm}%`);
-      }
       const { registers, count } = await this.registerRepository.findAll({
         where: whereClause,
         skip: options?.offset,
@@ -121,10 +117,6 @@ export class CashRegisterService {
 
     try {
       const savedRegister = await this.registerRepository.save(registerEntity);
-      logger.info(
-        `Cash register '${savedRegister.name}' (ID: ${savedRegister.id}) created successfully.`,
-      );
-
       const populatedRegister = await this.registerRepository.findById(savedRegister.id); // Re-fetch with relations
       const apiResponse = this.mapToApiResponse(populatedRegister);
       if (!apiResponse)
@@ -193,7 +185,6 @@ export class CashRegisterService {
       const updatedRegister = await this.registerRepository.findById(id);
       if (!updatedRegister) throw new ServerError('Failed to re-fetch cash register after update.');
 
-      logger.info(`Cash register '${updatedRegister.name}' (ID: ${id}) updated successfully.`);
       const apiResponse = this.mapToApiResponse(updatedRegister);
       if (!apiResponse) throw new ServerError(`Failed to map updated cash register ${id}.`);
       return apiResponse;
@@ -212,8 +203,6 @@ export class CashRegisterService {
       const register = await this.registerRepository.findById(id);
       if (!register) throw new NotFoundError(`Cash register with id ${id} not found.`);
 
-      // TODO: Dépendance - Vérifier si la caisse est utilisée (active CashRegisterSessions)
-      // Utiliser une tolérance pour la comparaison en virgule flottante
       if (Math.abs(Number(register.currentBalance)) > Number.EPSILON) {
         throw new BadRequestError(
           `Cash register '${register.name}' has a non-zero balance (${register.currentBalance}) and cannot be deleted. Please close all sessions and ensure balance is zero.`,
@@ -227,7 +216,6 @@ export class CashRegisterService {
       }
 
       await this.registerRepository.softDelete(id);
-      logger.info(`Cash register '${register.name}' (ID: ${id}) successfully soft-deleted.`);
     } catch (error) {
       logger.error(
         { message: `Error deleting cash register ${id}`, error },
