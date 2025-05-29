@@ -39,7 +39,7 @@ export abstract class Model extends BaseEntity {
   @JoinColumn({ name: 'created_by_user_id' })
   createdByUserId?: number | null;
 
-  @JoinColumn({ name: 'updated_by__user_id' })
+  @JoinColumn({ name: 'updated_by_user_id' })
   updatedByUserId?: number | null;
 
   @DeleteDateColumn({ type: 'timestamp', name: 'deleted_time', nullable: true })
