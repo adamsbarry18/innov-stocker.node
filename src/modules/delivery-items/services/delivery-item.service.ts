@@ -109,38 +109,24 @@ export class DeliveryItemService {
       );
     }
 
-    let alreadyShippedOnOtherLines = 0;
-    const deliveryItemsForThisSOItem = await this.itemRepository.findBySalesOrderItemId(
+    let totalShippedForThisSalesOrderItem = 0;
+    const allDeliveryItemsForThisSOItem = await this.itemRepository.findBySalesOrderItemId(
       salesOrderItem.id,
       { transactionalEntityManager: transactionalEntityManager },
     );
 
-    deliveryItemsForThisSOItem.forEach((di: DeliveryItem) => {
+    allDeliveryItemsForThisSOItem.forEach((di: DeliveryItem) => {
       if (currentItemIdToExclude === undefined || di.id !== currentItemIdToExclude) {
-        if (existingDeliveryItems.find((edi: DeliveryItem) => edi.id === di.id)) {
-        } else {
-          alreadyShippedOnOtherLines += Number(di.quantityShipped);
-        }
+        totalShippedForThisSalesOrderItem += Number(di.quantityShipped);
       }
     });
 
-    const alreadyPlannedForThisDeliveryThisSOLine = existingDeliveryItems
-      .filter(
-        (item) =>
-          item.salesOrderItemId === salesOrderItem.id &&
-          (currentItemIdToExclude === undefined || item.id !== currentItemIdToExclude),
-      )
-      .reduce((sum, item) => sum + Number(item.quantityShipped), 0);
-
-    const totalQuantityAccountedFor =
-      alreadyShippedOnOtherLines + alreadyPlannedForThisDeliveryThisSOLine;
-    const maxShippable = Number(salesOrderItem.quantity) - totalQuantityAccountedFor;
-
+    const maxShippable = Number(salesOrderItem.quantity) - totalShippedForThisSalesOrderItem;
     if (input.quantityShipped > maxShippable) {
       throw new BadRequestError(
         `Quantity shipped (${input.quantityShipped}) for product '${salesOrderItem.product.name}' ` +
           `exceeds remaining quantity on sales order item (${maxShippable.toFixed(3)}). ` +
-          `Ordered: ${salesOrderItem.quantity}, Already shipped/planned: ${totalQuantityAccountedFor.toFixed(3)}.`,
+          `Ordered: ${salesOrderItem.quantity}, Already shipped/planned: ${totalShippedForThisSalesOrderItem.toFixed(3)}.`,
       );
     }
     return {
@@ -172,8 +158,9 @@ export class DeliveryItemService {
         [DeliveryStatus.PENDING, DeliveryStatus.IN_PREPARATION],
         transactionalEntityManager,
       );
-      if (!delivery.salesOrder)
-        throw new ServerError('Sales Order relation not loaded on delivery.'); // Should be loaded by getDeliveryAndCheckStatus
+      if (!delivery.salesOrder) {
+        throw new ServerError('Sales Order relation not loaded on delivery.');
+      }
 
       const { salesOrderItem, product, productVariant } = await this.validateDeliveryItemInput(
         validatedInput,
@@ -187,6 +174,9 @@ export class DeliveryItemService {
         (item) => item.salesOrderItemId === validatedInput.salesOrderItemId,
       );
       if (existingLink) {
+        logger.warn(
+          `Attempted to add duplicate salesOrderItemId: ${validatedInput.salesOrderItemId} to delivery ${deliveryId}. Existing item ID: ${existingLink.id}`,
+        );
         throw new BadRequestError(
           `Sales Order Item ID ${validatedInput.salesOrderItemId} is already part of this delivery (Item ID: ${existingLink.id}). Update its quantity instead.`,
         );
@@ -205,18 +195,23 @@ export class DeliveryItemService {
       );
 
       if (!itemEntity.isValid()) {
+        logger.error(
+          `Internal validation failed for new delivery item: ${deliveryItemValidationInputErrors.join(', ')}`,
+        );
         throw new BadRequestError(
           `Delivery item data is invalid (internal check). Errors: ${deliveryItemValidationInputErrors.join(', ')}`,
         );
       }
 
       const savedItem = await this.itemRepository.save(itemEntity, transactionalEntityManager);
-
       const populatedItem = await this.itemRepository.findById(savedItem.id, {
         transactionalEntityManager,
       });
       const apiResponse = this.mapToApiResponse(populatedItem);
-      if (!apiResponse) throw new ServerError('Failed to map created delivery item.');
+      if (!apiResponse) {
+        logger.error(`Failed to map created delivery item ${savedItem.id} to API response.`);
+        throw new ServerError('Failed to map created delivery item.');
+      }
       return apiResponse;
     });
   }
@@ -262,8 +257,9 @@ export class DeliveryItemService {
         [DeliveryStatus.PENDING, DeliveryStatus.IN_PREPARATION],
         transactionalEntityManager,
       );
-      if (!delivery.salesOrder)
+      if (!delivery.salesOrder) {
         throw new ServerError('Sales Order relation not loaded on delivery.');
+      }
 
       const item = await this.itemRepository.findById(itemId, {
         relations: ['salesOrderItem'],
@@ -274,8 +270,9 @@ export class DeliveryItemService {
           `Delivery item with ID ${itemId} not found for delivery ${deliveryId}.`,
         );
       }
-      if (!item.salesOrderItem)
+      if (!item.salesOrderItem) {
         throw new ServerError('Sales Order Item relation not loaded on delivery item.');
+      }
 
       if (validatedInput.quantityShipped !== undefined) {
         await this.validateDeliveryItemInput(
@@ -303,7 +300,10 @@ export class DeliveryItemService {
         transactionalEntityManager,
       });
       const apiResponse = this.mapToApiResponse(populatedItem);
-      if (!apiResponse) throw new ServerError('Failed to map updated delivery item.');
+      if (!apiResponse) {
+        logger.error(`Failed to map updated delivery item ${savedItem.id} to API response.`);
+        throw new ServerError('Failed to map updated delivery item.');
+      }
       return apiResponse;
     });
   }
@@ -330,8 +330,6 @@ export class DeliveryItemService {
       }
 
       await this.itemRepository.remove(item, transactionalEntityManager);
-
-      logger.info(`Delivery item ID ${itemId} removed from delivery ${deliveryId}.`);
     });
   }
 

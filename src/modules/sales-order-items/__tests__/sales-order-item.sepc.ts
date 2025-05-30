@@ -6,7 +6,6 @@ import dayjs from 'dayjs';
 import app from '@/app';
 import { adminToken } from '@/tests/globalSetup';
 import { SalesOrderStatus } from '../../sales-orders/models/sales-order.entity';
-import logger from '@/lib/logger';
 
 const generateUniqueOrderNumber = () =>
   `SO-${dayjs().format('YYYYMMDDHHmmss')}-${uuidv4().substring(0, 8)}`;
@@ -56,7 +55,6 @@ describe('SalesOrderItems API', () => {
       .send(testSalesOrderInput());
     expect(res.status).toBe(201);
     salesOrderId = res.body.data.id;
-    console.log(`[beforeAll] Sales Order created with ID: ${salesOrderId}`);
 
     // Add an initial item to be used in tests
     const itemRes = await request(app)
@@ -65,7 +63,6 @@ describe('SalesOrderItems API', () => {
       .send(testSalesOrderItemInput());
     expect(itemRes.status).toBe(201);
     createdSalesOrderItemId = itemRes.body.data.id;
-    console.log(`[beforeAll] Initial Sales Order Item created with ID: ${createdSalesOrderItemId}`);
   });
 
   afterAll(async () => {

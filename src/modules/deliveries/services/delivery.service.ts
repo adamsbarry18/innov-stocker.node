@@ -35,7 +35,6 @@ import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop } from '@/modules/shops/models/shop.entity';
 import { SalesOrderItem } from '@/modules/sales-order-items/models/sales-order-item.entity';
 import { DeliveryItem } from '@/modules/delivery-items/models/delivery-item.entity';
-import { User } from '@/modules/users/models/users.entity';
 
 let instance: DeliveryService | null = null;
 
@@ -213,7 +212,6 @@ export class DeliveryService {
         manager,
       );
 
-      logger.info(`Delivery ID ${deliveryId} marked as SHIPPED.`);
       return this.getDeliveryResponse(deliveryId, manager);
     });
   }
@@ -237,11 +235,6 @@ export class DeliveryService {
       // delivery.actualDeliveryDate = new Date(); // If you have such a field
 
       await this.deliveryRepository.save(delivery, manager);
-      logger.info(`Delivery ID ${deliveryId} marked as DELIVERED.`);
-
-      // TODO: Optionally, check if all deliveries for the SO are delivered and update SO to COMPLETED.
-      // This often involves checking invoicing status as well.
-
       return this.getDeliveryResponse(deliveryId, manager);
     });
   }
@@ -272,7 +265,6 @@ export class DeliveryService {
 
       try {
         await this.deliveryRepository.softDelete(id, manager); // This should cascade to DeliveryItems if set in entity
-        logger.info(`Delivery '${delivery.deliveryNumber}' (ID: ${id}) soft-deleted.`);
       } catch (error) {
         logger.error({ message: `Error deleting delivery ${id}`, error });
         throw new ServerError(`Error deleting delivery ${id}.`);
