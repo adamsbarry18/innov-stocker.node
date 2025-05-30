@@ -19,6 +19,9 @@ import { quoteSchemas } from './quotes/quote.schema';
 import { productSchemas } from './products/product.schema';
 import { purchaseOrderSchemas } from './purchase-orders/purchase-order.schema';
 import { purchaseReceptionSchemas } from './purchase-receptions/purchase-reception.schema';
+import { salesOrderSchemas } from './sales-orders/sales-order.schema';
+import { deliverySchemas } from './deliveries/delivery.schema';
+import { stockMovementSchemas } from './stock-movements/stock-movement.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -42,6 +45,9 @@ export const schemas = {
   ...productSchemas,
   ...purchaseOrderSchemas,
   ...purchaseReceptionSchemas,
+  ...salesOrderSchemas,
+  ...deliverySchemas,
+  ...stockMovementSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -72,4 +78,7 @@ export {
   quoteSchemas,
   purchaseOrderSchemas,
   purchaseReceptionSchemas,
+  salesOrderSchemas,
+  deliverySchemas,
+  stockMovementSchemas,
 };

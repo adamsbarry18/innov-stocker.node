@@ -1,5 +1,4 @@
 import { Model } from '@/common/models/Model';
-import logger from '@/lib/logger';
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
 import { Product } from '@/modules/products/models/product.entity';
 import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';

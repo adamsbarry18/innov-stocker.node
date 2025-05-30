@@ -184,7 +184,8 @@ INSERT INTO quote_items (id, quote_id, product_id, product_variant_id, descripti
 -- -----------------------------------------------------
 INSERT INTO sales_orders (id, order_number, customer_id, quote_id, order_date, status, currency_id, total_amount_ht, total_vat_amount, total_amount_ttc, shipping_fees_ht, shipping_address_id, billing_address_id, dispatch_warehouse_id, dispatch_shop_id, created_by_user_id, notes, created_time, updated_time, deleted_time) VALUES
 (1, 'SO-2025-00001', 1, 1, '2025-05-10', 'approved', 1, 1009.0000, 201.8000, 1210.8000, 10.0000, 5, 4, 1, NULL, 2, 'Vente suite devis QT-2025-00001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-(2, 'SO-2025-00002', 2, NULL, '2025-05-12', 'in_preparation', 1, 1999.0000, 399.8000, 2398.8000, 25.0000, 6, 6, 1, NULL, 2, 'Vente 2 Laptops Entreprise ABC', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
+(2, 'SO-2025-00002', 2, NULL, '2025-05-12', 'in_preparation', 1, 1999.0000, 399.8000, 2398.8000, 25.0000, 6, 6, 1, NULL, 2, 'Vente 2 Laptops Entreprise ABC', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(3, 'SO-2025-00003', 1, NULL, '2025-05-29', 'approved', 1, 100.0000, 20.0000, 120.0000, 0.0000, 5, 4, 1, NULL, 1, 'Commande pour tests de livraison', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
 
 -- -----------------------------------------------------
 -- Table sales_order_items
@@ -192,7 +193,9 @@ INSERT INTO sales_orders (id, order_number, customer_id, quote_id, order_date, s
 INSERT INTO sales_order_items (id, sales_order_id, product_id, product_variant_id, description, quantity, unit_price_ht, discount_percentage, vat_rate_percentage, total_line_amount_ht, quantity_shipped, quantity_invoiced) VALUES
 (1, 1, 2, NULL, 'Ordinateur Portable Pro 15"', 1.000, 975.0000, 0.00, 20.00, 975.0000, 0.000, 0.000),
 (2, 1, 3, NULL, 'Chargeur USB-C Rapide', 1.000, 24.0000, 0.00, 20.00, 24.0000, 0.000, 0.000),
-(3, 2, 2, NULL, 'Ordinateur Portable Pro 15"', 2.000, 999.5000, 0.00, 20.00, 1999.0000, 0.000, 0.000);
+(3, 2, 2, NULL, 'Ordinateur Portable Pro 15"', 2.000, 999.5000, 0.00, 20.00, 1999.0000, 0.000, 0.000),
+(4, 3, 1, NULL, 'Smartphone Modèle X', 5.000, 100.0000, 0.00, 20.00, 500.0000, 0.000, 0.000),
+(5, 3, 3, NULL, 'Chargeur USB-C Rapide', 10.000, 10.0000, 0.00, 20.00, 100.0000, 0.000, 0.000);
 
 -- -----------------------------------------------------
 -- Table purchase_receptions
@@ -234,7 +237,7 @@ INSERT INTO supplier_invoice_purchase_order_links (supplier_invoice_id, purchase
 -- -----------------------------------------------------
 -- Table deliveries
 -- -----------------------------------------------------
-INSERT INTO deliveries (id, delivery_number, sales_order_id, delivery_date, status, shipping_address_id, carrier_name, tracking_number, shipped_by_user_id, dispatch_warehouse_id, dispatch_shop_id, notes, created_time, updated_time) VALUES
+INSERT INTO deliveries (id, delivery_number, sales_order_id, delivery_date, status, shipping_address_id, carrier_name, tracking_number, created_by_user_id, dispatch_warehouse_id, dispatch_shop_id, notes, created_time, updated_time) VALUES
 (1, 'DL-2025-00001', 1, '2025-05-11', 'shipped', 5, 'Chronopost', 'XY123456789FR', 1, 1, NULL, 'Livraison commande SO-2025-00001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (2, 'DL-2025-00002', 2, '2025-05-13', 'in_preparation', 6, NULL, NULL, 1, 1, NULL, 'Préparation Laptops Entreprise ABC (SO-2025-00002)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
