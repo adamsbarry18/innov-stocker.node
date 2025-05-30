@@ -31,6 +31,8 @@ import { PurchaseReceptionItem } from '@/modules/purchase-reception-items/models
 import { StockMovement } from '@/modules/stock-movements/models/stock-movement.entity';
 import { SalesOrderItem } from '@/modules/sales-order-items/models/sales-order-item.entity';
 import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
+import { Delivery } from '@/modules/deliveries/models/delivery.entity';
+import { DeliveryItem } from '@/modules/delivery-items/models/delivery-item.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -71,6 +73,8 @@ export const appDataSourceOptions: DataSourceOptions = {
     StockMovement,
     SalesOrderItem,
     SalesOrder,
+    Delivery,
+    DeliveryItem,
   ],
   migrations: [],
   subscribers: [],

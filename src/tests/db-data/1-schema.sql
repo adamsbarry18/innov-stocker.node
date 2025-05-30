@@ -914,18 +914,20 @@ CREATE TABLE `deliveries` (
     `shipping_address_id` INT NOT NULL,
     `carrier_name` VARCHAR(255) DEFAULT NULL,
     `tracking_number` VARCHAR(100) DEFAULT NULL,
-    `shipped_by_user_id` INT NOT NULL,
     `dispatch_warehouse_id` INT DEFAULT NULL,
     `dispatch_shop_id` INT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
+    `updated_by_user_id` INT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY `delivery_number_unique` (`delivery_number`),
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,    UNIQUE KEY `delivery_number_unique` (`delivery_number`),
     CONSTRAINT `fk_d_order` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_d_shipping_address` FOREIGN KEY (`shipping_address_id`) REFERENCES `addresses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_d_shipped_by` FOREIGN KEY (`shipped_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_d_warehouse` FOREIGN KEY (`dispatch_warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT `fk_d_shop` FOREIGN KEY (`dispatch_shop_id`) REFERENCES `shops` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT `fk_d_shop` FOREIGN KEY (`dispatch_shop_id`) REFERENCES `shops` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_d_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_d_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -940,6 +942,9 @@ CREATE TABLE `delivery_items` (
     `product_id` INT NOT NULL,
     `product_variant_id` INT DEFAULT NULL,
     `quantity_shipped` DECIMAL(15, 3) NOT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT `fk_di_delivery` FOREIGN KEY (`delivery_id`) REFERENCES `deliveries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_di_order_item` FOREIGN KEY (`sales_order_item_id`) REFERENCES `sales_order_items` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_di_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,

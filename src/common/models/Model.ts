@@ -43,7 +43,7 @@ export abstract class Model extends BaseEntity {
   updatedByUserId?: number | null;
 
   @DeleteDateColumn({ type: 'timestamp', name: 'deleted_time', nullable: true })
-  deletedAt!: Date | null;
+  deletedAt?: Date | null;
 
   /**
    * Formate une date en ISO ou retourne null.
