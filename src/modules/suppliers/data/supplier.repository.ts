@@ -21,10 +21,14 @@ interface FindAllSuppliersOptions {
 }
 
 export class SupplierRepository {
-  private readonly repository: Repository<Supplier>;
+  private readonly _repository: Repository<Supplier>;
 
   constructor(dataSource: DataSource = appDataSource) {
-    this.repository = dataSource.getRepository(Supplier);
+    this._repository = dataSource.getRepository(Supplier);
+  }
+
+  public get repository(): Repository<Supplier> {
+    return this._repository;
   }
 
   async findById(id: number, options?: { relations?: string[] }): Promise<Supplier | null> {

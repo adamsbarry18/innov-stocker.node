@@ -33,6 +33,9 @@ import { SalesOrderItem } from '@/modules/sales-order-items/models/sales-order-i
 import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
 import { Delivery } from '@/modules/deliveries/models/delivery.entity';
 import { DeliveryItem } from '@/modules/delivery-items/models/delivery-item.entity';
+import { SupplierInvoice } from '@/modules/supplier-invoices/models/supplier-invoice.entity';
+import { SupplierInvoiceItem } from '@/modules/supplier-invoice-items/models/supplier-invoice-item.entity';
+import { SupplierInvoicePurchaseOrderLink } from '@/modules/supplier-invoices/models/supplier-invoice-purchse-order-link.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -75,6 +78,9 @@ export const appDataSourceOptions: DataSourceOptions = {
     SalesOrder,
     Delivery,
     DeliveryItem,
+    SupplierInvoice,
+    SupplierInvoiceItem,
+    SupplierInvoicePurchaseOrderLink,
   ],
   migrations: [],
   subscribers: [],
