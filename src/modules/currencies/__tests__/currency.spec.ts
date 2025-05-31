@@ -39,7 +39,7 @@ describe('Currency API', () => {
       expect(getRes.body.status).toBe('success');
       expect(Array.isArray(getRes.body.data.currencies)).toBe(true);
       // Assuming initial data has 2 currencies, plus the one just created
-      expect(getRes.body.data.total).toBe(3);
+      expect(getRes.body.data.total).toBe(4);
     });
 
     it('should fail to create a new currency without authentication', async () => {

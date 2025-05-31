@@ -677,6 +677,7 @@ CREATE TABLE `supplier_invoices` (
     `total_amount_ht` DECIMAL(15, 4) NOT NULL,
     `total_vat_amount` DECIMAL(15, 4) DEFAULT 0.0000,
     `total_amount_ttc` DECIMAL(15, 4) NOT NULL,
+    `amount_paid` DECIMAL(15, 4) DEFAULT 0.0000 NOT NULL,
     `status` VARCHAR(25) DEFAULT 'pending_payment' NOT NULL, -- Possible values: draft, pending_payment, partially_paid, paid, cancelled
     `notes` TEXT DEFAULT NULL,
     `file_attachment_url` VARCHAR(2048) DEFAULT NULL,
@@ -711,6 +712,9 @@ CREATE TABLE `supplier_invoice_items` (
     `vat_rate_percentage` DECIMAL(5, 2) DEFAULT NULL,
     `total_line_amount_ht` DECIMAL(15, 4) DEFAULT 0.0000, -- Application to calculate
     `purchase_reception_item_id` BIGINT DEFAULT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT `fk_sii_invoice` FOREIGN KEY (`supplier_invoice_id`) REFERENCES `supplier_invoices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_sii_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_sii_variant` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,

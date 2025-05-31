@@ -13,6 +13,7 @@ import {
   PurchaseOrderItemApiResponse,
 } from '@/modules/purchase-order-items/models/purchase-order-item.entity';
 import logger from '@/lib/logger';
+import { SupplierInvoicePurchaseOrderLink } from '@/modules/supplier-invoices/models/supplier-invoice-purchse-order-link.entity';
 
 export enum PurchaseOrderStatus {
   DRAFT = 'draft',
@@ -170,6 +171,9 @@ export class PurchaseOrder extends Model {
     eager: true,
   })
   items!: PurchaseOrderItem[];
+
+  @OneToMany(() => SupplierInvoicePurchaseOrderLink, (link) => link.purchaseOrder)
+  supplierInvoiceLinks!: SupplierInvoicePurchaseOrderLink[];
 
   @Column({ type: 'int', name: 'created_by_user_id' })
   createdByUserId!: number;

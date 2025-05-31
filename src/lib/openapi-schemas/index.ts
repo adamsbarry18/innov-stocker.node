@@ -22,6 +22,7 @@ import { purchaseReceptionSchemas } from './purchase-receptions/purchase-recepti
 import { salesOrderSchemas } from './sales-orders/sales-order.schema';
 import { deliverySchemas } from './deliveries/delivery.schema';
 import { stockMovementSchemas } from './stock-movements/stock-movement.schema';
+import { supplierInvoiceSchemas } from './supplier-invoices/supplier-invoice.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -48,6 +49,7 @@ export const schemas = {
   ...salesOrderSchemas,
   ...deliverySchemas,
   ...stockMovementSchemas,
+  ...supplierInvoiceSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -81,4 +83,5 @@ export {
   salesOrderSchemas,
   deliverySchemas,
   stockMovementSchemas,
+  supplierInvoiceSchemas,
 };

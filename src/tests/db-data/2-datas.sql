@@ -31,7 +31,8 @@ INSERT INTO addresses (id, street_line1, street_line2, city, postal_code, state_
 -- -----------------------------------------------------
 INSERT INTO currencies (id, code, name, symbol, exchange_rate_to_company_default, is_active, created_time, updated_time) VALUES
 (1, 'EUR', 'Euro', '€', 1.000000, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'USD', 'Dollar Américain', '$', 0.920000, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 'USD', 'Dollar Américain', '$', 0.920000, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'GBP', 'Livre Sterling', '£', 1.170000, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- -----------------------------------------------------
 -- Table company
@@ -60,7 +61,8 @@ INSERT INTO customer_groups (id, name, description, discount_percentage, created
 -- -----------------------------------------------------
 INSERT INTO suppliers (id, name, contact_person_name, email, phone_number, website, vat_number, siret_number, default_currency_id, default_payment_terms_days, address_id, notes, created_by_user_id, updated_by_user_id, created_time, updated_time, deleted_time) VALUES
 (1, 'Fournisseur HighTech Global', 'Sophie Martin', 'sophie.martin@hightechglobal.com', '0198765432', 'https://hightechglobal.com', 'FR987654321', '98765432100011', 1, 30, 2, 'Fournisseur principal pour électronique', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-(2, 'Office Supplies Express', 'Paul Durand', 'paul.durand@officesupplies.com', '0456789123', 'https://officesupplies.com', 'FR123123123', '12312312300022', 1, 45, 3, 'Fournitures de bureau et consommables', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
+(2, 'Office Supplies Express', 'Paul Durand', 'paul.durand@officesupplies.com', '0456789123', 'https://officesupplies.com', 'FR123123123', '12312312300022', 1, 45, 3, 'Fournitures de bureau et consommables', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(3, 'Global Components Inc.', 'Alice Johnson', 'alice.j@globalcomponents.com', '0712345678', 'https://globalcomponents.com', 'FR456789012', '45678901200033', 1, 60, 2, 'Fournisseur de composants électroniques', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
 
 -- -----------------------------------------------------
 -- Table customers
@@ -100,7 +102,8 @@ INSERT INTO products (id, sku, name, description, product_category_id, unit_of_m
 (4, 'PROD-KIT-001', 'Kit Télétravail Essentiel', 'Kit comprenant souris, clavier et webcam', 2, 'kit', 1.200, 'kg', NULL, NULL, NULL, NULL, 'KIT0000000001', 5, 30, 45.0000, 79.9000, 20.00, 'active', 1, 'Idéal pour le bureau à domicile', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
 (5, 'PROD-MSE-001', 'Souris Ergonomique Sans Fil', 'Souris confortable pour usage quotidien', 2, 'pièce', 0.085, 'kg', 10.5, 6.5, 3.8, 'cm', 'BAR-MSE-001', 15, 150, 8.0000, 19.9000, 20.00, 'active', 0, NULL, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
 (6, 'PROD-KBD-001', 'Clavier Mécanique Compact', 'Clavier mécanique TKL, rétroéclairé', 2, 'pièce', 0.650, 'kg', 35.5, 12.8, 3.5, 'cm', 'BAR-KBD-001', 10, 80, 25.0000, 49.9000, 20.00, 'active', 0, 'Switches bleus', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-(7, 'PROD-WBC-001', 'Webcam HD 1080p', 'Webcam avec microphone intégré pour visioconférences', 1, 'pièce', 0.120, 'kg', 8.0, 3.5, 5.0, 'cm', 'BAR-WBC-001', 20, 100, 12.0000, 29.9000, 20.00, 'active', 0, NULL, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
+(7, 'PROD-WBC-001', 'Webcam HD 1080p', 'Webcam avec microphone intégré pour visioconférences', 1, 'pièce', 0.120, 'kg', 8.0, 3.5, 5.0, 'cm', 'BAR-WBC-001', 20, 100, 12.0000, 29.9000, 20.00, 'active', 0, NULL, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(8, 'PROD-CBL-001', 'Câble HDMI 2.1', 'Câble HDMI haute vitesse 2.1, 2 mètres', 1, 'pièce', 0.050, 'kg', 200.0, 1.0, 0.5, 'cm', 'CBL-HDMI-001', 50, 500, 5.0000, 12.5000, 20.00, 'active', 0, NULL, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
 -- -----------------------------------------------------
 -- Table product_images
 -- -----------------------------------------------------
