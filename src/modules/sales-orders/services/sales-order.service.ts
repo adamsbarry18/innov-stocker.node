@@ -35,7 +35,7 @@ import { SalesOrderRepository } from '../data/sales-order.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { SalesOrderItemRepository } from '../sales-order-items/data/sales-order-item.repository';
 import {
-  CreateSalesOrderItemInput,
+  type CreateSalesOrderItemInput,
   SalesOrderItem,
 } from '../sales-order-items/models/sales-order-item.entity';
 

@@ -38,7 +38,7 @@ import { SupplierInvoiceItemRepository } from '../supplier-invoice-items/data/su
 import { PurchaseReceptionItemRepository } from '@/modules/purchase-receptions/purchase-reception-items/data/purchase-reception-item.repository';
 import { PurchaseReceptionItem } from '@/modules/purchase-receptions/purchase-reception-items/models/purchase-reception-item.entity';
 import {
-  CreateSupplierInvoiceItemInput,
+  type CreateSupplierInvoiceItemInput,
   SupplierInvoiceItem,
 } from '../supplier-invoice-items/models/supplier-invoice-item.entity';
 
@@ -54,6 +54,19 @@ const UPDATABLE_FIELDS_FOR_PAID_INVOICE = ['notes', 'fileAttachmentUrl'] as cons
 let instance: SupplierInvoiceService | null = null;
 
 export class SupplierInvoiceService {
+  /**
+   * Constructs an instance of SupplierInvoiceService.
+   * @param invoiceRepository - Repository for supplier invoices.
+   * @param itemRepository - Repository for supplier invoice items.
+   * @param linkRepository - Repository for supplier invoice purchase order links.
+   * @param supplierRepository - Repository for suppliers.
+   * @param currencyRepository - Repository for currencies.
+   * @param productRepository - Repository for products.
+   * @param variantRepository - Repository for product variants.
+   * @param userRepository - Repository for users.
+   * @param poRepository - Repository for purchase orders.
+   * @param receptionItemRepository - Repository for purchase reception items.
+   */
   constructor(
     private readonly invoiceRepository: SupplierInvoiceRepository = new SupplierInvoiceRepository(),
     private readonly itemRepository: SupplierInvoiceItemRepository = new SupplierInvoiceItemRepository(),
@@ -68,6 +81,12 @@ export class SupplierInvoiceService {
   ) {}
 
   // Public API Methods
+  /**
+   * Creates a new supplier invoice.
+   * @param input - The data for creating the supplier invoice.
+   * @param createdByUserId - The ID of the user creating the invoice.
+   * @returns The created supplier invoice API response.
+   */
   async createSupplierInvoice(
     input: CreateSupplierInvoiceInput,
     createdByUserId: number,
@@ -95,6 +114,12 @@ export class SupplierInvoiceService {
     });
   }
 
+  /**
+   * Finds a supplier invoice by its ID.
+   * @param id - The ID of the supplier invoice.
+   * @param requestingUserId - The ID of the user requesting the invoice.
+   * @returns The supplier invoice API response.
+   */
   async findSupplierInvoiceById(
     id: number,
     requestingUserId: number,
@@ -119,6 +144,11 @@ export class SupplierInvoiceService {
       throw error;
     }
   }
+  /**
+   * Finds all supplier invoices based on provided options.
+   * @param options - Options for filtering, sorting, and pagination.
+   * @returns An object containing an array of supplier invoice API responses and the total count.
+   */
   async findAllSupplierInvoices(options?: {
     limit?: number;
     offset?: number;
@@ -142,6 +172,13 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Updates an existing supplier invoice.
+   * @param id - The ID of the supplier invoice to update.
+   * @param input - The data for updating the supplier invoice.
+   * @param updatedByUserId - The ID of the user updating the invoice.
+   * @returns The updated supplier invoice API response.
+   */
   async updateSupplierInvoice(
     id: number,
     input: UpdateSupplierInvoiceInput,
@@ -173,6 +210,13 @@ export class SupplierInvoiceService {
     });
   }
 
+  /**
+   * Updates the status of a supplier invoice.
+   * @param id - The ID of the supplier invoice to update.
+   * @param status - The new status for the invoice.
+   * @param updatedByUserId - The ID of the user updating the status.
+   * @returns The updated supplier invoice API response.
+   */
   async updateSupplierInvoiceStatus(
     id: number,
     status: SupplierInvoiceStatus,
@@ -188,6 +232,11 @@ export class SupplierInvoiceService {
     return this.getPopulatedInvoiceResponse(id);
   }
 
+  /**
+   * Deletes a supplier invoice (soft delete).
+   * @param id - The ID of the supplier invoice to delete.
+   * @param deletedByUserId - The ID of the user deleting the invoice.
+   */
   async deleteSupplierInvoice(id: number, deletedByUserId: number): Promise<void> {
     try {
       const invoice = await this.getExistingInvoice(id);
@@ -212,6 +261,11 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates the input data for creating or updating a supplier invoice.
+   * @param input - The input data for the invoice.
+   * @param context - The validation context, including whether it's an update and the invoice ID.
+   */
   private async validateInvoiceInput(
     input: CreateSupplierInvoiceInput | UpdateSupplierInvoiceInput,
     context: ValidationContext,
@@ -238,6 +292,12 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates the supplier ID.
+   * @param supplierId - The ID of the supplier.
+   * @param isUpdate - Indicates if the operation is an update.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async validateSupplier(
     supplierId: number | undefined,
     isUpdate: boolean,
@@ -259,6 +319,12 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates the currency ID.
+   * @param currencyId - The ID of the currency.
+   * @param isUpdate - Indicates if the operation is an update.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async validateCurrency(
     currencyId: number | undefined,
     isUpdate: boolean,
@@ -283,6 +349,12 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates the invoice number.
+   * @param input - The input data for the invoice.
+   * @param isUpdate - Indicates if the operation is an update.
+   * @param invoiceId - The ID of the invoice (if updating).
+   */
   private async validateInvoiceNumber(
     input: CreateSupplierInvoiceInput | UpdateSupplierInvoiceInput,
     isUpdate: boolean,
@@ -304,6 +376,12 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates a list of invoice items.
+   * @param items - The array of invoice items to validate.
+   * @param isUpdate - Indicates if the operation is an update.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async validateItems(
     items: any[],
     isUpdate: boolean,
@@ -317,6 +395,11 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates a single invoice item.
+   * @param item - The invoice item to validate.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async validateSingleItem(item: any, manager?: EntityManager): Promise<void> {
     if (item.productId) {
       await this.validateItemProduct(item, manager);
@@ -329,6 +412,11 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates the product and product variant for an invoice item.
+   * @param item - The invoice item containing product information.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async validateItemProduct(item: any, manager?: EntityManager): Promise<void> {
     let product;
     if (manager) {
@@ -365,6 +453,11 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates a purchase reception item ID.
+   * @param receptionItemId - The ID of the purchase reception item.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async validateReceptionItem(
     receptionItemId: number,
     manager?: EntityManager,
@@ -382,6 +475,12 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates a list of purchase order IDs.
+   * @param purchaseOrderIds - An array of purchase order IDs.
+   * @param supplierId - The ID of the supplier associated with the purchase orders.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async validatePurchaseOrders(
     purchaseOrderIds: number[],
     supplierId: number | undefined,
@@ -408,6 +507,10 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates a user ID.
+   * @param userId - The ID of the user.
+   */
   private async validateUser(userId: number): Promise<void> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -415,6 +518,13 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Creates the header for a new supplier invoice.
+   * @param input - The input data for the invoice.
+   * @param createdByUserId - The ID of the user creating the invoice.
+   * @param manager - The entity manager for transactional operations.
+   * @returns The created SupplierInvoice entity.
+   */
   private async createInvoiceHeader(
     input: CreateSupplierInvoiceInput,
     createdByUserId: number,
@@ -440,6 +550,13 @@ export class SupplierInvoiceService {
     return repo.save(invoice);
   }
 
+  /**
+   * Creates items for a supplier invoice.
+   * @param itemInputs - An array of input data for invoice items.
+   * @param invoiceId - The ID of the supplier invoice.
+   * @param manager - The entity manager for transactional operations.
+   * @returns An array of created SupplierInvoiceItem entities.
+   */
   private async createInvoiceItems(
     itemInputs: CreateSupplierInvoiceItemInput[],
     invoiceId: number,
@@ -472,6 +589,11 @@ export class SupplierInvoiceService {
     return savedItems;
   }
 
+  /**
+   * Updates the total amounts for a supplier invoice.
+   * @param invoice - The SupplierInvoice entity to update.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async updateInvoiceTotals(
     invoice: SupplierInvoice,
     manager: EntityManager,
@@ -481,6 +603,12 @@ export class SupplierInvoiceService {
     await repo.save(invoice);
   }
 
+  /**
+   * Creates links between a supplier invoice and purchase orders.
+   * @param purchaseOrderIds - An array of purchase order IDs to link.
+   * @param invoiceId - The ID of the supplier invoice.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async createPurchaseOrderLinks(
     purchaseOrderIds: number[] | undefined,
     invoiceId: number,
@@ -496,6 +624,13 @@ export class SupplierInvoiceService {
     await repo.save(links);
   }
 
+  /**
+   * Sanitizes the update input based on the invoice status.
+   * Restricts fields that can be updated if the invoice is paid or cancelled.
+   * @param input - The update input data.
+   * @param status - The current status of the invoice.
+   * @returns The sanitized update input.
+   */
   private sanitizeUpdateInput(
     input: UpdateSupplierInvoiceInput,
     status: SupplierInvoiceStatus,
@@ -506,10 +641,20 @@ export class SupplierInvoiceService {
     return input;
   }
 
+  /**
+   * Checks if the invoice status is paid or cancelled.
+   * @param status - The status of the invoice.
+   * @returns True if the invoice is paid or cancelled, false otherwise.
+   */
   private isInvoicePaidOrCancelled(status: SupplierInvoiceStatus): boolean {
     return status === SupplierInvoiceStatus.PAID || status === SupplierInvoiceStatus.CANCELLED;
   }
 
+  /**
+   * Restricts the fields that can be updated for a paid or cancelled invoice.
+   * @param input - The update input data.
+   * @returns The restricted update input.
+   */
   private restrictUpdateFieldsForPaidInvoice(
     input: UpdateSupplierInvoiceInput,
   ): UpdateSupplierInvoiceInput {
@@ -537,14 +682,29 @@ export class SupplierInvoiceService {
     return restrictedInput;
   }
 
+  /**
+   * Checks if invoice items can be updated based on the invoice status.
+   * @param status - The current status of the invoice.
+   * @returns True if items can be updated, false otherwise.
+   */
   private canUpdateItems(status: SupplierInvoiceStatus): boolean {
     return status === SupplierInvoiceStatus.DRAFT;
   }
 
+  /**
+   * Checks if purchase order links can be updated based on the invoice status.
+   * @param status - The current status of the invoice.
+   * @returns True if links can be updated, false otherwise.
+   */
   private canUpdateLinks(status: SupplierInvoiceStatus): boolean {
     return status === SupplierInvoiceStatus.DRAFT;
   }
 
+  /**
+   * Validates a status transition for a supplier invoice.
+   * @param invoice - The current supplier invoice.
+   * @param newStatus - The new status to transition to.
+   */
   private validateStatusTransition(
     invoice: SupplierInvoice,
     newStatus: SupplierInvoiceStatus,
@@ -567,6 +727,11 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates the transition to 'PAID' status, checking if the amount paid matches the total.
+   * @param invoice - The supplier invoice.
+   * @param newStatus - The new status to transition to.
+   */
   private async validatePaidStatusTransition(
     invoice: SupplierInvoice,
     newStatus: SupplierInvoiceStatus,
@@ -583,6 +748,10 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates if a supplier invoice can be deleted.
+   * @param invoice - The supplier invoice to validate.
+   */
   private validateDeletion(invoice: SupplierInvoice): void {
     const deletableStatuses = [
       SupplierInvoiceStatus.DRAFT,
@@ -597,6 +766,10 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Validates that there are no pending payments for an invoice before deletion.
+   * @param invoiceId - The ID of the invoice to validate.
+   */
   private async validateNoPendingPayments(invoiceId: number): Promise<void> {
     // TODO: Implement payment validation
     const amountPaid = await this.invoiceRepository.getAmountPaidForInvoice(invoiceId);
@@ -608,10 +781,20 @@ export class SupplierInvoiceService {
   }
 
   // Utility Methods
+  /**
+   * Calculates the total amount for a single line item.
+   * @param quantity - The quantity of the item.
+   * @param unitPrice - The unit price of the item (HT).
+   * @returns The total line amount (HT).
+   */
   private calculateLineTotal(quantity: number, unitPrice: number): number {
     return parseFloat((Number(quantity) * Number(unitPrice)).toFixed(4));
   }
 
+  /**
+   * Validates the integrity of a SupplierInvoice entity.
+   * @param invoice - The SupplierInvoice entity to validate.
+   */
   private validateInvoiceEntity(invoice: SupplierInvoice): void {
     if (!invoice.isValid()) {
       throw new BadRequestError(
@@ -620,6 +803,11 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Maps a SupplierInvoice entity to a SupplierInvoiceApiResponse.
+   * @param invoice - The SupplierInvoice entity.
+   * @returns The mapped SupplierInvoiceApiResponse.
+   */
   private mapToApiResponse(invoice: SupplierInvoice | null): SupplierInvoiceApiResponse {
     if (!invoice) {
       throw new ServerError('Failed to map supplier invoice to API response: invoice is null.');
@@ -627,6 +815,10 @@ export class SupplierInvoiceService {
     return invoice.toApi();
   }
 
+  /**
+   * Returns an array of relations to be loaded with a supplier invoice for detailed responses.
+   * @returns An array of relation strings.
+   */
   private getDetailedRelations(): string[] {
     return [
       'supplier',
@@ -642,6 +834,11 @@ export class SupplierInvoiceService {
     ];
   }
 
+  /**
+   * Retrieves an existing supplier invoice by ID.
+   * @param id - The ID of the supplier invoice.
+   * @returns The SupplierInvoice entity.
+   */
   private async getExistingInvoice(id: number): Promise<SupplierInvoice> {
     const invoice = await this.invoiceRepository.findById(id);
     if (!invoice) {
@@ -650,6 +847,11 @@ export class SupplierInvoiceService {
     return invoice;
   }
 
+  /**
+   * Retrieves a supplier invoice for update operations, including its items and purchase order links.
+   * @param id - The ID of the supplier invoice.
+   * @returns The SupplierInvoice entity with relations.
+   */
   private async getInvoiceForUpdate(id: number): Promise<SupplierInvoice> {
     const invoice = await this.invoiceRepository.findById(id, {
       relations: ['items', 'purchaseOrderLinks'],
@@ -660,6 +862,12 @@ export class SupplierInvoiceService {
     return invoice;
   }
 
+  /**
+   * Retrieves a populated supplier invoice response, including all detailed relations.
+   * @param id - The ID of the supplier invoice.
+   * @param manager - Optional entity manager for transactional operations.
+   * @returns The SupplierInvoiceApiResponse.
+   */
   private async getPopulatedInvoiceResponse(
     id: number,
     manager?: EntityManager,
@@ -688,6 +896,13 @@ export class SupplierInvoiceService {
   }
 
   // Transaction helpers (incomplete methods from original)
+  /**
+   * Updates the header information of a supplier invoice.
+   * @param id - The ID of the supplier invoice to update.
+   * @param input - The update input data.
+   * @param userId - The ID of the user performing the update.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async updateInvoiceHeader(
     id: number,
     input: UpdateSupplierInvoiceInput,
@@ -709,6 +924,13 @@ export class SupplierInvoiceService {
     await repo.update(id, updateData);
   }
 
+  /**
+   * Updates the items associated with a supplier invoice.
+   * This method deletes existing items and recreates them based on the provided input.
+   * @param invoiceId - The ID of the supplier invoice.
+   * @param items - An array of invoice item data.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async updateInvoiceItems(
     invoiceId: number,
     items: any[],
@@ -734,6 +956,13 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Updates the sales order links associated with a supplier invoice.
+   * This method deletes existing links and recreates them based on the provided input.
+   * @param invoiceId - The ID of the supplier invoice.
+   * @param purchaseOrderIds - An array of purchase order IDs to link.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async updatePurchaseOrderLinks(
     invoiceId: number,
     purchaseOrderIds: number[],
@@ -751,6 +980,12 @@ export class SupplierInvoiceService {
     }
   }
 
+  /**
+   * Recalculates and updates the total amounts for a supplier invoice.
+   * @param invoiceId - The ID of the supplier invoice.
+   * @param userId - The ID of the user performing the update.
+   * @param manager - The entity manager for transactional operations.
+   */
   private async recalculateAndUpdateTotals(
     invoiceId: number,
     userId: number,
@@ -775,6 +1010,10 @@ export class SupplierInvoiceService {
     });
   }
 
+  /**
+   * Returns a singleton instance of SupplierInvoiceService.
+   * @returns The singleton instance of SupplierInvoiceService.
+   */
   static getInstance(): SupplierInvoiceService {
     if (!instance) {
       instance = new SupplierInvoiceService();
