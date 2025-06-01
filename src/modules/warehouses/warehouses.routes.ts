@@ -11,7 +11,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { WarehouseService } from './services/warehouse.service';
 import { CreateWarehouseInput, UpdateWarehouseInput } from './models/warehouse.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';

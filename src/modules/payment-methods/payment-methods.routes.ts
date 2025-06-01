@@ -10,7 +10,7 @@ import {
   filterable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { PaymentMethodService } from './services/payment_method.service';
 import { CreatePaymentMethodInput, UpdatePaymentMethodInput } from './models/payment-method.entity';
 import { BadRequestError } from '@/common/errors/httpErrors';

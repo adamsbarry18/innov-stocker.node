@@ -1,19 +1,18 @@
 import { Model } from '@/common/models/Model';
-import logger from '@/lib/logger';
 import { Address, AddressApiResponse } from '@/modules/addresses/models/address.entity';
 import { Currency, CurrencyApiResponse } from '@/modules/currencies/models/currency.entity';
 import { Customer, CustomerApiResponse } from '@/modules/customers/models/customer.entity';
 import { Quote } from '@/modules/quotes/models/quote.entity';
-import {
-  CreateSalesOrderItemInput,
-  SalesOrderItem,
-  SalesOrderItemApiResponse,
-} from '@/modules/sales-order-items/models/sales-order-item.entity';
 import { Shop, ShopApiResponse } from '@/modules/shops/models/shop.entity';
 import { User, UserApiResponse } from '@/modules/users/models/users.entity';
 import { Warehouse, WarehouseApiResponse } from '@/modules/warehouses/models/warehouse.entity';
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany, Index, Unique } from 'typeorm';
 import { z } from 'zod';
+import {
+  CreateSalesOrderItemInput,
+  SalesOrderItem,
+  SalesOrderItemApiResponse,
+} from '../sales-order-items/models/sales-order-item.entity';
 
 export enum SalesOrderStatus {
   DRAFT = 'draft',

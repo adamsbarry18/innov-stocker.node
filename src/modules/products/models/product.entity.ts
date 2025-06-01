@@ -1,5 +1,4 @@
 import { Model } from '@/common/models/Model';
-import { CompositeProductItem } from '@/modules/composite-product-items/models/composite-product-item.entity';
 import { ProductCategory } from '@/modules/product-categories/models/product-category.entity';
 import {
   ProductImage,
@@ -16,6 +15,7 @@ import {
 import { User, UserApiResponse } from '@/modules/users/models/users.entity';
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany, Unique, Index } from 'typeorm';
 import { z } from 'zod';
+import { CompositeProductItem } from '../composite-product-items/models/composite-product-item.entity';
 
 export enum ProductStatus {
   ACTIVE = 'active',

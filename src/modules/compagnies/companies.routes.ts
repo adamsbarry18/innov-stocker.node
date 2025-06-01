@@ -1,7 +1,7 @@
 import { BaseRouter } from '@/common/routing/BaseRouter';
 import { CompanyService } from './services/compagny.service';
 import { authorize, Get, Put } from '@/common/routing/decorators';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { NextFunction, Response, Request } from '@/config/http';
 
 export default class CompanyRouter extends BaseRouter {

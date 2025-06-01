@@ -12,7 +12,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '../../config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { QuoteService } from './services/quote.service';
 import { CreateQuoteInput, UpdateQuoteInput, Quote, QuoteStatus } from './models/quote.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';

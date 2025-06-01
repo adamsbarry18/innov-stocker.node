@@ -12,7 +12,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { PurchaseReceptionService } from './services/purchase-reception.service';
 import {
   CreatePurchaseReceptionInput,

@@ -6,14 +6,14 @@ import { Currency, CurrencyApiResponse } from '../../currencies/models/currency.
 import { Address, AddressApiResponse } from '../../addresses/models/address.entity';
 import { Warehouse, WarehouseApiResponse } from '../../warehouses/models/warehouse.entity';
 import { Shop, ShopApiResponse } from '../../shops/models/shop.entity';
-import { User, UserApiResponse } from '../../users/models/users.entity';
+import { User, UserApiResponse } from '@/modules/users/models/users.entity';
+import logger from '@/lib/logger';
+import { SupplierInvoicePurchaseOrderLink } from '@/modules/supplier-invoices/models/supplier-invoice-purchse-order-link.entity';
 import {
   CreatePurchaseOrderItemInput,
   PurchaseOrderItem,
   PurchaseOrderItemApiResponse,
-} from '@/modules/purchase-order-items/models/purchase-order-item.entity';
-import logger from '@/lib/logger';
-import { SupplierInvoicePurchaseOrderLink } from '@/modules/supplier-invoices/models/supplier-invoice-purchse-order-link.entity';
+} from '../purchase-order-items/models/purchase-order-item.entity';
 
 export enum PurchaseOrderStatus {
   DRAFT = 'draft',

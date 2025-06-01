@@ -1,7 +1,7 @@
 import { BaseRouter } from '@/common/routing/BaseRouter';
 import { authorize, Delete, Get, Patch, Post, Put } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
 import { CreateProductImageInput, UpdateProductImageInput } from './models/product-image.entity';
 import { ProductImageService } from './services/product-image.service';

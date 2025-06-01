@@ -6,7 +6,7 @@ import {
   type CreateAddressInput as BaseCreateAddressInput,
   type AddressApiResponse,
 } from '../../addresses/models/address.entity';
-import { User, UserApiResponse } from '../../users/models/users.entity';
+import { User, UserApiResponse } from '@/modules/users/models/users.entity';
 
 // Zod Schema for validation
 const shopSchemaValidation = z.object({

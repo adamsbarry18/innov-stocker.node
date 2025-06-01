@@ -14,7 +14,6 @@ import logger from '@/lib/logger';
 import { ProductRepository } from '../data/product.repository';
 import { ProductImageRepository } from '@/modules/product-images/data/product-image.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
-import { CompositeProductItemRepository } from '@/modules/composite-product-items/data/composite-product-item.repository';
 import { ProductCategoryRepository } from '@/modules/product-categories/data/product-category.repository';
 import { ProductSupplierRepository } from '@/modules/product-suppliers/data/product-supplier.repository';
 import { SupplierRepository } from '@/modules/suppliers/data/supplier.repository';
@@ -35,7 +34,8 @@ import {
   type ProductSupplier,
   type ProductSupplierApiResponse,
 } from '@/modules/product-suppliers/models/product-supplier.entity';
-import { type CompositeProductItem } from '@/modules/composite-product-items/models/composite-product-item.entity';
+import { CompositeProductItemRepository } from '../composite-product-items/data/composite-product-item.repository';
+import { CompositeProductItem } from '../composite-product-items/models/composite-product-item.entity';
 
 // TODO: Dépendance - Importer StockMovementRepository quand il existera
 // import { StockMovementRepository } from '../../stock-movements/data/stock-movement.repository';

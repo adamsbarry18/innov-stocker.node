@@ -4,7 +4,6 @@ import app from '@/app';
 import { adminToken } from '@/tests/globalSetup';
 import dayjs from 'dayjs';
 import { PurchaseReceptionStatus } from '../models/purchase-reception.entity';
-import logger from '@/lib/logger';
 import { PurchaseOrderStatus } from '@/modules/purchase-orders/models/purchase-order.entity';
 
 describe('Purchase Receptions API', () => {

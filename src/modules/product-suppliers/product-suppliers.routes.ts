@@ -2,7 +2,7 @@ import { BaseRouter } from '@/common/routing/BaseRouter';
 import { ProductSupplierService } from './services/product-supplier.service';
 import { authorize, Delete, Get, Post, Put } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
 import {
   CreateProductSupplierForProductInput,

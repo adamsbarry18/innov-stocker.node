@@ -1,7 +1,7 @@
 import { BaseRouter } from '@/common/routing/BaseRouter';
 import { Get, Post, Put, Delete, Patch, authorize } from '../../common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
 import {
   CreateCustomerShippingAddressInput,

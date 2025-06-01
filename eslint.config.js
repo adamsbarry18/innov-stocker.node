@@ -1,6 +1,7 @@
 // ESLint configuration for a TypeScript (Node.js) project (ESLint v9+)
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import importPlugin from 'eslint-plugin-import';
 
 export default {
   ignores: [
@@ -27,8 +28,20 @@ export default {
   },
   plugins: {
     '@typescript-eslint': tseslint,
+    import: importPlugin,
+  },
+  settings: {
+    'import/resolver': {
+      typescript: {
+        project: './tsconfig.json',
+      },
+    },
   },
   rules: {
+    'import/no-unresolved': 'error', // Active la détection des imports non résolus
+    'import/named': 'error',
+    'import/default': 'error',
+    'import/namespace': 'error',
     // Désactivées car gérées par les règles @typescript-eslint équivalentes et plus précises
     'no-undef': 'off',
     'no-dupe-class-members': 'off',

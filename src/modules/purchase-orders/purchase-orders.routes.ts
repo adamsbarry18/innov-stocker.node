@@ -1,4 +1,4 @@
-import { BaseRouter } from '../../common/routing/BaseRouter';
+import { BaseRouter } from '@/common/routing/BaseRouter';
 import {
   Get,
   Post,
@@ -12,7 +12,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { PurchaseOrderService } from './services/purchase-order.service';
 import {
   CreatePurchaseOrderInput,
@@ -23,7 +23,6 @@ import {
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
 import dayjs from 'dayjs';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
-import { Between, FindOptionsWhere, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 
 export default class PurchaseOrderRouter extends BaseRouter {
   service = PurchaseOrderService.getInstance();
@@ -97,45 +96,14 @@ export default class PurchaseOrderRouter extends BaseRouter {
   @filterable(['supplierId', 'status', 'createdByUserId', 'approvedByUserId'])
   @searchable(['orderNumber', 'supplier.name', 'notes'])
   async getAllPurchaseOrders(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { filters: baseFilters, sort } = buildTypeORMCriteria(req);
+    const { filters, sort } = buildTypeORMCriteria(req);
     const searchTerm = req.searchQuery;
-
-    let effectiveFilters: FindOptionsWhere<PurchaseOrder> | FindOptionsWhere<PurchaseOrder>[] =
-      Array.isArray(baseFilters) ? [...baseFilters] : [{ ...baseFilters }];
-
-    if (req.query.orderDateFrom || req.query.orderDateTo) {
-      const dateFilter: FindOptionsWhere<PurchaseOrder> = {};
-      if (req.query.orderDateFrom && req.query.orderDateTo) {
-        const from = dayjs(req.query.orderDateFrom as string);
-        const to = dayjs(req.query.orderDateTo as string);
-        if (from.isValid() && to.isValid() && from.isBefore(to.add(1, 'day'))) {
-          dateFilter.orderDate = Between(from.toDate(), to.endOf('day').toDate());
-        } else {
-          return next(new BadRequestError('Invalid date range for orderDate.'));
-        }
-      } else if (req.query.orderDateFrom) {
-        const from = dayjs(req.query.orderDateFrom as string);
-        if (from.isValid()) dateFilter.orderDate = MoreThanOrEqual(from.toDate());
-        else return next(new BadRequestError('Invalid orderDateFrom format.'));
-      } else if (req.query.orderDateTo) {
-        const to = dayjs(req.query.orderDateTo as string);
-        if (to.isValid()) dateFilter.orderDate = LessThanOrEqual(to.endOf('day').toDate());
-        else return next(new BadRequestError('Invalid orderDateTo format.'));
-      }
-      if (Array.isArray(effectiveFilters)) {
-        effectiveFilters = effectiveFilters.map((f) => ({ ...f, ...dateFilter }));
-      } else {
-        effectiveFilters = [
-          { ...(effectiveFilters as FindOptionsWhere<PurchaseOrder>), ...dateFilter },
-        ];
-      }
-    }
 
     await this.pipe(res, req, next, () =>
       this.service.findAllPurchaseOrders({
         limit: req.pagination?.limit,
         offset: req.pagination?.offset,
-        filters: effectiveFilters,
+        filters,
         sort,
         searchTerm: searchTerm,
       }),

@@ -1,6 +1,6 @@
 import { BaseRouter } from '@/common/routing/BaseRouter';
 import { ProductVariantService } from './services/product-variant.service';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { authorize, Delete, Get, Post, Put } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
 import {

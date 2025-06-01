@@ -5,7 +5,7 @@ import {
   CreateDeliveryItemInput,
   DeliveryItem,
   DeliveryItemApiResponse,
-} from '@/modules/delivery-items/models/delivery-item.entity';
+} from '../delivery-items/models/delivery-item.entity';
 import { Address, AddressApiResponse } from '@/modules/addresses/models/address.entity';
 import { Warehouse, WarehouseApiResponse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop, ShopApiResponse } from '@/modules/shops/models/shop.entity';

@@ -1,4 +1,4 @@
-import { appDataSource } from '../../../database/data-source';
+import { appDataSource } from '@/database/data-source';
 import { v4 as uuidv4 } from 'uuid';
 import { IsNull, type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';
 import { DeliveryRepository } from '../data/delivery.repository';
@@ -23,18 +23,18 @@ import {
   BadRequestError,
   ServerError,
   ForbiddenError,
-} from '../../../common/errors/httpErrors';
-import logger from '../../../lib/logger';
+} from '@/common/errors/httpErrors';
+import logger from '@/lib/logger';
 import dayjs from 'dayjs';
-import { DeliveryItemRepository } from '@/modules/delivery-items/data/delivery-item.repository';
 import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
-import { SalesOrderItemRepository } from '@/modules/sales-order-items/data/sales-order-item.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop } from '@/modules/shops/models/shop.entity';
-import { SalesOrderItem } from '@/modules/sales-order-items/models/sales-order-item.entity';
-import { DeliveryItem } from '@/modules/delivery-items/models/delivery-item.entity';
+import { DeliveryItemRepository } from '../delivery-items/data/delivery-item.repository';
+import { SalesOrderItemRepository } from '@/modules/sales-orders/sales-order-items/data/sales-order-item.repository';
+import { DeliveryItem } from '../delivery-items/models/delivery-item.entity';
+import { SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
 
 let instance: DeliveryService | null = null;
 
