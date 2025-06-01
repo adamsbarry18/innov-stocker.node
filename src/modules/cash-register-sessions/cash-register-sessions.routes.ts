@@ -9,7 +9,7 @@ import {
   filterable,
 } from '../../common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import {
   OpenCashRegisterSessionInput,
   CloseCashRegisterSessionInput,

@@ -8,10 +8,10 @@ import {
   ILike,
   type EntityManager,
 } from 'typeorm';
-import { appDataSource } from '../../../database/data-source';
+import { appDataSource } from '@/database/data-source';
 import { SupplierInvoice } from '../models/supplier-invoice.entity';
-import { ServerError, BadRequestError } from '../../../common/errors/httpErrors';
-import logger from '../../../lib/logger';
+import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
+import logger from '@/lib/logger';
 
 interface FindAllSupplierInvoicesOptions {
   skip?: number;

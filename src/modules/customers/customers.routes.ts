@@ -11,7 +11,7 @@ import {
   searchable,
 } from '../../common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { CustomerService } from './services/customer.service';
 import { CustomerShippingAddressService } from './services/customer-shipping-address.service';
 import { CreateCustomerInput, UpdateCustomerInput } from './models/customer.entity';

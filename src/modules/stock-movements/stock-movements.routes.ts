@@ -9,7 +9,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { StockMovementService } from './services/stock-movement.service';
 import { CreateStockMovementInput, StockMovementType } from './models/stock-movement.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';

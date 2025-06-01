@@ -25,9 +25,9 @@ import {
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
 import { PurchaseOrderRepository } from '../data/purchase-order.repository';
-import { PurchaseOrderItemRepository } from '@/modules/purchase-order-items/data/purchase-order-item.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
-import { PurchaseOrderItem } from '@/modules/purchase-order-items/models/purchase-order-item.entity';
+import { PurchaseOrderItemRepository } from '../purchase-order-items/data/purchase-order-item.repository';
+import { PurchaseOrderItem } from '../purchase-order-items/models/purchase-order-item.entity';
 
 // TODO: Dépendance - Importer PurchaseReceptionRepository, SupplierInvoiceRepository pour les vérifications
 // import { PurchaseReceptionRepository } from '../../purchase-receptions/data/purchase_reception.repository';

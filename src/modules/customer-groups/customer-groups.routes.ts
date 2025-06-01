@@ -11,7 +11,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { BadRequestError } from '@/common/errors/httpErrors';
 import { CustomerGroupService } from './services/customer-group.service';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';

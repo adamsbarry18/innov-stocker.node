@@ -12,7 +12,7 @@ import { Request, Response, NextFunction } from '@/config/http';
 
 import { LoginService } from './services/login.services';
 import { PasswordService } from './services/password.services';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { AuthorizationService } from './services/authorization.service';
 import logger from '@/lib/logger';
 import config from '@/config';

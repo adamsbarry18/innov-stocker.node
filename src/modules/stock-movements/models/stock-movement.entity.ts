@@ -4,7 +4,7 @@ import { Model } from '@/common/models/Model';
 import { Product } from '../../products/models/product.entity';
 import { Warehouse } from '../../warehouses/models/warehouse.entity';
 import { Shop } from '../../shops/models/shop.entity';
-import { User, UserApiResponse } from '../../users/models/users.entity';
+import { User, UserApiResponse } from '@/modules/users/models/users.entity';
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
 
 // Types de mouvements de stock

@@ -1,4 +1,4 @@
-import { BaseRouter } from '../../common/routing/BaseRouter';
+import { BaseRouter } from '@/common/routing/BaseRouter';
 import {
   Get,
   Post,
@@ -10,16 +10,16 @@ import {
   sortable,
   filterable,
   searchable,
-} from '../../common/routing/decorators';
+} from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '../../config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { SupplierInvoiceService } from './services/supplier-invoice.service';
 import {
   CreateSupplierInvoiceInput,
   UpdateSupplierInvoiceInput,
   SupplierInvoiceStatus,
 } from './models/supplier-invoice.entity';
-import { BadRequestError, UnauthorizedError } from '../../common/errors/httpErrors';
+import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 
 export default class SupplierInvoiceRouter extends BaseRouter {

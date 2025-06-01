@@ -11,7 +11,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { BankAccountService } from './services/bank-account.service';
 import { CreateBankAccountInput, UpdateBankAccountInput } from './models/bank-account.entity';
 import { BadRequestError } from '@/common/errors/httpErrors';

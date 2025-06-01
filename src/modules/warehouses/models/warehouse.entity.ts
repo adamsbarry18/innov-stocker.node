@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn, Unique, Index } from 'typeorm';
 import { z } from 'zod';
 import { Model } from '@/common/models/Model';
 import { Address } from '../../addresses/models/address.entity';
-import { User } from '../../users/models/users.entity';
+import { User } from '@/modules/users/models/users.entity';
 
 // Zod Schema for validation
 const warehouseSchemaValidation = z.object({

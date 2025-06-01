@@ -15,7 +15,7 @@ import {
   CreateProductCategoryInput,
   UpdateProductCategoryInput,
 } from './models/product-category.entity';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 import { BaseRouter } from '@/common/routing/BaseRouter';
 

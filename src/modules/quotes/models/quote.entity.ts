@@ -4,12 +4,12 @@ import { Model } from '@/common/models/Model';
 import { Customer, CustomerApiResponse } from '../../customers/models/customer.entity';
 import { Currency, CurrencyApiResponse } from '../../currencies/models/currency.entity';
 import { Address, AddressApiResponse } from '../../addresses/models/address.entity';
-import { User, UserApiResponse } from '../../users/models/users.entity';
+import { User, UserApiResponse } from '@/modules/users/models/users.entity';
 import {
   CreateQuoteItemInput,
   QuoteItem,
   QuoteItemApiResponse,
-} from '@/modules/quote-items/models/quote-item.entity';
+} from '../quote-items/models/quote-item.entity';
 
 export enum QuoteStatus {
   DRAFT = 'draft',

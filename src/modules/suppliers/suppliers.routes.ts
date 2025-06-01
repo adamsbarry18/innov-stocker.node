@@ -11,7 +11,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { SupplierService } from './services/supplier.service';
 import { CreateSupplierInput, UpdateSupplierInput, Supplier } from './models/supplier.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';

@@ -24,11 +24,8 @@ import {
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
-import { QuoteItemRepository } from '@/modules/quote-items/data/quote-item.repository';
-import {
-  QuoteItem,
-  quoteItemValidationInputErrors,
-} from '@/modules/quote-items/models/quote-item.entity';
+import { QuoteItemRepository } from '../quote-items/data/quote-item.repository';
+import { QuoteItem, quoteItemValidationInputErrors } from '../quote-items/models/quote-item.entity';
 
 // TODO: Dépendance - Importer SalesOrderService pour la conversion
 // import { SalesOrderService } from '../../sales-orders/services/sales_order.service';
@@ -206,7 +203,7 @@ export class QuoteService {
           }
         }
 
-        const itemEntity = itemRepoTx.create({
+        const itemEntity: any = itemRepoTx.create({
           ...itemInput,
           quoteId: savedQuote.id, // Link to the saved quote
           description:

@@ -11,7 +11,7 @@ import {
   searchable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '../../config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { CreateCashRegisterInput, UpdateCashRegisterInput } from './models/cash-register.entity';
 import { BadRequestError } from '@/common/errors/httpErrors';
 import { CashRegisterService } from './services/cash-register.service';

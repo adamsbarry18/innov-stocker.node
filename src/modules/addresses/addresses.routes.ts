@@ -13,7 +13,7 @@ import {
   sortable,
 } from '@/common/routing/decorators';
 import { NextFunction, Response, Request } from '@/config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { BadRequestError } from '@/common/errors/httpErrors';
 
 export default class AddressRouter extends BaseRouter {

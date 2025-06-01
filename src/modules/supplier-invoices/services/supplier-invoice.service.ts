@@ -10,10 +10,6 @@ import {
 } from '../models/supplier-invoice.entity';
 import { SupplierInvoicePurchaseOrderLink } from '../models/supplier-invoice-purchse-order-link.entity';
 import {
-  type CreateSupplierInvoiceItemInput,
-  SupplierInvoiceItem,
-} from '@/modules/supplier-invoice-items/models/supplier-invoice-item.entity';
-import {
   NotFoundError,
   BadRequestError,
   ServerError,
@@ -24,7 +20,6 @@ import dayjs from 'dayjs';
 
 // Repositories
 import { SupplierInvoiceRepository } from '../data/supplier-invoice.repository';
-import { SupplierInvoiceItemRepository } from '../../supplier-invoice-items/data/supplier-invoice-item.repository';
 import { SupplierInvoicePurchaseOrderLinkRepository } from '../data/supplier-invoice-purchase-order-link.repo';
 import { SupplierRepository } from '@/modules/suppliers/data/supplier.repository';
 import { CurrencyRepository } from '@/modules/currencies/data/currency.repository';
@@ -32,15 +27,20 @@ import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { UserRepository } from '@/modules/users';
 import { PurchaseOrderRepository } from '@/modules/purchase-orders/data/purchase-order.repository';
-import { PurchaseReceptionItemRepository } from '@/modules/purchase-reception-items/data/purchase-reception-item.repository';
 
 // Entities for transactional access
 import { Supplier } from '@/modules/suppliers/models/supplier.entity';
 import { Currency } from '@/modules/currencies/models/currency.entity';
 import { Product } from '@/modules/products/models/product.entity';
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
-import { PurchaseReceptionItem } from '@/modules/purchase-reception-items/models/purchase-reception-item.entity';
 import { PurchaseOrder } from '@/modules/purchase-orders/models/purchase-order.entity';
+import { SupplierInvoiceItemRepository } from '../supplier-invoice-items/data/supplier-invoice-item.repository';
+import { PurchaseReceptionItemRepository } from '@/modules/purchase-receptions/purchase-reception-items/data/purchase-reception-item.repository';
+import { PurchaseReceptionItem } from '@/modules/purchase-receptions/purchase-reception-items/models/purchase-reception-item.entity';
+import {
+  CreateSupplierInvoiceItemInput,
+  SupplierInvoiceItem,
+} from '../supplier-invoice-items/models/supplier-invoice-item.entity';
 
 interface ValidationContext {
   isUpdate: boolean;

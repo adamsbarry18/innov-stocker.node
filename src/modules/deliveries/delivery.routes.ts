@@ -12,7 +12,7 @@ import {
   searchable,
 } from '../../common/routing/decorators';
 import { Request, Response, NextFunction } from '../../config/http';
-import { SecurityLevel } from '../users/models/users.entity';
+import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { DeliveryService } from './services/delivery.service';
 import { CreateDeliveryInput, UpdateDeliveryInput } from './models/delivery.entity';
 import { BadRequestError, UnauthorizedError } from '../../common/errors/httpErrors';

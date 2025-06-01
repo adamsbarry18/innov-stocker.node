@@ -1,7 +1,7 @@
 import { type DataSource, type Repository, type EntityManager, type DeleteResult } from 'typeorm';
-import { appDataSource } from '../../../database/data-source';
-import { ServerError, BadRequestError } from '../../../common/errors/httpErrors';
-import logger from '../../../lib/logger';
+import { appDataSource } from '@/database/data-source';
+import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
+import logger from '@/lib/logger';
 import { SupplierInvoicePurchaseOrderLink } from '../models/supplier-invoice-purchse-order-link.entity';
 
 export class SupplierInvoicePurchaseOrderLinkRepository {

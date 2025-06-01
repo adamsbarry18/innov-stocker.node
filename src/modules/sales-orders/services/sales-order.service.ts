@@ -32,12 +32,12 @@ import {
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
 import { SalesOrderRepository } from '../data/sales-order.repository';
-import { SalesOrderItemRepository } from '@/modules/sales-order-items/data/sales-order-item.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
+import { SalesOrderItemRepository } from '../sales-order-items/data/sales-order-item.repository';
 import {
-  type CreateSalesOrderItemInput,
+  CreateSalesOrderItemInput,
   SalesOrderItem,
-} from '@/modules/sales-order-items/models/sales-order-item.entity';
+} from '../sales-order-items/models/sales-order-item.entity';
 
 // TODO: Dépendance - Importer StockMovementService (ou équivalent) pour la réservation/vérification de stock
 // import { StockService } from '../../stock/services/stock.service';

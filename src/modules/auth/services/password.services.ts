@@ -17,7 +17,7 @@ import { getRedisClient, redisClient } from '@/lib/redis';
 import { renderTemplate } from '@/locales/emails';
 
 import { UserRepository } from '../../users/data/users.repository';
-import { type User, PasswordStatus } from '../../users/models/users.entity';
+import { type User, PasswordStatus } from '@/modules/users/models/users.entity';
 
 const CONFIRM_CODE_EXPIRE_SECONDS = 60 * 60 * 24 * 3; // 3 days
 const BCRYPT_SALT_ROUNDS = 10;

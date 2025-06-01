@@ -20,22 +20,22 @@ import { CashRegisterSession } from '@/modules/cash-register-sessions/models/cas
 import { Product } from '@/modules/products/models/product.entity';
 import { ProductImage } from '@/modules/product-images/models/product-image.entity';
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
-import { CompositeProductItem } from '@/modules/composite-product-items/models/composite-product-item.entity';
 import { ProductSupplier } from '@/modules/product-suppliers/models/product-supplier.entity';
 import { Quote } from '@/modules/quotes/models/quote.entity';
-import { QuoteItem } from '@/modules/quote-items/models/quote-item.entity';
 import { PurchaseOrder } from '@/modules/purchase-orders/models/purchase-order.entity';
-import { PurchaseOrderItem } from '@/modules/purchase-order-items/models/purchase-order-item.entity';
 import { PurchaseReception } from '@/modules/purchase-receptions/models/purchase-reception.entity';
-import { PurchaseReceptionItem } from '@/modules/purchase-reception-items/models/purchase-reception-item.entity';
 import { StockMovement } from '@/modules/stock-movements/models/stock-movement.entity';
-import { SalesOrderItem } from '@/modules/sales-order-items/models/sales-order-item.entity';
 import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
 import { Delivery } from '@/modules/deliveries/models/delivery.entity';
-import { DeliveryItem } from '@/modules/delivery-items/models/delivery-item.entity';
 import { SupplierInvoice } from '@/modules/supplier-invoices/models/supplier-invoice.entity';
-import { SupplierInvoiceItem } from '@/modules/supplier-invoice-items/models/supplier-invoice-item.entity';
 import { SupplierInvoicePurchaseOrderLink } from '@/modules/supplier-invoices/models/supplier-invoice-purchse-order-link.entity';
+import { CompositeProductItem } from '@/modules/products/composite-product-items/models/composite-product-item.entity';
+import { QuoteItem } from '@/modules/quotes/quote-items/models/quote-item.entity';
+import { PurchaseOrderItem } from '@/modules/purchase-orders/purchase-order-items/models/purchase-order-item.entity';
+import { PurchaseReceptionItem } from '@/modules/purchase-receptions/purchase-reception-items/models/purchase-reception-item.entity';
+import { SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
+import { DeliveryItem } from '@/modules/deliveries/delivery-items/models/delivery-item.entity';
+import { SupplierInvoiceItem } from '@/modules/supplier-invoices/supplier-invoice-items/models/supplier-invoice-item.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,

@@ -1,15 +1,15 @@
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany, Index, Unique } from 'typeorm';
 import { z } from 'zod';
-import { Model } from '../../../common/models/Model';
-import {
-  CreateSupplierInvoiceItemInput,
-  SupplierInvoiceItem,
-  SupplierInvoiceItemApiResponse,
-} from '@/modules/supplier-invoice-items/models/supplier-invoice-item.entity';
+import { Model } from '@/common/models/Model';
 import { Supplier, SupplierApiResponse } from '@/modules/suppliers/models/supplier.entity';
 import { Currency, CurrencyApiResponse } from '@/modules/currencies/models/currency.entity';
 import { User, UserApiResponse } from '@/modules/users/models/users.entity';
 import { SupplierInvoicePurchaseOrderLink } from './supplier-invoice-purchse-order-link.entity';
+import {
+  CreateSupplierInvoiceItemInput,
+  SupplierInvoiceItem,
+  SupplierInvoiceItemApiResponse,
+} from '../supplier-invoice-items/models/supplier-invoice-item.entity';
 
 export enum SupplierInvoiceStatus {
   DRAFT = 'draft',
