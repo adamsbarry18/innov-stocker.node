@@ -566,7 +566,7 @@ CREATE TABLE `purchase_orders` (
     `shipping_address_id` INT DEFAULT NULL,
     `warehouse_id_for_delivery` INT DEFAULT NULL,
     `shop_id_for_delivery` INT DEFAULT NULL,
-    `created_by_user_id` INT NOT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
     `approved_by_user_id` INT DEFAULT NULL,
     `updated_by_user_id` INT DEFAULT NULL, -- Added for consistency with Model pattern
     `notes` TEXT DEFAULT NULL,
@@ -579,7 +579,7 @@ CREATE TABLE `purchase_orders` (
     CONSTRAINT `fk_po_shipping_address` FOREIGN KEY (`shipping_address_id`) REFERENCES `addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_po_warehouse` FOREIGN KEY (`warehouse_id_for_delivery`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_po_shop` FOREIGN KEY (`shop_id_for_delivery`) REFERENCES `shops` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT `fk_po_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `fk_po_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_po_approved_by` FOREIGN KEY (`approved_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_po_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -749,13 +749,13 @@ CREATE TABLE `supplier_returns` (
     `return_date` DATE NOT NULL,
     `status` VARCHAR(30) DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved, shipped, received_by_supplier, refunded, exchanged, cancelled
     `reason` TEXT DEFAULT NULL,
-    `created_by_user_id` INT NOT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `return_number_unique` (`return_number`),
     CONSTRAINT `fk_sr_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_sr_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `fk_sr_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -799,7 +799,7 @@ CREATE TABLE `quotes` (
     `total_amount_ttc` DECIMAL(15, 4) DEFAULT 0.0000,
     `shipping_address_id` INT DEFAULT NULL,
     `billing_address_id` INT NOT NULL,
-    `created_by_user_id` INT NOT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
     `updated_by_user_id` INT DEFAULT NULL, -- Added for consistency with Model pattern
     `notes` TEXT DEFAULT NULL,
     `terms_and_conditions` TEXT DEFAULT NULL,
@@ -811,7 +811,7 @@ CREATE TABLE `quotes` (
     CONSTRAINT `fk_q_currency` FOREIGN KEY (`currency_id`) REFERENCES `currencies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_q_shipping_address` FOREIGN KEY (`shipping_address_id`) REFERENCES `addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_q_billing_address` FOREIGN KEY (`billing_address_id`) REFERENCES `addresses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_q_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `fk_q_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_q_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -860,7 +860,7 @@ CREATE TABLE `sales_orders` (
     `billing_address_id` INT NOT NULL,
     `dispatch_warehouse_id` INT DEFAULT NULL,
     `dispatch_shop_id` INT DEFAULT NULL,
-    `created_by_user_id` INT NOT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
     `updated_by_user_id` INT DEFAULT NULL, -- Added for consistency with Model pattern
     `notes` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -874,7 +874,7 @@ CREATE TABLE `sales_orders` (
     CONSTRAINT `fk_so_billing_address` FOREIGN KEY (`billing_address_id`) REFERENCES `addresses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_so_warehouse` FOREIGN KEY (`dispatch_warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_so_shop` FOREIGN KEY (`dispatch_shop_id`) REFERENCES `shops` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT `fk_so_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `fk_so_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_so_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -973,7 +973,9 @@ CREATE TABLE `customer_invoices` (
     `total_amount_ttc` DECIMAL(15, 4) NOT NULL,
     `amount_paid` DECIMAL(15, 4) DEFAULT 0.0000 NOT NULL,
     `billing_address_id` INT NOT NULL,
-    `created_by_user_id` INT NOT NULL,
+    `shipping_address_id` INT DEFAULT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
+    `updated_by_user_id` INT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
     `terms_and_conditions` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -983,7 +985,9 @@ CREATE TABLE `customer_invoices` (
     CONSTRAINT `fk_ci_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_ci_currency` FOREIGN KEY (`currency_id`) REFERENCES `currencies` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_ci_billing_address` FOREIGN KEY (`billing_address_id`) REFERENCES `addresses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_ci_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `fk_ci_shipping_address` FOREIGN KEY (`shipping_address_id`) REFERENCES `addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_ci_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_ci_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -1004,6 +1008,9 @@ CREATE TABLE `customer_invoice_items` (
     `total_line_amount_ht` DECIMAL(15, 4) DEFAULT 0.0000, -- Application to calculate
     `delivery_item_id` BIGINT DEFAULT NULL,
     `sales_order_item_id` BIGINT DEFAULT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT `fk_cii_invoice` FOREIGN KEY (`customer_invoice_id`) REFERENCES `customer_invoices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_cii_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_cii_variant` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -1041,7 +1048,7 @@ CREATE TABLE `customer_returns` (
     `return_date` DATE NOT NULL,
     `status` VARCHAR(30) DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved, pending_reception, received, inspected, refunded, exchanged, rejected, cancelled
     `reason` TEXT DEFAULT NULL,
-    `created_by_user_id` INT NOT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -1049,7 +1056,7 @@ CREATE TABLE `customer_returns` (
     CONSTRAINT `fk_cr_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_cr_order` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_cr_invoice` FOREIGN KEY (`customer_invoice_id`) REFERENCES `customer_invoices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT `fk_cr_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `fk_cr_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------

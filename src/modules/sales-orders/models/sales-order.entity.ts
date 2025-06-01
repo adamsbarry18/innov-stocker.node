@@ -13,6 +13,7 @@ import {
   SalesOrderItem,
   SalesOrderItemApiResponse,
 } from '../sales-order-items/models/sales-order-item.entity';
+import { CustomerInvoiceSalesOrderLink } from '@/modules/customer-invoices/models/customer-invoice-sales-order-link.entity';
 
 export enum SalesOrderStatus {
   DRAFT = 'draft',
@@ -206,6 +207,9 @@ export class SalesOrder extends Model {
   @ManyToOne(() => User, { eager: false, onDelete: 'SET NULL', nullable: true }) // Eager false
   @JoinColumn({ name: 'updated_by_user_id' })
   updatedByUser?: User | null;
+
+  @OneToMany(() => CustomerInvoiceSalesOrderLink, (link) => link.salesOrder)
+  customerInvoiceLinks!: CustomerInvoiceSalesOrderLink[];
 
   calculateTotals(): void {
     this.totalAmountHt = 0;

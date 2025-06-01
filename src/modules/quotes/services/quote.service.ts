@@ -6,7 +6,7 @@ import { CurrencyRepository } from '../../currencies/data/currency.repository';
 import { AddressRepository } from '../../addresses/data/address.repository';
 import { ProductRepository } from '../../products/data/product.repository';
 import { UserRepository } from '../../users/data/users.repository';
-
+import { v4 as uuidv4 } from 'uuid';
 import {
   Quote,
   type CreateQuoteInput,
@@ -72,17 +72,7 @@ export class QuoteService {
 
   private async generateQuoteNumber(): Promise<string> {
     const datePrefix = dayjs().format('YYYYMMDD');
-    const prefix = `QT-${datePrefix}-`;
-
-    const lastNumberStr = await this.quoteRepository.findLastQuoteNumber(prefix);
-    let nextSeq = 1;
-    if (lastNumberStr) {
-      const lastSeq = parseInt(lastNumberStr.substring(prefix.length), 10);
-      if (!isNaN(lastSeq)) {
-        nextSeq = lastSeq + 1;
-      }
-    }
-    return `${prefix}${String(nextSeq).padStart(4, '0')}`;
+    return `QT-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }
 
   async findById(id: number, requestingUserId: number): Promise<QuoteApiResponse> {
