@@ -457,14 +457,17 @@ CREATE TABLE `inventory_sessions` (
     `start_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     `end_date` TIMESTAMP NULL DEFAULT NULL,
     `status` VARCHAR(20) DEFAULT 'pending' NOT NULL, -- Possible values: pending, in_progress, completed, cancelled
-    `initiated_by_user_id` INT NOT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
+    `updated_by_user_id` INT DEFAULT NULL,
     `validated_by_user_id` INT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_is_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_is_shop` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_is_initiated_by` FOREIGN KEY (`initiated_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `fk_is_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_is_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_is_validated_by` FOREIGN KEY (`validated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
@@ -483,6 +486,9 @@ CREATE TABLE `inventory_session_items` (
     `variance_quantity` DECIMAL(15, 3) DEFAULT 0.000, -- Application to calculate: counted - theoretical
     `unit_cost_at_inventory` DECIMAL(15, 4) DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `inventory_item_unique` (
         `inventory_session_id`,
         `product_id`,

@@ -320,7 +320,7 @@ INSERT INTO customer_return_items (id, customer_return_id, product_id, product_v
 -- -----------------------------------------------------
 -- Table inventory_sessions
 -- -----------------------------------------------------
-INSERT INTO inventory_sessions (id, warehouse_id, shop_id, start_date, end_date, status, initiated_by_user_id, validated_by_user_id, notes, created_time, updated_time) VALUES
+INSERT INTO inventory_sessions (id, warehouse_id, shop_id, start_date, end_date, status, created_by_user_id, validated_by_user_id, notes, created_time, updated_time) VALUES
 (1, 1, NULL, '2025-06-01 08:00:00', '2025-06-01 17:00:00', 'completed', 1, 1, 'Inventaire annuel Entrepôt Principal Paris Sud - Terminé', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (2, NULL, 1, '2025-06-05 09:00:00', NULL, 'in_progress', 2, NULL, 'Inventaire tournant Boutique Nantes', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 

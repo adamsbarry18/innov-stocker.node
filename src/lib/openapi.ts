@@ -30,6 +30,7 @@ import {
   stockMovementSchemas,
   supplierInvoiceSchemas,
   customerInvoiceSchemas,
+  inventorySessionSchemas,
 } from './openapi-schemas';
 
 const swaggerDefinition = {
@@ -80,6 +81,7 @@ const swaggerDefinition = {
       ...stockMovementSchemas,
       ...supplierInvoiceSchemas,
       ...customerInvoiceSchemas,
+      ...inventorySessionSchemas,
       ErrorResponse: {
         type: 'object',
         properties: {
