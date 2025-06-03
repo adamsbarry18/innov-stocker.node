@@ -23,7 +23,6 @@ export default {
     parserOptions: {
       project: './tsconfig.json',
       sourceType: 'module',
-      ecmaVersion: 2022,
     },
   },
   plugins: {

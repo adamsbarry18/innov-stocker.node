@@ -56,14 +56,14 @@ export class PurchaseOrderItem extends Model {
   @Column({ type: 'int', name: 'product_id' })
   productId!: number;
 
-  @ManyToOne(() => Product, { eager: true, onDelete: 'RESTRICT' })
+  @ManyToOne(() => Product, { eager: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'product_id' })
   product!: Product;
 
   @Column({ type: 'int', name: 'product_variant_id', nullable: true })
   productVariantId: number | null = null;
 
-  @ManyToOne(() => ProductVariant, { eager: true, onDelete: 'RESTRICT', nullable: true })
+  @ManyToOne(() => ProductVariant, { eager: false, onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'product_variant_id' })
   productVariant: ProductVariant | null = null;
 
