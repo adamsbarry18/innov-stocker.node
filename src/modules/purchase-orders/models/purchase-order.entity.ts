@@ -108,7 +108,7 @@ export class PurchaseOrder extends Model {
   @Column({ type: 'int', name: 'supplier_id' })
   supplierId!: number;
 
-  @ManyToOne(() => Supplier, { eager: true, onDelete: 'RESTRICT' })
+  @ManyToOne(() => Supplier, { eager: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'supplier_id' })
   supplier!: Supplier;
 
@@ -129,7 +129,7 @@ export class PurchaseOrder extends Model {
   @Column({ type: 'int', name: 'currency_id' })
   currencyId!: number;
 
-  @ManyToOne(() => Currency, { eager: true, onDelete: 'RESTRICT' })
+  @ManyToOne(() => Currency, { eager: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'currency_id' })
   currency!: Currency;
 
@@ -145,21 +145,21 @@ export class PurchaseOrder extends Model {
   @Column({ type: 'int', name: 'shipping_address_id', nullable: true })
   shippingAddressId: number | null = null;
 
-  @ManyToOne(() => Address, { eager: true, onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => Address, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'shipping_address_id' })
   shippingAddress: Address | null = null;
 
   @Column({ type: 'int', name: 'warehouse_id_for_delivery', nullable: true })
   warehouseIdForDelivery: number | null = null;
 
-  @ManyToOne(() => Warehouse, { eager: true, onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => Warehouse, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'warehouse_id_for_delivery' })
   warehouseForDelivery: Warehouse | null = null;
 
   @Column({ type: 'int', name: 'shop_id_for_delivery', nullable: true })
   shopIdForDelivery: number | null = null;
 
-  @ManyToOne(() => Shop, { eager: true, onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => Shop, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'shop_id_for_delivery' })
   shopForDelivery: Shop | null = null;
 
@@ -168,7 +168,7 @@ export class PurchaseOrder extends Model {
 
   @OneToMany(() => PurchaseOrderItem, (item) => item.purchaseOrder, {
     cascade: ['insert', 'update', 'remove'],
-    eager: true,
+    eager: false,
   })
   items!: PurchaseOrderItem[];
 
@@ -178,14 +178,14 @@ export class PurchaseOrder extends Model {
   @Column({ type: 'int', name: 'created_by_user_id' })
   createdByUserId!: number;
 
-  @ManyToOne(() => User, { eager: true, onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { eager: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'created_by_user_id' })
   createdByUser!: User;
 
   @Column({ type: 'int', name: 'approved_by_user_id', nullable: true })
   approvedByUserId: number | null = null;
 
-  @ManyToOne(() => User, { eager: true, onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => User, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'approved_by_user_id' })
   approvedByUser: User | null = null;
 
@@ -193,7 +193,7 @@ export class PurchaseOrder extends Model {
   updatedByUserId: number | null = null;
   // Note: SQL schema doesn't have updated_by_user_id for purchase_orders, but Model expects it.
   // If you add it to SQL:
-  // @ManyToOne(() => User, { eager: true, onDelete: 'SET NULL', nullable: true })
+  // @ManyToOne(() => User, { eager: false, onDelete: 'SET NULL', nullable: true })
   // @JoinColumn({ name: 'updated_by_user_id' })
   // updatedByUser: User | null = null;
 

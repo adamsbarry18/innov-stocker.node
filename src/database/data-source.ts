@@ -43,6 +43,7 @@ import { InventorySession } from '@/modules/inventory-sessions/models/inventory-
 import { InventorySessionItem } from '@/modules/inventory-sessions/inventory-session-items/models/inventory-session-item.entity';
 import { StockTransfer } from '@/modules/stock-transfers/models/stock-transfer.entity';
 import { StockTransferItem } from '@/modules/stock-transfers/stock-transfer-items/models/stock-transfer-item.entity';
+import { Payment } from '@/modules/payments/models/payment.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -76,6 +77,7 @@ export const appDataSourceOptions: DataSourceOptions = {
     ProductSupplier,
     QuoteItem,
     Quote,
+    Payment,
     PurchaseOrder,
     PurchaseOrderItem,
     PurchaseReception,
