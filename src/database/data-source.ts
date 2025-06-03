@@ -41,6 +41,8 @@ import { CustomerInvoiceItem } from '@/modules/customer-invoices/customer-invoic
 import { CustomerInvoiceSalesOrderLink } from '../modules/customer-invoices/models/customer-invoice-sales-order-link.entity';
 import { InventorySession } from '@/modules/inventory-sessions/models/inventory-session.entity';
 import { InventorySessionItem } from '@/modules/inventory-sessions/inventory-session-items/models/inventory-session-item.entity';
+import { StockTransfer } from '@/modules/stock-transfers/models/stock-transfer.entity';
+import { StockTransferItem } from '@/modules/stock-transfers/stock-transfer-items/models/stock-transfer-item.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -91,6 +93,8 @@ export const appDataSourceOptions: DataSourceOptions = {
     CustomerInvoiceSalesOrderLink,
     InventorySession,
     InventorySessionItem,
+    StockTransfer,
+    StockTransferItem,
   ],
   migrations: [],
   subscribers: [],

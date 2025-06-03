@@ -1,0 +1,232 @@
+import {
+  type Repository,
+  type DataSource,
+  type FindOptionsWhere,
+  IsNull,
+  type UpdateResult,
+  type FindManyOptions,
+  ILike,
+  type EntityManager,
+} from 'typeorm';
+import { appDataSource } from '@/database/data-source';
+import { StockTransfer } from '../models/stock-transfer.entity';
+import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
+import logger from '@/lib/logger';
+
+interface FindAllStockTransfersOptions {
+  skip?: number;
+  take?: number;
+  where?: FindOptionsWhere<StockTransfer> | FindOptionsWhere<StockTransfer>[];
+  order?: FindManyOptions<StockTransfer>['order'];
+  relations?: string[];
+  searchTerm?: string;
+}
+
+export class StockTransferRepository {
+  private readonly repository: Repository<StockTransfer>;
+
+  constructor(dataSource: DataSource = appDataSource) {
+    this.repository = dataSource.getRepository(StockTransfer);
+  }
+
+  private getDefaultRelationsForFindOne(): string[] {
+    return [
+      'sourceWarehouse',
+      'sourceShop',
+      'destinationWarehouse',
+      'destinationShop',
+      'items',
+      'items.product',
+      'items.productVariant',
+      'requestedByUser',
+      'shippedByUser',
+      'receivedByUser',
+      // 'createdByUser', // From Model, overlaps with requestedByUser
+      // 'updatedByUser', // From Model
+    ];
+  }
+
+  private getDefaultRelationsForFindAll(): string[] {
+    return [
+      'sourceWarehouse',
+      'sourceShop',
+      'destinationWarehouse',
+      'destinationShop',
+      'requestedByUser',
+    ];
+  }
+
+  async findById(
+    id: number,
+    options?: { relations?: string[]; transactionalEntityManager?: EntityManager },
+  ): Promise<StockTransfer | null> {
+    try {
+      const repo = options?.transactionalEntityManager
+        ? options.transactionalEntityManager.getRepository(StockTransfer)
+        : this.repository;
+      return await repo.findOne({
+        where: { id, deletedAt: IsNull() },
+        relations:
+          options?.relations === undefined
+            ? this.getDefaultRelationsForFindOne()
+            : options.relations,
+      });
+    } catch (error) {
+      logger.error(
+        { message: `Error finding stock transfer with id ${id}`, error },
+        'StockTransferRepository.findById',
+      );
+      throw new ServerError(`Error finding stock transfer with id ${id}.`);
+    }
+  }
+
+  async findByTransferNumber(transferNumber: string): Promise<StockTransfer | null> {
+    try {
+      return await this.repository.findOne({
+        where: { transferNumber, deletedAt: IsNull() },
+        relations: this.getDefaultRelationsForFindOne(),
+      });
+    } catch (error) {
+      logger.error(
+        { message: `Error finding stock transfer by number '${transferNumber}'`, error },
+        'StockTransferRepository.findByTransferNumber',
+      );
+      throw new ServerError(`Error finding stock transfer by number '${transferNumber}'.`);
+    }
+  }
+
+  async findLastTransferNumber(prefix: string): Promise<string | null> {
+    try {
+      const lastTransfer = await this.repository
+        .createQueryBuilder('st')
+        .select('MAX(st.transferNumber)', 'maxTransferNumber')
+        .where('st.transferNumber LIKE :prefix', { prefix: `${prefix}%` })
+        .getRawOne();
+      return lastTransfer?.maxTransferNumber || null;
+    } catch (error) {
+      logger.error({ message: 'Error fetching last stock transfer number', error, prefix });
+      throw new ServerError('Could not fetch last stock transfer number.');
+    }
+  }
+
+  async findAll(
+    options: FindAllStockTransfersOptions = {},
+  ): Promise<{ transfers: StockTransfer[]; count: number }> {
+    try {
+      let whereConditions: FindOptionsWhere<StockTransfer> | FindOptionsWhere<StockTransfer>[] =
+        options.where
+          ? Array.isArray(options.where)
+            ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
+            : { ...options.where, deletedAt: IsNull() }
+          : { deletedAt: IsNull() };
+
+      if (options.searchTerm) {
+        const searchPattern = ILike(`%${options.searchTerm}%`);
+        const searchConditions: FindOptionsWhere<StockTransfer>[] = [
+          { transferNumber: searchPattern, deletedAt: IsNull() },
+          { notes: searchPattern, deletedAt: IsNull() },
+        ];
+
+        if (Array.isArray(whereConditions)) {
+          whereConditions = whereConditions.flatMap((wc) =>
+            searchConditions.map((sc) => ({ ...wc, ...sc })),
+          );
+        } else {
+          whereConditions = searchConditions.map((sc) => ({ ...whereConditions, ...sc }));
+        }
+      }
+
+      const findOptions: FindManyOptions<StockTransfer> = {
+        where: whereConditions,
+        order: options.order || { requestDate: 'DESC', createdAt: 'DESC' },
+        skip: options.skip,
+        take: options.take,
+        relations:
+          options.relations === undefined
+            ? this.getDefaultRelationsForFindAll()
+            : options.relations,
+      };
+      const [transfers, count] = await this.repository.findAndCount(findOptions);
+      return { transfers, count };
+    } catch (error) {
+      logger.error(
+        {
+          message: `Error finding all stock transfers`,
+          error,
+          options: { ...options, where: JSON.stringify(options.where) },
+        },
+        'StockTransferRepository.findAll',
+      );
+      throw new ServerError(`Error finding all stock transfers.`);
+    }
+  }
+
+  create(dto: Partial<StockTransfer>, transactionalEntityManager?: EntityManager): StockTransfer {
+    const repo = transactionalEntityManager
+      ? transactionalEntityManager.getRepository(StockTransfer)
+      : this.repository;
+    return repo.create(dto);
+  }
+
+  async save(
+    transfer: StockTransfer,
+    transactionalEntityManager?: EntityManager,
+  ): Promise<StockTransfer> {
+    try {
+      const repo = transactionalEntityManager
+        ? transactionalEntityManager.getRepository(StockTransfer)
+        : this.repository;
+      return await repo.save(transfer);
+    } catch (error: any) {
+      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
+        if (error.message?.includes('uq_stock_transfer_number')) {
+          throw new BadRequestError(
+            `Stock transfer with number '${transfer.transferNumber}' already exists.`,
+          );
+        }
+      }
+      logger.error(
+        { message: `Error saving stock transfer ${transfer.id || transfer.transferNumber}`, error },
+        'StockTransferRepository.save',
+      );
+      throw new ServerError(`Error saving stock transfer.`);
+    }
+  }
+
+  async update(
+    id: number,
+    dto: Partial<StockTransfer>,
+    transactionalEntityManager?: EntityManager,
+  ): Promise<UpdateResult> {
+    try {
+      const repo = transactionalEntityManager
+        ? transactionalEntityManager.getRepository(StockTransfer)
+        : this.repository;
+      const { items, ...headerDto } = dto;
+      return await repo.update({ id, deletedAt: IsNull() }, headerDto);
+    } catch (error: any) {
+      logger.error(
+        { message: `Error updating stock transfer with id ${id}`, error },
+        'StockTransferRepository.update',
+      );
+      throw new ServerError(`Error updating stock transfer with id ${id}.`);
+    }
+  }
+
+  async softDelete(id: number, transactionalEntityManager?: EntityManager): Promise<UpdateResult> {
+    try {
+      const repo = transactionalEntityManager
+        ? transactionalEntityManager.getRepository(StockTransfer)
+        : this.repository;
+      // Service layer should check status before allowing soft delete / cancel.
+      // Cascading soft delete to items might be desired if items also extend Model with soft delete.
+      return await repo.softDelete(id);
+    } catch (error) {
+      logger.error(
+        { message: `Error soft-deleting stock transfer with id ${id}`, error },
+        'StockTransferRepository.softDelete',
+      );
+      throw new ServerError(`Error soft-deleting stock transfer with id ${id}.`);
+    }
+  }
+}
