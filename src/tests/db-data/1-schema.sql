@@ -519,6 +519,7 @@ CREATE TABLE `stock_transfers` (
     `ship_date` DATE DEFAULT NULL,
     `receive_date` DATE DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `transfer_number_unique` (`transfer_number`),
@@ -544,6 +545,9 @@ CREATE TABLE `stock_transfer_items` (
     `quantity_requested` DECIMAL(15, 3) NOT NULL,
     `quantity_shipped` DECIMAL(15, 3) DEFAULT 0.000,
     `quantity_received` DECIMAL(15, 3) DEFAULT 0.000,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_sti_transfer` FOREIGN KEY (`stock_transfer_id`) REFERENCES `stock_transfers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_sti_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_sti_variant` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
