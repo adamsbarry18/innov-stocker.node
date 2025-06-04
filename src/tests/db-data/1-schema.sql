@@ -1228,6 +1228,8 @@ CREATE TABLE `cash_register_transactions` (
     `payment_method_id` INT DEFAULT NULL, -- Utile si une dépense est faite par un autre moyen depuis la caisse (rare)
     `related_sales_order_id` INT DEFAULT NULL,
     `user_id` INT NOT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT `fk_crt_session` FOREIGN KEY (`cash_register_session_id`) REFERENCES `cash_register_sessions` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_crt_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_methods` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,

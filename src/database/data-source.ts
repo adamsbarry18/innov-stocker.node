@@ -44,6 +44,7 @@ import { InventorySessionItem } from '@/modules/inventory-sessions/inventory-ses
 import { StockTransfer } from '@/modules/stock-transfers/models/stock-transfer.entity';
 import { StockTransferItem } from '@/modules/stock-transfers/stock-transfer-items/models/stock-transfer-item.entity';
 import { Payment } from '@/modules/payments/models/payment.entity';
+import { CashRegisterTransaction } from '@/modules/cash-register-transactions/models/cash-register-transaction.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -97,6 +98,7 @@ export const appDataSourceOptions: DataSourceOptions = {
     InventorySessionItem,
     StockTransfer,
     StockTransferItem,
+    CashRegisterTransaction,
   ],
   migrations: [],
   subscribers: [],
