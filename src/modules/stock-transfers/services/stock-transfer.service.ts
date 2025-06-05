@@ -38,7 +38,7 @@ import {
 } from '../stock-transfer-items/models/stock-transfer-item.entity';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
 import { User } from '@/modules/users';
-
+import { v4 as uuidv4 } from 'uuid';
 interface ValidationContext {
   isUpdate: boolean;
   transferId?: number;
@@ -87,7 +87,6 @@ export class StockTransferService {
       } catch (error: any) {
         logger.error(`Error creating stock transfer: ${error.message}`, {
           error,
-          input,
           requestedByUserId,
         });
         throw error;
@@ -192,7 +191,6 @@ export class StockTransferService {
       } catch (error: any) {
         logger.error(`Error updating stock transfer ${id}: ${JSON.stringify(error)}`, {
           id,
-          input,
           updatedByUserId,
         });
         throw error;
@@ -232,7 +230,6 @@ export class StockTransferService {
         logger.error(`Error shipping transfer ${transferId}: ${JSON.stringify(error)}`, {
           error,
           transferId,
-          input,
           shippedByUserId,
         });
         throw error;
@@ -275,7 +272,6 @@ export class StockTransferService {
         logger.error(`Error receiving transfer ${transferId}: ${JSON.stringify(error)}`, {
           error,
           transferId,
-          input,
           receivedByUserId,
         });
         throw error;
@@ -840,12 +836,10 @@ export class StockTransferService {
    * Generates a unique transfer number based on the current date and a sequence.
    * @returns A unique stock transfer number.
    */
+
   private async generateTransferNumber(): Promise<string> {
     const datePrefix = dayjs().format('YYYYMMDD');
-    const prefix = `TRF-${datePrefix}-`;
-    const lastNumber = await this.transferRepository.findLastTransferNumber(prefix);
-    const nextSeq = lastNumber ? parseInt(lastNumber.substring(prefix.length), 10) + 1 : 1;
-    return `${prefix}${String(nextSeq).padStart(5, '0')}`;
+    return `TRF-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }
 
   /**

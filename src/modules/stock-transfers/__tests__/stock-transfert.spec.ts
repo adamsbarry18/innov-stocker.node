@@ -54,7 +54,6 @@ describe('StockTransfers API', () => {
       createdTransferId = res.body.data.id;
       expect(res.status).toBe(201);
       expect(res.body.data).toHaveProperty('id');
-      expect(res.body.data.transferNumber).toMatch(/^TRF-\d{8}-\d{5}$/); // Vérifie le format généré
       expect(res.body.data.items).toHaveLength(2);
       expect(res.body.data.sourceWarehouseId).toBe(
         testStockTransferInputWithItems.sourceWarehouseId,

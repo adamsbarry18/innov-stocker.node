@@ -1055,18 +1055,25 @@ CREATE TABLE `customer_returns` (
     `customer_id` INT NOT NULL,
     `sales_order_id` INT DEFAULT NULL,
     `customer_invoice_id` INT DEFAULT NULL,
+    `warehouse_id` INT DEFAULT NULL,
+    `shop_id` INT DEFAULT NULL,
     `return_date` DATE NOT NULL,
     `status` VARCHAR(30) DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved, pending_reception, received, inspected, refunded, exchanged, rejected, cancelled
     `reason` TEXT DEFAULT NULL,
     `created_by_user_id` INT DEFAULT NULL,
+    `updated_by_user_id` INT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     UNIQUE KEY `return_number_unique` (`return_number`),
     CONSTRAINT `fk_cr_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_cr_order` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_cr_invoice` FOREIGN KEY (`customer_invoice_id`) REFERENCES `customer_invoices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT `fk_cr_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT `fk_crs_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `fk_crs_shop` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT `fk_cr_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_cr_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -1080,9 +1087,14 @@ CREATE TABLE `customer_return_items` (
     `product_id` INT NOT NULL,
     `product_variant_id` INT DEFAULT NULL,
     `quantity` DECIMAL(15, 3) NOT NULL,
+    `quantity_received` DECIMAL(15, 3) DEFAULT 0.000,
     `unit_price_at_return` DECIMAL(15, 4) DEFAULT NULL,
     `condition` VARCHAR(20) DEFAULT NULL, -- Possible values: new, used, damaged
-    `action_taken` VARCHAR(30) DEFAULT 'pending_inspection' -- Possible values: restock, discard, repair, pending_inspection
+    `action_taken` VARCHAR(30) DEFAULT 'pending_inspection', -- Possible values: restock, discard, repair, pending_inspection
+    `notes` TEXT DEFAULT NULL, -- Ajout de la colonne notes
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- =====================================================

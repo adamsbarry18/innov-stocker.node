@@ -39,6 +39,8 @@ import { SupplierInvoiceItem } from '@/modules/supplier-invoices/supplier-invoic
 import { CustomerInvoice } from '@/modules/customer-invoices/models/customer-invoice.entity';
 import { CustomerInvoiceItem } from '@/modules/customer-invoices/customer-invoice-items/models/customer-invoice-item.entity';
 import { CustomerInvoiceSalesOrderLink } from '../modules/customer-invoices/models/customer-invoice-sales-order-link.entity';
+import { CustomerReturn } from '@/modules/customer-returns/models/customer-return.entity';
+import { CustomerReturnItem } from '@/modules/customer-returns/customer-return-items/models/customer-return-item.entity';
 import { InventorySession } from '@/modules/inventory-sessions/models/inventory-session.entity';
 import { InventorySessionItem } from '@/modules/inventory-sessions/inventory-session-items/models/inventory-session-item.entity';
 import { StockTransfer } from '@/modules/stock-transfers/models/stock-transfer.entity';
@@ -94,6 +96,8 @@ export const appDataSourceOptions: DataSourceOptions = {
     CustomerInvoice,
     CustomerInvoiceItem,
     CustomerInvoiceSalesOrderLink,
+    CustomerReturn,
+    CustomerReturnItem,
     InventorySession,
     InventorySessionItem,
     StockTransfer,
