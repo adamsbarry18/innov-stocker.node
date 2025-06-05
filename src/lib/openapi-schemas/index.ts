@@ -28,6 +28,7 @@ import { inventorySessionSchemas } from './inventory-sessions/inventory-session.
 import { stockTransferSchemas } from './stock-transferts/stock-transfert.schema';
 import { paymentSchemas } from './payments/payment.schema';
 import { cashRegisterTransactionSchemas } from './cash-register-transactions/cash-register-transaction.schema';
+import { customerReturnSchemas } from './customer-returns/customer-return.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -60,6 +61,7 @@ export const schemas = {
   ...stockTransferSchemas,
   ...paymentSchemas,
   ...cashRegisterTransactionSchemas,
+  ...customerReturnSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -99,4 +101,5 @@ export {
   stockTransferSchemas,
   paymentSchemas,
   cashRegisterTransactionSchemas,
+  customerReturnSchemas,
 };

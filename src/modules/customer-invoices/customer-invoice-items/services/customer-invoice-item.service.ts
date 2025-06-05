@@ -28,8 +28,6 @@ import { CustomerInvoice, CustomerInvoiceStatus } from '../../models/customer-in
 let instance: CustomerInvoiceItemService | null = null;
 
 export class CustomerInvoiceItemService {
-  private static instance: CustomerInvoiceItemService | null = null;
-
   constructor(
     private readonly invoiceRepository: CustomerInvoiceRepository = new CustomerInvoiceRepository(),
     private readonly itemRepository: CustomerInvoiceItemRepository = new CustomerInvoiceItemRepository(),
@@ -40,10 +38,10 @@ export class CustomerInvoiceItemService {
   ) {}
 
   public static getInstance(): CustomerInvoiceItemService {
-    if (!CustomerInvoiceItemService.instance) {
-      CustomerInvoiceItemService.instance = new CustomerInvoiceItemService();
+    if (!instance) {
+      instance = new CustomerInvoiceItemService();
     }
-    return CustomerInvoiceItemService.instance;
+    return instance;
   }
 
   private mapToApiResponse(

@@ -120,8 +120,12 @@ export class StockMovementService {
         : this.movementRepository
     ).create(movementEntityData);
 
-    if (!movementEntity.isValidBasic())
+    if (!movementEntity.isValidBasic()) {
+      logger.error(
+        `[createMovement] Basic validation failed for movement entity: ${JSON.stringify(movementEntity)}`,
+      );
       throw new BadRequestError('Internal stock movement entity state invalid.');
+    }
 
     try {
       const savedMovement = await (
