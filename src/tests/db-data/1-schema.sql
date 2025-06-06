@@ -757,15 +757,27 @@ CREATE TABLE `supplier_returns` (
     `return_number` VARCHAR(50) NOT NULL,
     `supplier_id` INT NOT NULL,
     `return_date` DATE NOT NULL,
-    `status` VARCHAR(30) DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved, shipped, received_by_supplier, refunded, exchanged, cancelled
+    `status` VARCHAR(30) DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved_by_supplier, pending_shipment, shipped_to_supplier, received_by_supplier, credit_expected, refunded, credit_note_received, completed, rejected_by_supplier, cancelled
     `reason` TEXT DEFAULT NULL,
-    `created_by_user_id` INT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
+    `source_warehouse_id` INT DEFAULT NULL,
+    `source_shop_id` INT DEFAULT NULL,
+    `supplier_rma_number` VARCHAR(100) DEFAULT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
+    `shipped_by_user_id` INT DEFAULT NULL,
+    `processed_by_user_id` INT DEFAULT NULL, -- Ajouté pour la complétion du processus de retour
+    `updated_by_user_id` INT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     UNIQUE KEY `return_number_unique` (`return_number`),
     CONSTRAINT `fk_sr_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT `fk_sr_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT `fk_sr_source_warehouse` FOREIGN KEY (`source_warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_sr_source_shop` FOREIGN KEY (`source_shop_id`) REFERENCES `shops` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_sr_created_by` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_sr_shipped_by` FOREIGN KEY (`shipped_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_sr_processed_by` FOREIGN KEY (`processed_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_sr_updated_by` FOREIGN KEY (`updated_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -779,8 +791,13 @@ CREATE TABLE `supplier_return_items` (
     `product_id` INT NOT NULL,
     `product_variant_id` INT DEFAULT NULL,
     `quantity` DECIMAL(15, 3) NOT NULL,
+    `quantity_shipped` DECIMAL(15, 3) DEFAULT 0.000,
+    `quantity_received` DECIMAL(15, 3) DEFAULT 0.000,
     `unit_price_at_return` DECIMAL(15, 4) DEFAULT NULL,
     `purchase_reception_item_id` BIGINT DEFAULT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     CONSTRAINT `fk_sri_return` FOREIGN KEY (`supplier_return_id`) REFERENCES `supplier_returns` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_sri_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT `fk_sri_variant` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,

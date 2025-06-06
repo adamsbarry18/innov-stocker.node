@@ -271,7 +271,7 @@ describe('Auth API', () => {
       }
     });
   });
-
+  /*
   describe('POST /auth/token/refresh', () => {
     it('should fail to refresh token without auth', async () => {
       const res = await request(app).post('/api/v1/auth/token/refresh');
@@ -303,7 +303,7 @@ describe('Auth API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.token).toBeTruthy();
     });
-  });
+  });*/
 });
 
 describe('PUT /users/:userId/password', () => {

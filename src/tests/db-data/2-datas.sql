@@ -292,16 +292,17 @@ INSERT INTO customer_invoice_sales_order_links (customer_invoice_id, sales_order
 -- -----------------------------------------------------
 -- Table supplier_returns
 -- -----------------------------------------------------
-INSERT INTO supplier_returns (id, return_number, supplier_id, return_date, status, reason, created_by_user_id, notes, created_time, updated_time) VALUES
-(1, 'RET-SUP-2025-001', 1, '2025-05-20', 'approved', 'Produit défectueux à la réception', 2, 'Retour de 2 smartphones du lot LOT-SPX-20250514', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'RET-SUP-2025-002', 2, '2025-05-22', 'shipped', 'Erreur de référence', 1, 'Retour de 3 chargeurs non commandés', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO supplier_returns (id, return_number, supplier_id, return_date, status, reason, notes, source_warehouse_id, source_shop_id, supplier_rma_number, created_by_user_id, shipped_by_user_id, processed_by_user_id, updated_by_user_id, created_time, updated_time) VALUES
+(1, 'RET-SUP-2025-001', 1, '2025-05-20', 'approved_by_supplier', 'Produit défectueux à la réception', 'Retour de 2 smartphones du lot LOT-SPX-20250514', 1, NULL, 'RMA-SUP-001', 2, NULL, NULL, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'RET-SUP-2025-002', 2, '2025-05-22', 'shipped_to_supplier', 'Erreur de référence', 'Retour de 3 chargeurs non commandés', NULL, 1, NULL, 1, 1, NULL, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'RET-SUP-2025-003', 1, '2025-05-25', 'completed', 'Changement d''avis client', 'Retour complet et avoir émis', 1, NULL, 'RMA-SUP-002', 1, 1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- -----------------------------------------------------
 -- Table supplier_return_items
 -- -----------------------------------------------------
-INSERT INTO supplier_return_items (id, supplier_return_id, product_id, product_variant_id, quantity, unit_price_at_return, purchase_reception_item_id) VALUES
-(1, 1, 1, NULL, 2.000, 350.0000, 1),
-(2, 2, 3, NULL, 3.000, 9.5000, 2);
+INSERT INTO supplier_return_items (id, supplier_return_id, product_id, product_variant_id, quantity, quantity_shipped, quantity_received, unit_price_at_return, purchase_reception_item_id) VALUES
+(1, 1, 1, NULL, 2.000, 0.000, 0.000, 350.0000, 1),
+(2, 2, 3, NULL, 3.000, 0.000, 0.000, 9.5000, 2);
 
 -- -----------------------------------------------------
 -- Table customer_returns
