@@ -628,7 +628,7 @@ export class CustomerReturnService {
     const { items, warehouseId, shopId, ...headerInput } = input;
     const returnData: Partial<CustomerReturn> = {
       ...headerInput,
-      returnNumber: await this.generateReturnNumber(),
+      returnNumber: this.generateReturnNumber(),
       returnDate: dayjs(input.returnDate).toDate(),
       status: input.status || CustomerReturnStatus.REQUESTED,
       warehouseId: warehouseId,
@@ -985,17 +985,17 @@ export class CustomerReturnService {
     }
   }
 
-  /**
+  /**TODO
    * Validates that there are no processed financial transactions linked to the return before deletion.
    * @param returnId - The ID of the return to validate.
    */
   private async validateNoProcessedTransactions(returnId: number): Promise<void> {
-    const isProcessed = await this.returnRepository.isReturnProcessedForRefundOrExchange(returnId);
+    /*const isProcessed = await this.returnRepository.isReturnProcessedForRefundOrExchange(returnId);
     if (isProcessed) {
       throw new BadRequestError(
         `Return ${returnId} has been processed for refund/exchange and cannot be deleted.`,
       );
-    }
+    }*/
   }
 
   // Private processing methods
@@ -1150,7 +1150,7 @@ export class CustomerReturnService {
    * Generates a unique return number.
    * @returns A promise that resolves to a unique return number string.
    */
-  private async generateReturnNumber(): Promise<string> {
+  private generateReturnNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
     return `RMA-${datePrefix}-${uuidv4().substring(0, 8)}`; // Use a portion of UUID for uniqueness
   }

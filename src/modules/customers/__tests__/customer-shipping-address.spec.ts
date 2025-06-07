@@ -6,8 +6,8 @@ import { adminToken } from '@/tests/globalSetup';
 
 describe('CustomerShippingAddress API', () => {
   // You may need to adapt these IDs to your test DB or fixtures
-  let customerId = 1;
-  let addressId = 1;
+  const customerId: number = 1;
+  const addressId: number = 1;
   let createdShippingAddressId: number;
 
   const testShippingAddress = {

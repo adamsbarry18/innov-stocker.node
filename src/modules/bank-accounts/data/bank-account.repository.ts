@@ -11,6 +11,7 @@ import { appDataSource } from '@/database/data-source';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { BankAccount } from '../models/bank-account.entity';
+import { Payment } from '@/modules/payments/models/payment.entity';
 
 interface FindAllBankAccountsOptions {
   skip?: number;
@@ -165,13 +166,10 @@ export class BankAccountRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec PaymentRepository
   async isBankAccountInUse(accountId: number): Promise<boolean> {
-    // Example:
-    // const paymentRepo = this.repository.manager.getRepository(Payment);
-    // const count = await paymentRepo.count({where: {bankAccountId: accountId}});
-    // return count > 0;
-    return false;
+    const paymentRepo = this.repository.manager.getRepository(Payment);
+    const count = await paymentRepo.count({ where: { bankAccountId: accountId } });
+    return count > 0;
   }
 
   // Method to update currentBalance (should be used by transaction services)

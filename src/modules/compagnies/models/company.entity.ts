@@ -1,10 +1,8 @@
 import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { z } from 'zod';
-import { Address } from '../../addresses/models/address.entity';
-import { Currency } from '../../currencies/models/currency.entity';
-import { AddressApiResponse } from '../../addresses/models/address.entity';
-import { CurrencyApiResponse } from '../../currencies/models/currency.entity';
 import { Model } from '@/common/models/Model';
+import { Address, AddressApiResponse } from '@/modules/addresses/models/address.entity';
+import { Currency, CurrencyApiResponse } from '@/modules/currencies/models/currency.entity';
 
 // DTO pour la mise à jour (pas de création directe pour une entité mono-enregistrement)
 export type UpdateCompanyInput = {

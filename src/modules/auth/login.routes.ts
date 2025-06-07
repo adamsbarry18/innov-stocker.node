@@ -165,7 +165,7 @@ export default class LoginRouter extends BaseRouter {
     const { password } = req.body;
     const { code } = req.params;
 
-    if (!code || code.length != 32) return res.jsend.fail('No confirm code');
+    if (!code || code.length !== 32) return res.jsend.fail('No confirm code');
 
     await this.pipe(res, req, next, async () => {
       await this.passwordService.resetPasswordWithCode(code, password);
@@ -198,7 +198,7 @@ export default class LoginRouter extends BaseRouter {
   @Post('/auth/password/:code/confirm')
   async confirmPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { code } = req.params;
-    if (!code || code.length != 32) return res.jsend.fail('No confirm code');
+    if (!code || code.length !== 32) return res.jsend.fail('No confirm code');
     await this.pipe(res, req, next, async () => {
       await this.passwordService.confirmPasswordChange(code);
       return { message: 'Password confirmed successfully' };

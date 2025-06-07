@@ -356,7 +356,7 @@ export class SupplierReturnService {
     try {
       const supplierReturn = await this.getExistingReturn(id);
       this.validateDeletion(supplierReturn);
-      await this.validateNoProcessedTransactions(id);
+      this.validateNoProcessedTransactions(id);
       await this.validateUser(deletedByUserId);
 
       await this.returnRepository.softDelete(id);
@@ -620,7 +620,7 @@ export class SupplierReturnService {
     const { items, sourceWarehouseId, sourceShopId, ...headerInput } = input;
     const returnData: Partial<SupplierReturn> = {
       ...headerInput,
-      returnNumber: await this.generateReturnNumber(),
+      returnNumber: this.generateReturnNumber(),
       returnDate: input.returnDate ? dayjs(input.returnDate).toDate() : undefined,
       status: SupplierReturnStatus.REQUESTED, // Default status for creation
       sourceWarehouseId: sourceWarehouseId,
@@ -674,7 +674,7 @@ export class SupplierReturnService {
       const item = repo.create({
         ...parsedItemInput.data,
         supplierReturnId: returnId,
-      }) as SupplierReturnItem;
+      });
 
       if (!item.isValid()) {
         logger.error(
@@ -820,7 +820,7 @@ export class SupplierReturnService {
         ...itemInput,
         id: itemInput.id ? Number(itemInput.id) : undefined, // Convert id to number if present
         supplierReturnId: returnId,
-      }) as SupplierReturnItem;
+      });
 
       if (!item.isValid()) {
         logger.error(
@@ -969,17 +969,17 @@ export class SupplierReturnService {
     }
   }
 
-  /**
+  /**TODO
    * Validates that there are no processed financial transactions linked to the return before deletion.
    * @param returnId - The ID of the return to validate.
    */
-  private async validateNoProcessedTransactions(returnId: number): Promise<void> {
-    const isProcessed = await this.returnRepository.isReturnProcessedForCreditOrRefund(returnId);
+  private validateNoProcessedTransactions(returnId: number): void {
+    /*const isProcessed = await this.returnRepository.isReturnProcessedForCreditOrRefund(returnId);
     if (isProcessed) {
       throw new BadRequestError(
         `Return ${returnId} has been processed for credit/refund and cannot be deleted.`,
       );
-    }
+    }*/
   }
 
   // Private processing methods
@@ -1101,9 +1101,9 @@ export class SupplierReturnService {
    * Generates a unique return number.
    * @returns A promise that resolves to a unique return number string.
    */
-  private async generateReturnNumber(): Promise<string> {
+  private generateReturnNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
-    return `SRA-${datePrefix}-${uuidv4().substring(0, 8)}`; // Use a portion of UUID for uniqueness
+    return `SRA-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }
 
   /**
@@ -1254,9 +1254,8 @@ export class SupplierReturnService {
   }
 
   static getInstance(): SupplierReturnService {
-    if (!instance) {
-      instance = new SupplierReturnService();
-    }
+    instance ??= new SupplierReturnService();
+
     return instance;
   }
 }

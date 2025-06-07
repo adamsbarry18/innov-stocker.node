@@ -13,7 +13,7 @@ describe('Quotes API', () => {
   let testProductId: number;
   let createdQuoteId: number;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     // Assuming these IDs exist in the seeded test database (2-datas.sql)
     testCustomerId = 1;
     testCurrencyId = 1;

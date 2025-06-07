@@ -208,9 +208,7 @@ export class CompositeProductItemService {
   }
 
   static getInstance(): CompositeProductItemService {
-    if (!instance) {
-      instance = new CompositeProductItemService();
-    }
+    instance ??= new CompositeProductItemService();
     return instance;
   }
 }

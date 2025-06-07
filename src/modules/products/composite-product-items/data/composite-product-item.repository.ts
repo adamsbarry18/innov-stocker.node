@@ -24,7 +24,7 @@ export class CompositeProductItemRepository {
   async findById(id: number): Promise<CompositeProductItem | null> {
     try {
       return await this.repository.findOne({
-        where: { id, deletedAt: IsNull() }, // Assuming Model adds deletedAt
+        where: { id, deletedAt: IsNull() },
         relations: this.getDefaultRelations(),
       });
     } catch (error) {

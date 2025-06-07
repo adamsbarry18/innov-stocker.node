@@ -282,8 +282,9 @@ export class ProductRepository {
     }
   }
 
+  /* TODO
   async isProductInUse(productId: number): Promise<boolean> {
     logger.warn('ProductRepository.isProductInUse is a placeholder.');
     return false;
-  }
+  }*/
 }

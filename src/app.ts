@@ -166,7 +166,7 @@ app.get('/', (req: Request, res: Response) => {
   }
 })().catch((error) => {
   logger.fatal({ err: error }, '❌ Unhandled error during async app initialization.');
-  process.exit(1);
+  throw error;
 });
 
 // Export the configured app instance.

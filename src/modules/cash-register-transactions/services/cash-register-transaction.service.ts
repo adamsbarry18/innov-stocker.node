@@ -309,7 +309,7 @@ export class CashRegisterTransactionService {
           savedTransaction.amount,
         );
         await this.updateCashRegisterBalance(
-          session.cashRegisterId as number,
+          session.cashRegisterId,
           amountChangeForBalance,
           manager,
         );

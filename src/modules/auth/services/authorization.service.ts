@@ -39,6 +39,8 @@ export class AuthorizationService {
    * Retrieves all features and their possible actions.
    * @returns An object mapping feature names to their actions.
    */
+
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getAllFeatures(): Promise<Record<string, string[]>> {
     const result: Record<string, string[]> = {};
     FEATURES_CONFIG.forEach((feature) => {
@@ -68,6 +70,7 @@ export class AuthorizationService {
    * @param level The security level.
    * @returns An object mapping feature names to their actions.
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async listAuthorisationsFromLevel(level: number): Promise<Record<string, string[]>> {
     const res: Record<string, string[]> = {};
     FEATURES_CONFIG.forEach((feature) => {

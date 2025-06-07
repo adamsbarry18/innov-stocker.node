@@ -39,7 +39,7 @@ export class CompositeProductItem extends Model {
   @Column({ type: 'decimal', precision: 10, scale: 3 })
   quantity!: number;
 
-  toApi(): any {
+  toApi() {
     // Define a specific API response if needed
     const base = super.toApi();
     return {

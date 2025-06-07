@@ -661,7 +661,7 @@ export class CustomerInvoiceService {
     const { items, salesOrderIds, ...headerInput } = input;
     const invoiceData: Partial<CustomerInvoice> = {
       ...headerInput,
-      invoiceNumber: input.invoiceNumber || (await this.generateInvoiceNumber()),
+      invoiceNumber: input.invoiceNumber || this.generateInvoiceNumber(),
       invoiceDate: dayjs(input.invoiceDate).toDate(),
       dueDate: input.dueDate ? dayjs(input.dueDate).toDate() : null,
       status: input.status || CustomerInvoiceStatus.DRAFT,
@@ -930,7 +930,7 @@ export class CustomerInvoiceService {
    * Generates a unique invoice number.
    * @returns A promise that resolves to a unique invoice number string.
    */
-  private async generateInvoiceNumber(): Promise<string> {
+  private generateInvoiceNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
     return `INV-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }

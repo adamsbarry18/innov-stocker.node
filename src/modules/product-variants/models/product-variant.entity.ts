@@ -5,7 +5,7 @@ import {
 } from '@/modules/product-images/models/product-image.entity';
 import { ProductSupplier } from '@/modules/product-suppliers/models/product-supplier.entity';
 import { Product } from '@/modules/products/models/product.entity';
-import { User } from '@/modules/users';
+import { User } from '@/modules/users/models/users.entity';
 import { Entity, Column, ManyToOne, JoinColumn, Unique, Index, OneToMany } from 'typeorm';
 import { z } from 'zod';
 

@@ -11,6 +11,10 @@ import { appDataSource } from '@/database/data-source';
 import { CashRegister } from '../models/cash-register.entity';
 import { ServerError, BadRequestError, NotFoundError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import {
+  CashRegisterSession,
+  CashRegisterSessionStatus,
+} from '@/modules/cash-register-sessions/models/cash-register-session.entity';
 
 interface FindAllCashRegistersOptions {
   skip?: number;
@@ -143,14 +147,12 @@ export class CashRegisterRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec CashRegisterSessionRepository
   async isCashRegisterInUse(registerId: number): Promise<boolean> {
-    logger.warn('CashRegisterRepository.isCashRegisterInUse is a placeholder.');
-    // Example:
-    // const sessionRepo = this.repository.manager.getRepository(CashRegisterSession);
-    // const count = await sessionRepo.count({where: {cashRegisterId: registerId, status: 'open'}});
-    // return count > 0;
-    return false;
+    const sessionRepo = this.repository.manager.getRepository(CashRegisterSession);
+    const count = await sessionRepo.count({
+      where: { cashRegisterId: registerId, status: CashRegisterSessionStatus.OPEN },
+    });
+    return count > 0;
   }
 
   // Method to update currentBalance (should be used by cash register session/transaction services)

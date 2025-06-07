@@ -10,6 +10,7 @@ import { CustomerGroup } from '../models/customer-group.entity';
 import { appDataSource } from '@/database/data-source';
 import logger from '@/lib/logger';
 import { BadRequestError, ServerError } from '@/common/errors/httpErrors';
+import { Customer } from '@/modules/customers/models/customer.entity';
 
 interface FindAllCustomerGroupsOptions {
   skip?: number;
@@ -128,20 +129,22 @@ export class CustomerGroupRepository {
     }
   }
 
-  // Placeholder for dependency check - to be implemented properly with CustomerRepository
   async isGroupUsedByCustomers(groupId: number): Promise<boolean> {
     logger.warn(
       'CustomerGroupRepository.isGroupUsedByCustomers is a placeholder and should be implemented using CustomerRepository or a direct query.',
     );
-    // Example (requires Customer entity and repository):
-    // try {
-    //   const customerRepository = this.repository.manager.getRepository(Customer); // Customer entity needs to be defined/imported
-    //   const count = await customerRepository.count({ where: { customerGroupId: groupId, deletedAt: IsNull() }});
-    //   return count > 0;
-    // } catch (error) {
-    //   logger.error({ message: `Error checking if group ${groupId} is used by customers`, error }, 'CustomerGroupRepository.isGroupUsedByCustomers');
-    //   throw new ServerError('Error checking customer group usage.');
-    // }
-    return false;
+    try {
+      const customerRepository = this.repository.manager.getRepository(Customer);
+      const count = await customerRepository.count({
+        where: { customerGroupId: groupId, deletedAt: IsNull() },
+      });
+      return count > 0;
+    } catch (error) {
+      logger.error(
+        { message: `Error checking if group ${groupId} is used by customers`, error },
+        'CustomerGroupRepository.isGroupUsedByCustomers',
+      );
+      throw new ServerError('Error checking customer group usage.');
+    }
   }
 }

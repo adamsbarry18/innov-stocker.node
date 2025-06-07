@@ -12,6 +12,7 @@ import { appDataSource } from '@/database/data-source';
 import { SupplierInvoice } from '../models/supplier-invoice.entity';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { Payment } from '@/modules/payments/models/payment.entity';
 
 interface FindAllSupplierInvoicesOptions {
   skip?: number;
@@ -93,13 +94,13 @@ export class SupplierInvoiceRepository {
     }
   }
 
-  async findLastInvoiceNumber(prefix: string, supplierId: number): Promise<string | null> {
+  /*async findLastInvoiceNumber(prefix: string, supplierId: number): Promise<string | null> {
     // Supplier invoice numbers are external, so this might not be needed unless you generate internal reference
     logger.warn(
       'findLastInvoiceNumber for supplier invoices might not be relevant as numbers are external.',
     );
     return null;
-  }
+  }*/
 
   async findAll(
     options: FindAllSupplierInvoicesOptions = {},
@@ -233,18 +234,16 @@ export class SupplierInvoiceRepository {
       throw new ServerError(`Error soft-deleting supplier invoice with id ${id}.`);
     }
   }
-
-  // TODO: Dépendance - Implémenter avec PaymentRepository
   async getAmountPaidForInvoice(invoiceId: number): Promise<number> {
     logger.warn('SupplierInvoiceRepository.getAmountPaidForInvoice is a placeholder.');
-    // Example:
-    // const paymentRepo = this.repository.manager.getRepository(Payment);
-    // const result = await paymentRepo.createQueryBuilder("payment")
-    //    .select("SUM(payment.amount)", "totalPaid")
-    //    .where("payment.supplierInvoiceId = :invoiceId", { invoiceId })
-    //    .andWhere("payment.direction = 'outbound'") // Ensure it's an outbound payment
-    //    .getRawOne();
-    // return Number(result?.totalPaid || 0);
+    const paymentRepo = this.repository.manager.getRepository(Payment);
+    const result = await paymentRepo
+      .createQueryBuilder('payment')
+      .select('SUM(payment.amount)', 'totalPaid')
+      .where('payment.supplierInvoiceId = :invoiceId', { invoiceId })
+      .andWhere("payment.direction = 'outbound'")
+      .getRawOne();
+    return Number(result?.totalPaid || 0);
     return 0;
   }
 }

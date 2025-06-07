@@ -47,7 +47,7 @@ export class UsersService {
    */
   mapToApiResponse(user: User | null): UserApiResponse | null {
     if (!user) return null;
-    const apiUser = user.toApi() as UserApiResponse;
+    const apiUser = user.toApi();
     return apiUser;
   }
 
@@ -192,7 +192,7 @@ export class UsersService {
         passwordUpdatedAt: new Date(),
         authorisationOverrides: encodedOverrides,
         permissionsExpireAt: permissionsExpireAt ? dayjs(permissionsExpireAt).toDate() : null,
-        isActive: isActive === undefined ? true : isActive,
+        isActive: isActive ? true : isActive,
         uid: randomUUID(),
       };
 
@@ -300,7 +300,7 @@ export class UsersService {
         passwordUpdatedAt: new Date(),
         authorisationOverrides: encodedOverrides,
         permissionsExpireAt: permissionsExpireAt ? dayjs(permissionsExpireAt).toDate() : null,
-        isActive: isActive === undefined ? true : isActive,
+        isActive: isActive ? true : isActive,
         uid: randomUUID(),
       };
 

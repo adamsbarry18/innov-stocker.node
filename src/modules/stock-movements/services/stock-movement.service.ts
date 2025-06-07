@@ -267,7 +267,7 @@ export class StockMovementService {
 
     const locationParam = warehouseId ? { warehouseId } : { shopId };
     const locationType = warehouseId ? 'warehouse' : 'shop';
-    const locationId = (warehouseId !== undefined ? warehouseId : shopId) as number; // Ensure locationId is always a number here
+    const locationId = (warehouseId !== undefined ? warehouseId : shopId) as number;
 
     if (locationType === 'warehouse') {
       const warehouse = await this.warehouseRepository.findById(locationId);
@@ -290,16 +290,14 @@ export class StockMovementService {
     return {
       productId,
       productVariantId,
-      locationId: locationId as number,
+      locationId,
       locationType,
       quantity,
     };
   }
 
   static getInstance(): StockMovementService {
-    if (!instance) {
-      instance = new StockMovementService();
-    }
+    instance ??= new StockMovementService();
     return instance;
   }
 }

@@ -10,6 +10,7 @@ import { appDataSource } from '@/database/data-source';
 import { Shop } from '../models/shop.entity';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { CashRegister } from '@/modules/cash-registers/models/cash-register.entity';
 
 interface FindAllShopsOptions {
   skip?: number;
@@ -153,13 +154,9 @@ export class ShopRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec CashRegisterRepository, StockMovementRepository, etc.
   async isShopInUse(shopId: number): Promise<boolean> {
-    logger.warn('ShopRepository.isShopInUse is a placeholder.');
-    // Example:
-    // const cashRegisterRepo = this.repository.manager.getRepository(CashRegister);
-    // const crCount = await cashRegisterRepo.count({where: {shopId}});
-    // return crCount > 0;
-    return false;
+    const cashRegisterRepo = this.repository.manager.getRepository(CashRegister);
+    const crCount = await cashRegisterRepo.count({ where: { shopId } });
+    return crCount > 0;
   }
 }

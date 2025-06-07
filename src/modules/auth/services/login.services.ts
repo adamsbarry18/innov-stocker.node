@@ -84,7 +84,7 @@ export class LoginService {
       throw error;
     }
 
-    const token = await this.signToken(user.id, { level: user.level, internal: user.internal });
+    const token = this.signToken(user.id, { level: user.level, internal: user.internal });
     const userApi = this.usersService.mapToApiResponse(user);
     if (!userApi) {
       throw new ServerError('Failed to map user data');
@@ -107,7 +107,7 @@ export class LoginService {
    * @param extraPayload Additional payload to include in the token.
    * @returns The signed JWT token.
    */
-  async signToken(userId: number, extraPayload: Record<string, any> = {}): Promise<string> {
+  signToken(userId: number, extraPayload: Record<string, any> = {}): string {
     const payload = { sub: userId, ...extraPayload };
     try {
       return jwt.sign(payload, config.JWT_SECRET, { expiresIn: TOKEN_DEFAULT_EXPIRE_SECONDS });
@@ -167,7 +167,7 @@ export class LoginService {
       // Defensive check, though findById should throw if not found
       throw new ServerError(`User not found for ID ${userId} when generating token.`);
     }
-    const token = await this.signToken(user.id, { level: user.level, internal: user.internal });
+    const token = this.signToken(user.id, { level: user.level, internal: user.internal });
     return { token, expiresIn: TOKEN_DEFAULT_EXPIRE_SECONDS };
   }
 
@@ -197,7 +197,7 @@ export class LoginService {
       throw new ServerError('Failed to fetch user after password update');
     }
 
-    return await this.signToken(user.id, { level: user.level, internal: user.internal });
+    return this.signToken(user.id, { level: user.level, internal: user.internal });
   }
 
   /**

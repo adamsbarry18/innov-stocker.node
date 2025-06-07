@@ -218,7 +218,7 @@ export class CurrencyService {
       ) {
         (apiResponse as any).defaultCurrency = currencyToSetDefault.toApi();
       }
-      return apiResponse as CompanyApiResponse;
+      return apiResponse;
     }
 
     company.defaultCurrencyId = currencyId;
@@ -236,7 +236,7 @@ export class CurrencyService {
 
       const apiResponse = updatedCompany.toApi();
       (apiResponse as any).defaultCurrency = currencyToSetDefault.toApi();
-      return apiResponse as CompanyApiResponse;
+      return apiResponse;
     } catch (error) {
       logger.error(`Error setting default company currency: ${error}`);
       throw new ServerError('Failed to set default company currency.');
@@ -244,9 +244,7 @@ export class CurrencyService {
   }
 
   static getInstance(): CurrencyService {
-    if (!instance) {
-      instance = new CurrencyService();
-    }
+    instance ??= new CurrencyService();
     return instance;
   }
 }

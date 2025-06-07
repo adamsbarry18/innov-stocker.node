@@ -247,9 +247,9 @@ export class DeliveryRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec CustomerInvoiceRepository
+  /* TODO: Dépendance - Implémenter avec CustomerInvoiceRepository
   async isDeliveryLinkedToInvoice(deliveryId: number): Promise<boolean> {
     logger.warn('DeliveryRepository.isDeliveryLinkedToInvoice is a placeholder.');
     return false;
-  }
+  }*/
 }

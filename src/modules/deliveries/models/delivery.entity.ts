@@ -191,9 +191,7 @@ export class Delivery extends Model {
       deliveryDate: Model.formatISODate(this.deliveryDate),
       status: this.status,
       shippingAddressId: this.shippingAddressId,
-      shippingAddress: this.shippingAddress
-        ? (this.shippingAddress.toApi() as AddressApiResponse)
-        : null,
+      shippingAddress: this.shippingAddress ? this.shippingAddress.toApi() : null,
       carrierName: this.carrierName,
       trackingNumber: this.trackingNumber,
       dispatchWarehouseId: this.dispatchWarehouseId,

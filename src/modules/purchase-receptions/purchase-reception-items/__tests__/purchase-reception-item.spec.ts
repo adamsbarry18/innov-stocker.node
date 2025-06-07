@@ -13,7 +13,7 @@ describe('Purchase Reception Items API (nested)', () => {
   let parentReceptionId: number; // REC-2025-00003 (status PENDING_QUALITY_CHECK)
   let initialReceptionItemId: number; // Item 3 (linked to REC-2025-00003)
 
-  beforeAll(async () => {
+  beforeAll(() => {
     // IDs from 2-datas.sql
     testProductId1 = 1; // Smartphone Modèle X
     testProductId2 = 3; // Chargeur USB-C Rapide

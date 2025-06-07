@@ -108,7 +108,7 @@ export abstract class Model extends BaseEntity {
    * Hooks de cycle de vie TypeORM
    */
   @BeforeInsert()
-  protected async beforeInsert(): Promise<void> {
+  protected beforeInsert(): void {
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
@@ -119,7 +119,7 @@ export abstract class Model extends BaseEntity {
   }
 
   @BeforeUpdate()
-  protected async beforeUpdate(): Promise<void> {
+  protected beforeUpdate(): void {
     this.updatedAt = new Date();
   }
 

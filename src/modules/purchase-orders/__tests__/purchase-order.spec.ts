@@ -21,7 +21,7 @@ describe('Purchase Orders API', () => {
     description: 'Item PO Test 1',
   };
 
-  beforeAll(async () => {
+  beforeAll(() => {
     // Assuming these IDs exist in the seeded test database (2-datas.sql)
     testSupplierId = 1;
     testCurrencyId = 1;

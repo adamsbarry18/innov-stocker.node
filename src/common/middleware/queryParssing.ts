@@ -1,5 +1,4 @@
 import { type Request, type Response, type NextFunction } from '@/config/http';
-import logger from '@/lib/logger';
 
 import { BadRequestError } from '../errors/httpErrors';
 

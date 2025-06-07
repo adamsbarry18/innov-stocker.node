@@ -175,7 +175,7 @@ export class SupplierRepository {
     }
   }
 
-  // TODO: Dépendance - Implementer cette méthode avec PurchaseOrderRepository, ProductSupplierRepository, etc.
+  /* TODO: Dépendance - Implementer cette méthode avec PurchaseOrderRepository, ProductSupplierRepository, etc.
   async isSupplierInUse(supplierId: number): Promise<boolean> {
     logger.warn('SupplierRepository.isSupplierInUse is a placeholder and should be implemented.');
     // Example:
@@ -183,5 +183,5 @@ export class SupplierRepository {
     // const psCount = await this.repository.manager.getRepository(ProductSupplier).count({where: {supplierId}});
     // return poCount > 0 || psCount > 0;
     return false;
-  }
+  }*/
 }
