@@ -76,7 +76,7 @@ export class SalesOrderService {
       await this.validateUser(createdByUserId);
       await this.validateInput(input);
 
-      const orderData = await this.buildOrderData(input, createdByUserId);
+      const orderData = this.buildOrderData(input, createdByUserId);
       const savedOrder = await this.saveOrderWithItems(manager, orderData, input.items);
 
       if (savedOrder.quoteId) {
@@ -123,9 +123,7 @@ export class SalesOrderService {
         take: options?.limit,
         order: options?.sort,
       });
-      const apiOrders = orders
-        .map((salesOrd) => this.mapToApiResponse(salesOrd))
-        .filter(Boolean) as SalesOrderApiResponse[];
+      const apiOrders = orders.map((salesOrd) => this.mapToApiResponse(salesOrd)).filter(Boolean);
       return { orders: apiOrders, total: count };
     } catch (error) {
       logger.error(`Error finding all sales orders: ${error}`);
@@ -174,7 +172,7 @@ export class SalesOrderService {
     }
 
     this.validateStatusTransition(order.status, status);
-    await this.handleStatusSpecificActions(order, status);
+    this.handleStatusSpecificActions(order, status);
 
     await this.orderRepository.update(id, { status, updatedByUserId });
     return this.findSalesOrderById(id);
@@ -303,7 +301,7 @@ export class SalesOrderService {
     await Promise.all(validationPromises);
 
     if ('quoteId' in input && input.quoteId) {
-      await this.validateQuote(input as CreateSalesOrderInput, isUpdate, orderId);
+      await this.validateQuote(input, isUpdate, orderId);
     }
   }
 
@@ -455,13 +453,13 @@ export class SalesOrderService {
    * @param createdByUserId The ID of the user creating the order.
    * @returns The partial order data.
    */
-  private async buildOrderData(
+  private buildOrderData(
     input: CreateSalesOrderInput,
     createdByUserId: number,
-  ): Promise<Partial<SalesOrder>> {
+  ): Partial<SalesOrder> {
     return {
       ...input,
-      orderNumber: await this.generateOrderNumber(),
+      orderNumber: this.generateOrderNumber(),
       orderDate: dayjs(input.orderDate).toDate(),
       status: input.status || SalesOrderStatus.DRAFT,
       createdByUserId,
@@ -722,10 +720,7 @@ export class SalesOrderService {
    * @param order The sales order.
    * @param newStatus The new status of the order.
    */
-  private async handleStatusSpecificActions(
-    order: SalesOrder,
-    newStatus: SalesOrderStatus,
-  ): Promise<void> {
+  private handleStatusSpecificActions(order: SalesOrder, newStatus: SalesOrderStatus): void {
     // Stock reservation logic (TODO: implement when stock service is available)
     if ([SalesOrderStatus.APPROVED, SalesOrderStatus.IN_PREPARATION].includes(newStatus)) {
       logger.info(`TODO: Reserve stock for order ${order.id} moving to ${newStatus}`);
@@ -859,7 +854,7 @@ export class SalesOrderService {
    * Generates a unique order number.
    * @returns The generated order number.
    */
-  private async generateOrderNumber(): Promise<string> {
+  private generateOrderNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
     return `SO-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }

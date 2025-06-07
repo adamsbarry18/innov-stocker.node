@@ -15,9 +15,9 @@ export function dependency(
   resourceKey: ResourcesKeys,
   dependencies: ResourcesKeys[] = [],
 ): ClassDecorator {
-  if (!resourceKey) throw 'RessourceKey not defined';
+  if (!resourceKey) throw new Error('RessourceKey not defined');
   if (!Object.values(ResourcesKeys).includes(resourceKey))
-    throw `RessourceKey ${resourceKey} not found`;
+    throw new Error(`RessourceKey ${resourceKey} not found`);
   return function (target: any): void {
     target.resourceKey = (): ResourcesKeys => resourceKey;
     target.dependencies = (): ResourcesKeys[] => dependencies;

@@ -13,17 +13,23 @@ export enum SecurityLevel {
   NOBODY = 999,
 }
 
-export enum Action {
+export enum ActionType {
   CREATE = 'create',
   READ = 'read',
   UPDATE = 'write',
   DELETE = 'delete',
   EXECUTE = 'execute',
+  APPROVE = 'approve',
+  CANCEL = 'cancel',
+  COMPLETE = 'complete',
+  SHIP = 'ship',
+  RECEIVE = 'receive',
+  VALIDATE = 'validate',
 }
 
 export type AuthorisationRule =
   | { level: SecurityLevel; feature?: never; action?: never }
-  | { level?: never; feature: string; action: Action | string };
+  | { level?: never; feature: string; action: ActionType | string };
 
 // CreateUserInput type and schema
 export type CreateUserInput = {

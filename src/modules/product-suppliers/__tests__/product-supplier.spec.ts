@@ -17,7 +17,7 @@ describe('Product Suppliers API', () => {
     isDefaultSupplier: false,
   };
 
-  beforeAll(async () => {
+  beforeAll(() => {
     // Assuming these IDs exist in the seeded test database (2-datas.sql)
     testProductId = 1; // Product 1 (Smartphone Modèle X)
     testVariantId = 2; // Variant 2 (Smartphone Modèle X - Vert)

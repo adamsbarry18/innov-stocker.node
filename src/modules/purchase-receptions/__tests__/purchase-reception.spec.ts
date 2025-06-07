@@ -282,8 +282,8 @@ describe('Purchase Receptions API', () => {
     });
 
     it('should fail to update if reception status does not allow modification', async () => {
-      let poIdForUpdateFailTest: number;
-      let poItemIdForUpdateFailTest: number;
+      let poIdForUpdateFailTest: number = 0;
+      let poItemIdForUpdateFailTest: number = 0;
 
       ({ purchaseOrderId: poIdForUpdateFailTest, purchaseOrderItemId: poItemIdForUpdateFailTest } =
         await createPurchaseOrderWithItem(testSupplierId, testProductId, 10, 100, adminToken));

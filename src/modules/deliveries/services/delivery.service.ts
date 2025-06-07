@@ -35,6 +35,7 @@ import { DeliveryItemRepository } from '../delivery-items/data/delivery-item.rep
 import { SalesOrderItemRepository } from '@/modules/sales-orders/sales-order-items/data/sales-order-item.repository';
 import { DeliveryItem } from '../delivery-items/models/delivery-item.entity';
 import { SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
+import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
 
 let instance: DeliveryService | null = null;
 
@@ -93,7 +94,7 @@ export class DeliveryService {
       await this.validateUser(createdByUserId);
       const { salesOrder } = await this.validateInput(input, false, undefined, manager);
 
-      const deliveryData = await this.buildDeliveryData(input, salesOrder, createdByUserId);
+      const deliveryData = this.buildDeliveryData(input, salesOrder, createdByUserId);
       const savedDelivery = await this.saveDeliveryWithItems(
         manager,
         deliveryData,
@@ -139,9 +140,7 @@ export class DeliveryService {
         searchTerm: options?.searchTerm,
         relations: this.deliveryRepository['getDefaultRelationsForFindAll'](),
       });
-      const apiDeliveries = deliveries
-        .map((d) => this.mapToApiResponse(d))
-        .filter(Boolean) as DeliveryApiResponse[];
+      const apiDeliveries = deliveries.map((d) => this.mapToApiResponse(d)).filter(Boolean);
       return { deliveries: apiDeliveries, total: count };
     } catch (error) {
       logger.error(
@@ -196,8 +195,8 @@ export class DeliveryService {
     return appDataSource.transaction(async (manager) => {
       const delivery = await this.getDeliveryForShipment(deliveryId, manager);
       await this.validateUser(createdByUserId);
-
-      await this.handleStockMovements(delivery, createdByUserId, actualShipDate, manager);
+      // TODO: Dépendance - Create Stock Movement (OUT)
+      // await this.handleStockMovements(delivery, createdByUserId, actualShipDate, manager);
       await this.updateSalesOrderShippedQuantities(delivery, manager);
 
       delivery.status = DeliveryStatus.SHIPPED;
@@ -509,14 +508,14 @@ export class DeliveryService {
    * @param createdByUserId The ID of the user creating the delivery.
    * @returns The partial delivery data.
    */
-  private async buildDeliveryData(
+  private buildDeliveryData(
     input: CreateDeliveryInput,
     salesOrder: SalesOrder,
     createdByUserId: number,
-  ): Promise<Partial<Delivery>> {
+  ): Partial<Delivery> {
     return {
       salesOrderId: input.salesOrderId,
-      deliveryNumber: await this.generateDeliveryNumber(),
+      deliveryNumber: this.generateDeliveryNumber(),
       deliveryDate: dayjs(input.deliveryDate).toDate(),
       status: DeliveryStatus.PENDING,
       shippingAddressId: input.shippingAddressId || salesOrder.shippingAddressId,
@@ -812,24 +811,26 @@ export class DeliveryService {
       if (!item.salesOrderItem) {
         throw new ServerError(`SalesOrderItem link missing for delivery item ${item.id}`);
       }
-      // TODO: Dépendance - Create Stock Movement (OUT)
       logger.info(
         `TODO: STOCK_MOVEMENT_OUT: ProductID ${item.productId}, VariantID ${item.productVariantId || 'N/A'}, Qty ${item.quantityShipped}, From ${delivery.dispatchWarehouseId ? 'WH ' + delivery.dispatchWarehouseId : 'Shop ' + delivery.dispatchShopId}, Ref: Delivery ${delivery.deliveryNumber}`,
       );
-      // await this.stockMovementService.createMovement({
-      //     productId: item.productId,
-      //     productVariantId: item.productVariantId,
-      //     warehouseId: delivery.dispatchWarehouseId,
-      //     shopId: delivery.dispatchShopId,
-      //     movementType: StockMovementType.SALE_DELIVERY,
-      //     quantity: -Math.abs(Number(item.quantityShipped)), // Negative for OUT
-      //     movementDate: actualShipDate ? dayjs(actualShipDate).toDate() : new Date(),
-      //     unitCostAtMovement: item.salesOrderItem.product?.defaultPurchasePrice, // Or more accurate cost
-      //     userId: createdByUserId,
-      //     referenceDocumentType: 'delivery',
-      //     referenceDocumentId: delivery.id.toString(),
-      //     notes: `Shipped via Delivery ${delivery.deliveryNumber} for SO ${delivery.salesOrder.orderNumber}`
-      // }, manager); // Pass manager to stockMovementService
+      await this.stockMovementService.createMovement(
+        {
+          productId: item.productId,
+          productVariantId: item.productVariantId,
+          warehouseId: delivery.dispatchWarehouseId,
+          shopId: delivery.dispatchShopId,
+          movementType: StockMovementType.SALE_DELIVERY,
+          quantity: -Math.abs(Number(item.quantityShipped)), // Negative for OUT
+          movementDate: actualShipDate ? dayjs(actualShipDate).toDate() : new Date(),
+          unitCostAtMovement: item.salesOrderItem.product?.defaultPurchasePrice, // Or more accurate cost
+          userId: createdByUserId,
+          referenceDocumentType: 'delivery',
+          referenceDocumentId: delivery.id.toString(),
+          notes: `Shipped via Delivery ${delivery.deliveryNumber} for SO ${delivery.salesOrder.orderNumber}`,
+        },
+        manager,
+      ); // Pass manager to stockMovementService
     }
   }
 
@@ -976,7 +977,7 @@ export class DeliveryService {
     return delivery.toApi();
   }
 
-  private async generateDeliveryNumber(): Promise<string> {
+  private generateDeliveryNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
     return `DL-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }

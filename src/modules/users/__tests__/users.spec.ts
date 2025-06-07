@@ -27,7 +27,7 @@ const createAndLoginUser = async (
   password = 'Password123!',
 ) => {
   let userId: number | undefined;
-  let token: string;
+  let token: string = '';
 
   // Use the new admin route to create users with specific levels for testing setup
   const userRes = await request(app)

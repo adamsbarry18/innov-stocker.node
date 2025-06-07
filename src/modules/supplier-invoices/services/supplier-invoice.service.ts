@@ -92,25 +92,21 @@ export class SupplierInvoiceService {
     createdByUserId: number,
   ): Promise<SupplierInvoiceApiResponse> {
     return appDataSource.transaction(async (manager) => {
-      try {
-        await this.validateInvoiceInput(input, {
-          isUpdate: false,
-          transactionalEntityManager: manager,
-        });
-        await this.validateUser(createdByUserId);
+      await this.validateInvoiceInput(input, {
+        isUpdate: false,
+        transactionalEntityManager: manager,
+      });
+      await this.validateUser(createdByUserId);
 
-        const invoiceHeader = await this.createInvoiceHeader(input, createdByUserId, manager);
-        await this.createInvoiceItems(input.items, invoiceHeader.id, manager);
-        await this.updateInvoiceTotals(invoiceHeader, manager);
-        if (input.purchaseOrderIds && input.purchaseOrderIds.length > 0) {
-          await this.createPurchaseOrderLinks(input.purchaseOrderIds, invoiceHeader.id, manager);
-        }
-
-        const response = await this.getPopulatedInvoiceResponse(invoiceHeader.id, manager);
-        return response;
-      } catch (error) {
-        throw error;
+      const invoiceHeader = await this.createInvoiceHeader(input, createdByUserId, manager);
+      await this.createInvoiceItems(input.items, invoiceHeader.id, manager);
+      await this.updateInvoiceTotals(invoiceHeader, manager);
+      if (input.purchaseOrderIds && input.purchaseOrderIds.length > 0) {
+        await this.createPurchaseOrderLinks(input.purchaseOrderIds, invoiceHeader.id, manager);
       }
+
+      const response = await this.getPopulatedInvoiceResponse(invoiceHeader.id, manager);
+      return response;
     });
   }
 
@@ -162,9 +158,7 @@ export class SupplierInvoiceService {
         take: options?.limit,
         order: options?.sort,
       });
-      const apiInvoices = invoices
-        .map((inv) => this.mapToApiResponse(inv))
-        .filter(Boolean) as SupplierInvoiceApiResponse[];
+      const apiInvoices = invoices.map((inv) => this.mapToApiResponse(inv)).filter(Boolean);
       return { invoices: apiInvoices, total: count };
     } catch (error: any) {
       logger.error(`Error finding all supplier invoives: ${JSON.stringify(error)}`);

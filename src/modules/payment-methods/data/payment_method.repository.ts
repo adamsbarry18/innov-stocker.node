@@ -10,6 +10,7 @@ import { appDataSource } from '@/database/data-source';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { PaymentMethod } from '../models/payment-method.entity';
+import { Payment } from '@/modules/payments/models/payment.entity';
 
 interface FindAllPaymentMethodsOptions {
   skip?: number;
@@ -129,13 +130,10 @@ export class PaymentMethodRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter cette méthode avec le repository des Payments
   async isPaymentMethodInUse(methodId: number): Promise<boolean> {
     logger.warn('PaymentMethodRepository.isPaymentMethodInUse is a placeholder.');
-    // Example:
-    // const paymentRepository = this.repository.manager.getRepository(Payment); // Assuming Payment entity
-    // const count = await paymentRepository.count({where: {paymentMethodId: methodId}});
-    // return count > 0;
-    return false;
+    const paymentRepository = this.repository.manager.getRepository(Payment);
+    const count = await paymentRepository.count({ where: { paymentMethodId: methodId } });
+    return count > 0;
   }
 }

@@ -142,7 +142,7 @@ try {
   } else {
     console.error('❌ Unexpected error parsing environment variables:', error);
   }
-  process.exit(1);
+  throw error;
 }
 
 export default config;

@@ -123,7 +123,9 @@ export default class WarehouseRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async getByIdRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
+    if (isNaN(id)) {
+      return next(new BadRequestError('Invalid ID format.'));
+    }
     await this.pipe(res, req, next, () => this.service.findById(id));
   }
 
@@ -161,7 +163,9 @@ export default class WarehouseRouter extends BaseRouter {
   async createRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateWarehouseInput = req.body;
     const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
+    if (!userId) {
+      return next(new UnauthorizedError('User ID not found for audit.'));
+    }
 
     await this.pipe(res, req, next, () => this.service.create(input, userId), 201);
   }
@@ -208,11 +212,15 @@ export default class WarehouseRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async updateRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
+    if (isNaN(id)) {
+      return next(new BadRequestError('Invalid ID format.'));
+    }
 
     const input: UpdateWarehouseInput = req.body;
     const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
+    if (!userId) {
+      return next(new UnauthorizedError('User ID not found for audit.'));
+    }
 
     await this.pipe(res, req, next, () => this.service.update(id, input, userId));
   }
@@ -250,10 +258,14 @@ export default class WarehouseRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async deleteRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
+    if (isNaN(id)) {
+      return next(new BadRequestError('Invalid ID format.'));
+    }
 
     const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
+    if (!userId) {
+      return next(new UnauthorizedError('User ID not found for audit.'));
+    }
 
     await this.pipe(
       res,

@@ -11,6 +11,7 @@ import { ProductCategory } from '../models/product-category.entity';
 import { appDataSource } from '@/database/data-source';
 import { BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { Product } from '@/modules/products/models/product.entity';
 
 interface FindAllProductCategoriesOptions {
   skip?: number;
@@ -157,16 +158,11 @@ export class ProductCategoryRepository {
     }
   }
 
-  // This method should ideally be in ProductRepository or use a direct query.
-  // For now, it's a placeholder as its direct implementation here is not ideal.
   async isCategoryUsedByProducts(categoryId: number): Promise<boolean> {
-    logger.warn(
-      'ProductCategoryRepository.isCategoryUsedByProducts is a placeholder and should be implemented using ProductRepository or a direct query.',
-    );
-    // Example (requires Product entity and repository):
-    // const productRepository = this.repository.manager.getRepository(Product); // Assuming Product entity exists
-    // const count = await productRepository.count({ where: { productCategoryId: categoryId, deletedAt: IsNull() }});
-    // return count > 0;
-    return false;
+    const productRepository = this.repository.manager.getRepository(Product);
+    const count = await productRepository.count({
+      where: { productCategoryId: categoryId, deletedAt: IsNull() },
+    });
+    return count > 0;
   }
 }

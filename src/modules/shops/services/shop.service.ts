@@ -11,7 +11,7 @@ import {
 import { Address, type CreateAddressInput } from '../../addresses/models/address.entity';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
-import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
+import { ILike, type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 
 let instance: ShopService | null = null;
@@ -60,14 +60,7 @@ export class ShopService {
     searchTerm?: string;
   }): Promise<{ shops: ShopApiResponse[]; total: number }> {
     try {
-      let whereClause = options?.filters ? { ...options.filters } : {};
-      if (options?.searchTerm) {
-        logger.warn('Search term functionality for shops is basic.');
-        // whereClause = [
-        //     { ...options.filters, name: ILike(`%${options.searchTerm}%`) },
-        //     { ...options.filters, code: ILike(`%${options.searchTerm}%`) },
-        // ];
-      }
+      const whereClause = options?.filters ? { ...options.filters } : {};
       const { shops, count } = await this.shopRepository.findAll({
         where: whereClause,
         skip: options?.offset,
@@ -111,7 +104,7 @@ export class ShopService {
         if (inputAddressId) {
           throw new BadRequestError('Provide either addressId or newAddress for shop, not both.');
         }
-        const addressEntity = addressRepoTx.create(newAddress as CreateAddressInput);
+        const addressEntity = addressRepoTx.create(newAddress);
         const savedAddress = await addressRepoTx.save(addressEntity);
         finalAddressId = savedAddress.id;
       } else if (inputAddressId) {

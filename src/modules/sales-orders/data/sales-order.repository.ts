@@ -227,9 +227,9 @@ export class SalesOrderRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec DeliveryRepository, CustomerInvoiceRepository
+  /* TODO: Dépendance - Implémenter avec DeliveryRepository, CustomerInvoiceRepository
   async isSalesOrderLinkedToDeliveryOrInvoice(orderId: number): Promise<boolean> {
     logger.warn('SalesOrderRepository.isSalesOrderLinkedToDeliveryOrInvoice is a placeholder.');
     return false;
-  }
+  }*/
 }

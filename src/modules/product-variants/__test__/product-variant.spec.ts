@@ -7,7 +7,7 @@ describe('Product Variants API', () => {
   let testProductId: number;
   let createdVariantId: number;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     // Assuming these IDs exist in the seeded test database (2-datas.sql)
     testProductId = 1;
   });

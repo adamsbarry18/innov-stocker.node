@@ -224,12 +224,12 @@ export class PurchaseReceptionRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec SupplierInvoiceRepository
+  /*TODO: Dépendance - Implémenter avec SupplierInvoiceRepository
   async isReceptionLinkedToInvoice(receptionId: number): Promise<boolean> {
     logger.warn('PurchaseReceptionRepository.isReceptionLinkedToInvoice is a placeholder.');
     // Example:
     // const supplierInvoiceItemRepo = this.repository.manager.getRepository(SupplierInvoiceItem);
     // const count = await supplierInvoiceItemRepo.count({where: {purchaseReceptionItemId: In(receptionItemIds)}}); // Needs receptionItemIds
     return false;
-  }
+  }*/
 }

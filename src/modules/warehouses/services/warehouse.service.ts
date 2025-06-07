@@ -7,7 +7,6 @@ import {
   type WarehouseApiResponse,
   Warehouse,
   warehouseValidationInputErrors,
-  type CreateAddressInput,
 } from '../models/warehouse.entity';
 import { Address } from '../../addresses/models/address.entity';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
@@ -63,7 +62,7 @@ export class WarehouseService {
     searchTerm?: string;
   }): Promise<{ warehouses: WarehouseApiResponse[]; total: number }> {
     try {
-      let whereClause: FindOptionsWhere<Warehouse> | FindOptionsWhere<Warehouse>[] =
+      const whereClause: FindOptionsWhere<Warehouse> | FindOptionsWhere<Warehouse>[] =
         options?.filters ? { ...options.filters } : {};
       if (options?.searchTerm) {
         logger.warn(
@@ -86,7 +85,7 @@ export class WarehouseService {
         where: whereClause,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { name: 'ASC' },
+        order: options?.sort ?? { name: 'ASC' },
       });
       const apiWarehouses = warehouses
         .map((w) => this.mapToApiResponse(w))
@@ -134,7 +133,7 @@ export class WarehouseService {
             'Provide either addressId or newAddress for warehouse, not both.',
           );
         }
-        const addressEntity = addressRepoTx.create(newAddress as CreateAddressInput);
+        const addressEntity = addressRepoTx.create(newAddress);
         const savedAddress = await addressRepoTx.save(addressEntity);
         finalAddressId = savedAddress.id;
       } else if (inputAddressId) {
@@ -196,11 +195,12 @@ export class WarehouseService {
       if (!address) throw new BadRequestError(`New address with ID ${input.addressId} not found.`);
     }
     if (input.hasOwnProperty('managerId')) {
-      if (input.managerId === null) {
-      } else if (input.managerId !== warehouseToUpdate.managerId) {
-        const manager = await this.userRepository.findById(input.managerId as number);
-        if (!manager)
-          throw new BadRequestError(`New manager (User) with ID ${input.managerId} not found.`);
+      if (input.managerId !== null) {
+        if (input.managerId !== warehouseToUpdate.managerId) {
+          const manager = await this.userRepository.findById(input.managerId as number);
+          if (!manager)
+            throw new BadRequestError(`New manager (User) with ID ${input.managerId} not found.`);
+        }
       }
     }
 
@@ -261,12 +261,12 @@ export class WarehouseService {
       const warehouse = await this.warehouseRepository.findById(id);
       if (!warehouse) throw new NotFoundError(`Warehouse with id ${id} not found.`);
 
-      const isInUse = await this.warehouseRepository.isWarehouseInUse(id);
+      /*const isInUse = await this.warehouseRepository.isWarehouseInUse(id);
       if (isInUse) {
         throw new BadRequestError(
           `Warehouse '${warehouse.name}' is in use and cannot be deleted. Please reassign associated records first.`,
         );
-      }
+      }*/
 
       // await this.warehouseRepository.update(id, { updatedByUserId: deletedByUserId }); // Optional audit before delete
       await this.warehouseRepository.softDelete(id);
@@ -278,9 +278,7 @@ export class WarehouseService {
   }
 
   static getInstance(): WarehouseService {
-    if (!instance) {
-      instance = new WarehouseService();
-    }
+    instance ??= new WarehouseService();
     return instance;
   }
 }

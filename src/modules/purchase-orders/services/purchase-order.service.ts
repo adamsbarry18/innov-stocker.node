@@ -259,11 +259,7 @@ export class PurchaseOrderService {
         }
 
         savedOrderHeader.calculateTotals();
-        try {
-          await orderRepoTx.save(savedOrderHeader);
-        } catch (saveError) {
-          throw saveError;
-        }
+        await orderRepoTx.save(savedOrderHeader);
 
         const populatedOrder = await orderRepoTx.findOne({
           where: { id: savedOrderHeader.id, deletedAt: IsNull() },

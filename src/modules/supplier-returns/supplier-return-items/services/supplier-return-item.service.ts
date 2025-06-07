@@ -154,10 +154,10 @@ export class SupplierReturnItemService {
       const itemEntity = itemRepoTx.create({
         ...validatedInput,
         supplierReturnId,
-        quantityShipped: 0, // Initialized
-        quantityReceived: 0, // Initialized (supplier received)
-        // createdByUserId, // If SupplierReturnItem has audit fields
-      }) as SupplierReturnItem;
+        quantityShipped: 0,
+        quantityReceived: 0,
+        // createdByUserId,
+      });
 
       if (!itemEntity.isValid()) {
         throw new BadRequestError(

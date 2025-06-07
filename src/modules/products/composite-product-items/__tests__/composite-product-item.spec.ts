@@ -12,7 +12,7 @@ describe('Composite Product Items API', () => {
   let createdItemLinkId1: number;
   let createdItemLinkId2: number;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     testCompositeProductId = 4; // Essential Telework Kit
     testComponentProductId1 = 5; // Ergonomic Wireless Mouse
     testComponentProductId2 = 1; // Smartphone Model X (parent product of the variant)

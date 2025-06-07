@@ -155,7 +155,7 @@ export class WarehouseRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter cette méthode avec les repositories pertinents (StockMovement, InventorySession, etc.)
+  /* TODO: Dépendance - Implémenter cette méthode avec les repositories pertinents (StockMovement, InventorySession, etc.)
   async isWarehouseInUse(warehouseId: number): Promise<boolean> {
     logger.warn('WarehouseRepository.isWarehouseInUse is a placeholder.');
     // Example:
@@ -163,5 +163,5 @@ export class WarehouseRepository {
     // const count = await stockMovementRepo.count({where: [{warehouseId: warehouseId}, {shopId: warehouseId}]}); // if shopId can reference warehouseId
     // return count > 0;
     return false;
-  }
+  }*/
 }

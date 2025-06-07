@@ -1,7 +1,7 @@
 import { Model } from '@/common/models/Model';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { Currency } from '@/modules/currencies/models/currency.entity';
-import { User } from '@/modules/users';
+import { User } from '@/modules/users/models/users.entity';
 import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { z } from 'zod';
 

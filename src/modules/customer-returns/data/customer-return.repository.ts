@@ -219,10 +219,10 @@ export class CustomerReturnRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec PaymentRepository ou CreditNoteRepository
+  /* TODO: Dépendance - Implémenter avec PaymentRepository ou CreditNoteRepository
   async isReturnProcessedForRefundOrExchange(returnId: number): Promise<boolean> {
     logger.warn('CustomerReturnRepository.isReturnProcessedForRefundOrExchange is a placeholder.');
     // Example: Check if a payment (refund) or credit note is linked to this returnId
     return false;
-  }
+  }*/
 }

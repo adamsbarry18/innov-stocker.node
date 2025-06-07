@@ -537,7 +537,7 @@ export class StockTransferService {
   ): Promise<StockTransfer> {
     const repo = manager.getRepository(StockTransfer);
     const transferData: Partial<StockTransfer> = {
-      transferNumber: await this.generateTransferNumber(),
+      transferNumber: this.generateTransferNumber(),
       sourceWarehouseId: input.sourceWarehouseId,
       sourceShopId: input.sourceShopId,
       destinationWarehouseId: input.destinationWarehouseId,
@@ -837,7 +837,7 @@ export class StockTransferService {
    * @returns A unique stock transfer number.
    */
 
-  private async generateTransferNumber(): Promise<string> {
+  private generateTransferNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
     return `TRF-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }

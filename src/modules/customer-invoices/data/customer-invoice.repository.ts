@@ -12,6 +12,7 @@ import { appDataSource } from '@/database/data-source';
 import { CustomerInvoice } from '../models/customer-invoice.entity';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { Payment } from '@/modules/payments/models/payment.entity';
 
 interface FindAllCustomerInvoicesOptions {
   skip?: number;
@@ -260,20 +261,19 @@ export class CustomerInvoiceRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec PaymentRepository
   async getAmountPaidForInvoice(
     invoiceId: number,
     transactionalEntityManager?: EntityManager,
   ): Promise<number> {
-    logger.warn('CustomerInvoiceRepository.getAmountPaidForInvoice is a placeholder.');
-    // Example:
-    // const paymentRepo = transactionalEntityManager ? transactionalEntityManager.getRepository(Payment) : this.repository.manager.getRepository(Payment);
-    // const result = await paymentRepo.createQueryBuilder("payment")
-    //    .select("SUM(payment.amount)", "totalPaid")
-    //    .where("payment.customerInvoiceId = :invoiceId", { invoiceId })
-    //    .andWhere("payment.direction = 'inbound'")
-    //    .getRawOne();
-    // return Number(result?.totalPaid || 0);
-    return 0;
+    const paymentRepo = transactionalEntityManager
+      ? transactionalEntityManager.getRepository(Payment)
+      : this.repository.manager.getRepository(Payment);
+    const result = await paymentRepo
+      .createQueryBuilder('payment')
+      .select('SUM(payment.amount)', 'totalPaid')
+      .where('payment.customerInvoiceId = :invoiceId', { invoiceId })
+      .andWhere("payment.direction = 'inbound'")
+      .getRawOne();
+    return Number(result?.totalPaid || 0);
   }
 }

@@ -85,7 +85,7 @@ export class ProductCategoryService {
           .filter(Boolean) as ProductCategoryApiResponse[];
       }
 
-      let effectiveFilters = options?.filters ? { ...options.filters } : {};
+      const effectiveFilters = options?.filters ? { ...options.filters } : {};
       if (options?.parentId !== undefined) {
         effectiveFilters.parentCategoryId = options.parentId === null ? IsNull() : options.parentId;
       }

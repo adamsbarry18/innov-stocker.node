@@ -56,7 +56,7 @@ export class BankAccountService {
     searchTerm?: string;
   }): Promise<{ accounts: BankAccountApiResponse[]; total: number }> {
     try {
-      let whereClause = options?.filters ? { ...options.filters } : {};
+      const whereClause = options?.filters ? { ...options.filters } : {};
       const { accounts, count } = await this.bankAccountRepository.findAll({
         where: whereClause,
         skip: options?.offset,

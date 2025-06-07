@@ -65,7 +65,7 @@ export class CashRegisterService {
     searchTerm?: string;
   }): Promise<{ registers: CashRegisterApiResponse[]; total: number }> {
     try {
-      let whereClause = options?.filters ? { ...options.filters } : {};
+      const whereClause = options?.filters ? { ...options.filters } : {};
       const { registers, count } = await this.registerRepository.findAll({
         where: whereClause,
         skip: options?.offset,

@@ -19,7 +19,7 @@ describe('Product Images API', () => {
     isPrimary: false,
   };
 
-  beforeAll(async () => {
+  beforeAll(() => {
     // Assuming these IDs exist in the seeded test database (2-datas.sql)
     testProductId = 1;
   });

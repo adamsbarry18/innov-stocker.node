@@ -218,9 +218,9 @@ export class SupplierReturnRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec le module de gestion des avoirs/remboursements fournisseurs
+  /* TODO: Dépendance - Implémenter avec le module de gestion des avoirs/remboursements fournisseurs
   async isReturnProcessedForCreditOrRefund(returnId: number): Promise<boolean> {
     logger.warn('SupplierReturnRepository.isReturnProcessedForCreditOrRefund is a placeholder.');
     return false;
-  }
+  }*/
 }

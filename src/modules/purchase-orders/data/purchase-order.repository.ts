@@ -191,7 +191,7 @@ export class PurchaseOrderRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec PurchaseReceptionRepository, SupplierInvoiceRepository
+  /* TODO: Dépendance - Implémenter avec PurchaseReceptionRepository, SupplierInvoiceRepository
   async isPurchaseOrderLinkedToReceptionOrInvoice(orderId: number): Promise<boolean> {
     logger.warn(
       'PurchaseOrderRepository.isPurchaseOrderLinkedToReceptionOrInvoice is a placeholder.',
@@ -204,5 +204,5 @@ export class PurchaseOrderRepository {
     // const invoiceLinkCount = await invoiceLinkRepo.count({where: {purchaseOrderId: orderId}});
     // return invoiceLinkCount > 0;
     return false;
-  }
+  }*/
 }

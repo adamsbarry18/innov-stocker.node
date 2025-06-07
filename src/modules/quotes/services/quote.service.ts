@@ -70,7 +70,7 @@ export class QuoteService {
     return quote.toApi();
   }
 
-  private async generateQuoteNumber(): Promise<string> {
+  private generateQuoteNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
     return `QT-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }
@@ -164,7 +164,7 @@ export class QuoteService {
         issueDate: dayjs(input.issueDate).toDate(),
         expiryDate: input.expiryDate ? dayjs(input.expiryDate).toDate() : null,
         status: input.status || QuoteStatus.DRAFT,
-        quoteNumber: await this.generateQuoteNumber(), // Generate unique quote number
+        quoteNumber: this.generateQuoteNumber(), // Generate unique quote number
         createdByUserId: createdByUserId,
         updatedByUserId: createdByUserId,
         items: [], // Initialize items array, will be populated next
@@ -326,7 +326,7 @@ export class QuoteService {
         const existingItemIds = quote.items?.map((item) => item.id) || [];
         const inputItemIds = input.items
           .map((item) => item.id)
-          .filter((itemId) => itemId !== undefined) as number[];
+          .filter((itemId) => itemId !== undefined);
 
         // Items to delete: in existing but not in input
         const itemsToDelete = quote.items?.filter((item) => !inputItemIds.includes(item.id)) || [];

@@ -159,7 +159,7 @@ export class QuoteRepository {
     }
   }
 
-  // TODO: Dépendance - Implémenter avec SalesOrderRepository
+  /*TODO: Dépendance - Implémenter avec SalesOrderRepository
   async isQuoteConvertedToOrder(quoteId: number): Promise<boolean> {
     logger.warn('QuoteRepository.isQuoteConvertedToOrder is a placeholder.');
     // Example:
@@ -167,5 +167,5 @@ export class QuoteRepository {
     // const count = await salesOrderRepo.count({where: {quoteId: quoteId, deletedAt: IsNull()}});
     // return count > 0;
     return false;
-  }
+  }*/
 }

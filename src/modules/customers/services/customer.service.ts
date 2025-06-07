@@ -77,20 +77,7 @@ export class CustomerService {
     searchTerm?: string;
   }): Promise<{ customers: CustomerApiResponse[]; total: number }> {
     try {
-      let whereClause = options?.filters ? { ...options.filters } : {};
-      if (options?.searchTerm) {
-        // TODO: Améliorer la recherche pour TypeORM (ex: QueryBuilder avec OR sur plusieurs champs)
-        // Ceci est une recherche simple, insensible à la casse sur le nom/email/companyName
-        // whereClause = [
-        //     { ...whereClause, firstName: ILike(`%${options.searchTerm}%`) },
-        //     { ...whereClause, lastName: ILike(`%${options.searchTerm}%`) },
-        //     { ...whereClause, companyName: ILike(`%${options.searchTerm}%`) },
-        //     { ...whereClause, email: ILike(`%${options.searchTerm}%`) },
-        // ];
-        logger.warn(
-          'Search term functionality for customers is basic. Consider full-text search for production.',
-        );
-      }
+      const whereClause = options?.filters ? { ...options.filters } : {};
 
       const { customers, count } = await this.customerRepository.findAll({
         where: whereClause,

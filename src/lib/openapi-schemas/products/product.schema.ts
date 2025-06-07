@@ -1,15 +1,11 @@
 import { ProductStatus } from '@/modules/products/models/product.entity';
 
 // Références (supposons qu'ils sont définis globalement ou importés d'autres fichiers schema)
-const ProductCategoryApiResponseRef = { $ref: '\#/components/schemas/ProductCategoryApiResponse' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '\#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const SupplierApiResponseRef = { $ref: '\#/components/schemas/SupplierApiResponse' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const CurrencyApiResponseRef = { $ref: '\#/components/schemas/CurrencyApiResponse' };
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCurrencyDTORef = { $ref: '\#/components/schemas/EmbeddedCurrencyDTO' };
+const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
 
 // --- ProductImage Schemas ---
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -72,7 +68,7 @@ const CreateProductVariantInput = {
       type: 'integer',
       nullable: true,
       description:
-        'ID of an existing product\_images record to associate specifically with this variant',
+        'ID of an existing product images record to associate specifically with this variant',
     },
   },
 };
@@ -163,14 +159,14 @@ const CreateProductSupplierInput = {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const CreateProductSupplierForProductInput = {
   allOf: [
-    { $ref: '\#/components/schemas/CreateProductSupplierInput' },
+    { $ref: '#/components/schemas/CreateProductSupplierInput' },
     { type: 'object', required: ['productId'], properties: { productId: { type: 'integer' } } },
   ],
 };
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const CreateProductSupplierForVariantInput = {
   allOf: [
-    { $ref: '\#/components/schemas/CreateProductSupplierInput' },
+    { $ref: '#/components/schemas/CreateProductSupplierInput' },
     {
       type: 'object',
       required: ['productVariantId'],
@@ -315,22 +311,22 @@ const ProductApiResponse = {
     notes: { type: 'string', nullable: true },
     images: {
       type: 'array',
-      items: { $ref: '\#/components/schemas/ProductImageApiResponse' },
+      items: { $ref: '#/components/schemas/ProductImageApiResponse' },
       nullable: true,
     },
     variants: {
       type: 'array',
-      items: { $ref: '\#/components/schemas/ProductVariantApiResponse' },
+      items: { $ref: '#/components/schemas/ProductVariantApiResponse' },
       nullable: true,
     },
     productSuppliers: {
       type: 'array',
-      items: { $ref: '\#/components/schemas/ProductSupplierApiResponse' },
+      items: { $ref: '#/components/schemas/ProductSupplierApiResponse' },
       nullable: true,
     },
     components: {
       type: 'array',
-      items: { $ref: '\#/components/schemas/CompositeProductItemApiResponse' },
+      items: { $ref: '#/components/schemas/CompositeProductItemApiResponse' },
       nullable: true,
     },
     createdByUserId: { type: 'integer', nullable: true },

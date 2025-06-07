@@ -11,6 +11,8 @@ import { appDataSource } from '@/database/data-source';
 import { Customer } from '../models/customer.entity';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
+import { Quote } from '@/modules/quotes/models/quote.entity';
 
 interface FindAllCustomersOptions {
   skip?: number;
@@ -178,13 +180,13 @@ export class CustomerRepository {
     }
   }
 
-  // TODO: Implement isCustomerInUse with necessary repositories
   async isCustomerInUse(customerId: number): Promise<boolean> {
-    logger.warn('CustomerRepository.isCustomerInUse is a placeholder.');
-    // Example:
-    // const salesOrderCount = await this.repository.manager.getRepository(SalesOrder).count({where: {customerId}});
-    // const quoteCount = await this.repository.manager.getRepository(Quote).count({where: {customerId}});
-    // return salesOrderCount > 0 || quoteCount > 0;
-    return false;
+    const salesOrderCount = await this.repository.manager
+      .getRepository(SalesOrder)
+      .count({ where: { customerId } });
+    const quoteCount = await this.repository.manager
+      .getRepository(Quote)
+      .count({ where: { customerId } });
+    return salesOrderCount > 0 || quoteCount > 0;
   }
 }
