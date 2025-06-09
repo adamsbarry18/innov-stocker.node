@@ -388,11 +388,11 @@ INSERT INTO cash_register_transactions (id, cash_register_session_id, transactio
 -- -----------------------------------------------------
 -- Table user_activity_logs
 -- -----------------------------------------------------
-INSERT INTO user_activity_logs (id, user_id, action_type, entity_type, entity_id, details_before, details_after, ip_address, user_agent, timestamp) VALUES
-(1, 1, 'LOGIN_SUCCESS', 'USER', 1, NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36', CURRENT_TIMESTAMP),
-(2, 2, 'CREATE_ENTITY', 'PRODUCT', 1, NULL, '{"name": "Smartphone Modèle X", "sku": "PROD-SP-001"}', '192.168.1.10', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15', CURRENT_TIMESTAMP),
-(3, 1, 'UPDATE_ENTITY', 'COMPANY', 1, '{"name": "Old Company Name"}', '{"name": "Innov Stocker SARL"}', '127.0.0.1', 'Mozilla/5.0 ...', '2025-05-10 10:00:00'),
-(4, 2, 'VIEW_ENTITY_LIST', 'SUPPLIER', NULL, NULL, NULL, '192.168.1.10', 'Mozilla/5.0 ...', '2025-05-11 11:00:00');
+INSERT INTO user_activity_logs (id, user_id, action_type, entity_type, entity_id, details, ip_address, timestamp) VALUES
+(1, 1, 'LOGIN_SUCCESS', 'USER', '1', NULL, '127.0.0.1', CURRENT_TIMESTAMP),
+(2, 2, 'CREATE', 'PRODUCT', '1', '{"name": "Smartphone Modèle X", "sku": "PROD-SP-001"}', '192.168.1.10', CURRENT_TIMESTAMP),
+(3, 1, 'UPDATE', 'COMPANY', '1', '{"name": "Innov Stocker SARL"}', '127.0.0.1', '2025-05-10 10:00:00'),
+(4, 2, 'VIEW', 'SUPPLIER', NULL, NULL, '192.168.1.10', '2025-05-11 11:00:00');
 
 -- -----------------------------------------------------
 -- Table notifications

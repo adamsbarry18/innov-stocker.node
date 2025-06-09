@@ -36,6 +36,7 @@ import {
   cashRegisterTransactionSchemas,
   customerReturnSchemas,
   supplierReturnSchemas,
+  userActivityLogSchemas,
 } from './openapi-schemas';
 
 const swaggerDefinition = {
@@ -92,6 +93,7 @@ const swaggerDefinition = {
       ...cashRegisterTransactionSchemas,
       ...customerReturnSchemas,
       ...supplierReturnSchemas,
+      ...userActivityLogSchemas,
       ErrorResponse: {
         type: 'object',
         properties: {

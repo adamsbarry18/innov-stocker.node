@@ -1276,12 +1276,11 @@ CREATE TABLE `user_activity_logs` (
     `user_id` INT DEFAULT NULL,
     `action_type` VARCHAR(255) NOT NULL,
     `entity_type` VARCHAR(100) DEFAULT NULL,
-    `entity_id` INT DEFAULT NULL,
-    `details_before` JSON DEFAULT NULL,
-    `details_after` JSON DEFAULT NULL,
+    `entity_id` VARCHAR(100) DEFAULT NULL,
+    `details` JSON DEFAULT NULL,
     `ip_address` VARCHAR(45) DEFAULT NULL,
-    `user_agent` TEXT DEFAULT NULL,
-    `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT `fk_ual_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 -- Index sur user_id et timestamp pour recherches rapides
 CREATE INDEX `idx_user_activity_user_time` ON `user_activity_logs` (`user_id`, `timestamp`);

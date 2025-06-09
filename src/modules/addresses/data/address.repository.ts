@@ -42,7 +42,7 @@ export class AddressRepository {
     const where = { ...options.where, deletedAt: IsNull() };
     const [addresses, count] = await this.repository.findAndCount({
       where,
-      order: options.order || { createdAt: 'DESC' },
+      order: options.order ?? { createdAt: 'DESC' },
       skip: options.skip,
       take: options.take,
     });

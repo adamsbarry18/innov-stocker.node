@@ -49,6 +49,7 @@ import { Payment } from '@/modules/payments/models/payment.entity';
 import { CashRegisterTransaction } from '@/modules/cash-register-transactions/models/cash-register-transaction.entity';
 import { SupplierReturn } from '@/modules/supplier-returns/models/supplier-return.entity';
 import { SupplierReturnItem } from '@/modules/supplier-returns/supplier-return-items/models/supplier-return-item.entity';
+import { UserActivityLog } from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -107,6 +108,7 @@ export const appDataSourceOptions: DataSourceOptions = {
     CashRegisterTransaction,
     SupplierReturn,
     SupplierReturnItem,
+    UserActivityLog,
   ],
   migrations: [],
   subscribers: [],

@@ -19,12 +19,6 @@ export enum ActionType {
   UPDATE = 'write',
   DELETE = 'delete',
   EXECUTE = 'execute',
-  APPROVE = 'approve',
-  CANCEL = 'cancel',
-  COMPLETE = 'complete',
-  SHIP = 'ship',
-  RECEIVE = 'receive',
-  VALIDATE = 'validate',
 }
 
 export type AuthorisationRule =
