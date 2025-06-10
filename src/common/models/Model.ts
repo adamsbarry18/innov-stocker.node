@@ -54,6 +54,14 @@ export abstract class Model extends BaseEntity {
   }
 
   /**
+   * Normalized entity id for user entity changelog
+   * @returns Normalized identifier
+   */
+  get entityIdentifier(): string {
+    return `${this.id}`;
+  }
+
+  /**
    * Met à jour l'entité avec de nouvelles données
    */
   update(data: Partial<this>): void {
