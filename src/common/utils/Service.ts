@@ -1,8 +1,147 @@
 import { type User } from '@/modules/users/models/users.entity';
+import { DependencyManager } from './DependencyManager';
+import { type DataSource } from 'typeorm';
+import { ReadyManager } from './ReaderManager';
+
+const DS_SERVICE = new WeakMap<Service, DataSource | object>();
 
 export enum ResourcesKeys {
   USER = 'user',
+  ADDRESSES = 'addresses',
+  CURRENCIES = 'currencies',
+  COMPANY = 'company',
+  PRODUCT_CATEGORIES = 'product_categories',
+  CUSTOMER_GROUPS = 'customer_groups',
+  SUPPLIERS = 'suppliers',
+  CUSTOMERS = 'customers',
+  CUSTOMER_SHIPPING_ADDRESSES = 'customer_shipping_addresses',
+  WAREHOUSES = 'warehouses',
+  SHOPS = 'shops',
+  PRODUCTS = 'products',
+  PRODUCT_IMAGES = 'product_images',
+  PRODUCT_VARIANTS = 'product_variants',
+  COMPOSITE_PRODUCT_ITEMS = 'composite_product_items',
+  PRODUCT_SUPPLIERS = 'product_suppliers',
+  STOCK_MOVEMENTS = 'stock_movements',
+  INVENTORY_SESSIONS = 'inventory_sessions',
+  INVENTORY_SESSION_ITEMS = 'inventory_session_items',
+  STOCK_TRANSFERS = 'stock_transfers',
+  STOCK_TRANSFER_ITEMS = 'stock_transfer_items',
+  PURCHASE_ORDERS = 'purchase_orders',
+  PURCHASE_ORDER_ITEMS = 'purchase_order_items',
+  PURCHASE_RECEPTIONS = 'purchase_receptions',
+  PURCHASE_RECEPTION_ITEMS = 'purchase_reception_items',
+  SUPPLIER_INVOICES = 'supplier_invoices',
+  SUPPLIER_INVOICE_ITEMS = 'supplier_invoice_items',
+  SUPPLIER_INVOICE_PURCHASE_ORDER_LINKS = 'supplier_invoice_purchase_order_links',
+  SUPPLIER_RETURNS = 'supplier_returns',
+  SUPPLIER_RETURN_ITEMS = 'supplier_return_items',
+  QUOTES = 'quotes',
+  QUOTE_ITEMS = 'quote_items',
+  SALES_ORDERS = 'sales_orders',
+  SALES_ORDER_ITEMS = 'sales_order_items',
+  DELIVERIES = 'deliveries',
+  DELIVERY_ITEMS = 'delivery_items',
+  CUSTOMER_INVOICES = 'customer_invoices',
+  CUSTOMER_INVOICE_ITEMS = 'customer_invoice_items',
+  CUSTOMER_INVOICE_SALES_ORDER_LINKS = 'customer_invoice_sales_order_links',
+  CUSTOMER_RETURNS = 'customer_returns',
+  CUSTOMER_RETURN_ITEMS = 'customer_return_items',
+  PAYMENT_METHODS = 'payment_methods',
+  BANK_ACCOUNTS = 'bank_accounts',
+  CASH_REGISTERS = 'cash_registers',
+  CASH_REGISTER_SESSIONS = 'cash_register_sessions',
+  PAYMENTS = 'payments',
+  CASH_REGISTER_TRANSACTIONS = 'cash_register_transactions',
+  USER_ACTIVITY_LOGS = 'user_activity_logs',
+  NOTIFICATIONS = 'notifications',
   NA = 'n/a',
+}
+interface ICanDelete {
+  result: boolean;
+  dependents: DependentWrapper[];
+}
+
+/**
+ * Classe de base des services
+ */
+export class Service {
+  // Removed 'extends DataSource'
+  entity?: string;
+  private static _currentUser: User | null = null; // Make _user static
+  // Hack to have a proper type for constructor https://github.com/microsoft/TypeScript/issues/3841
+  ['constructor']!: typeof Service;
+
+  constructor(dataSourceService: object = {}) {
+    if (dataSourceService) {
+      DS_SERVICE.set(this, dataSourceService);
+    }
+    DependencyManager.getInstance().registerDependencies(
+      this,
+      this.constructor.resourceKey(),
+      this.constructor.dependencies(),
+    );
+    ReadyManager.getInstance().registerService(this);
+  }
+
+  /**
+   * Retourne l'objet d'accès aux données
+   */
+  get DataSource(): DataSource | object {
+    // Changed return type to include object
+    return DS_SERVICE.get(this) as DataSource | object;
+  }
+
+  /**
+   * Ready flag
+   */
+  static get isReady(): boolean {
+    return true;
+  }
+
+  static resourceKey(): ResourcesKeys {
+    // Overridden by @dependency
+    return this.name as ResourcesKeys;
+  }
+
+  static dependencies(): ResourcesKeys[] {
+    return [];
+  }
+
+  async getDependents(id: number): Promise<DependentWrapper[]> {
+    return await DependencyManager.getInstance().getDependents(this.constructor.resourceKey(), id);
+  }
+
+  //eslint-disable-next-line @typescript-eslint/require-await
+  async getDependencies({
+    resourceKey,
+    id,
+  }: {
+    resourceKey: ResourcesKeys;
+    id: number;
+  }): Promise<DependentWrapper[]> {
+    return [];
+  }
+
+  async canDelete(id: number): Promise<ICanDelete> {
+    const dependents = (await this.getDependents(id)).filter((dep) => dep.preventDeletion);
+    return {
+      result: dependents.length === 0,
+      dependents,
+    };
+  }
+
+  static setUser(user: User): void {
+    Service._currentUser = user;
+  }
+
+  static getUser(): User | null {
+    return Service._currentUser;
+  }
+
+  static clearUser(): void {
+    Service._currentUser = null;
+  }
 }
 
 export function service(registry: { entity: string }): ClassDecorator {
@@ -85,21 +224,3 @@ export function isJson(str: string): boolean {
   }
   return true;
 }
-
-export class GlobalService {
-  private _user: User | null = null;
-
-  setUser(user: User): void {
-    this._user = user;
-  }
-
-  getUser(): User | null {
-    return this._user;
-  }
-
-  clearUser(): void {
-    this._user = null;
-  }
-}
-
-export const globalService = new GlobalService();

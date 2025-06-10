@@ -8,18 +8,20 @@ import {
   type ActionType,
   type EntityType,
 } from '../models/user-activity-log.entity';
-import { globalService } from '@/common/utils/Service';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';
+import { Service } from '@/common/utils/Service';
 
 let instance: UserActivityLogService | null = null;
 
-export class UserActivityLogService {
+export class UserActivityLogService extends Service {
   constructor(
     private readonly logRepository: UserActivityLogRepository = new UserActivityLogRepository(),
     private readonly userRepository: UserRepository = new UserRepository(),
-  ) {}
+  ) {
+    super();
+  }
 
   static getInstance(): UserActivityLogService {
     instance ??= new UserActivityLogService();
@@ -44,7 +46,7 @@ export class UserActivityLogService {
     entityId: string,
     details = {},
   ): Promise<void> {
-    const userId = globalService.getUser()?.id;
+    const userId = Service.getUser()?.id;
     if (!userId) {
       logger.error('Could not create entity changelog: User ID is undefined.');
       throw new BadRequestError('User ID is required to create an entity changelog.');

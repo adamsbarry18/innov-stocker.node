@@ -43,6 +43,11 @@ import {
   type CreateCustomerInvoiceItemInput,
 } from '../customer-invoice-items/models/customer-invoice-item.entity';
 import { CustomerInvoiceSalesOrderLink } from '../models/customer-invoice-sales-order-link.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 interface ValidationContext {
   isUpdate: boolean;
@@ -124,6 +129,14 @@ export class CustomerInvoiceService {
         }
 
         const response = await this.getPopulatedInvoiceResponse(invoiceHeader.id, manager);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.CREATE,
+          EntityType.FINANCIAL_TRANSACTION,
+          invoiceHeader.id.toString(),
+          { invoiceNumber: invoiceHeader.invoiceNumber },
+        );
+
         return response;
       } catch (error: any) {
         logger.error(
@@ -141,11 +154,12 @@ export class CustomerInvoiceService {
    * @param requestingUserId - The ID of the user requesting the invoice.
    * @returns The customer invoice API response.
    */
-  async findCustomerInvoiceById(
-    id: number,
-    requestingUserId: number,
-  ): Promise<CustomerInvoiceApiResponse> {
+  async findCustomerInvoiceById(id: number): Promise<CustomerInvoiceApiResponse> {
     try {
+      if (isNaN(id) || id <= 0) {
+        throw new BadRequestError(`Invalid customer invoice ID format: ${id}.`);
+      }
+
       const invoice = await this.invoiceRepository.findById(id, {
         relations: this.getDetailedRelations(),
       });
@@ -232,6 +246,13 @@ export class CustomerInvoiceService {
 
       await this.recalculateAndUpdateTotals(id, updatedByUserId, manager);
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.FINANCIAL_TRANSACTION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return this.getPopulatedInvoiceResponse(id, manager);
     });
   }
@@ -261,9 +282,8 @@ export class CustomerInvoiceService {
   /**
    * Deletes a customer invoice (soft delete).
    * @param id - The ID of the customer invoice to delete.
-   * @param deletedByUserId - The ID of the user deleting the invoice.
    */
-  async deleteCustomerInvoice(id: number, deletedByUserId: number): Promise<void> {
+  async deleteCustomerInvoice(id: number): Promise<void> {
     try {
       const invoice = await this.getExistingInvoice(id);
 
@@ -271,6 +291,12 @@ export class CustomerInvoiceService {
       await this.validateNoPendingPayments(id);
 
       await this.invoiceRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.FINANCIAL_TRANSACTION,
+        id.toString(),
+      );
     } catch (error: any) {
       logger.error(
         `[deleteCustomerInvoice] Error deleting customer invoice: ${JSON.stringify(error)}`,

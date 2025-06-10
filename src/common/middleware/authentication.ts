@@ -20,7 +20,6 @@ import {
   ValidationError,
   ServerError,
   BaseError,
-  // BadRequestError is imported where used or assumed globally available via httpErrors
 } from '@/common/errors/httpErrors';
 import type { CustomJwtPayload } from '@/common/types';
 import config from '@/config';
@@ -29,6 +28,7 @@ import logger from '@/lib/logger';
 import { AuthorizationService } from '@/modules/auth/services/authorization.service';
 import { LoginService } from '@/modules/auth/services/login.services';
 import { UsersService } from '@/modules/users/services/users.services';
+import { Service } from '@/common/utils/Service';
 
 type JwtStrategyOptionsWithRequest = JwtStrategyOptions & {
   passReqToCallback: true;
@@ -210,6 +210,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction): vo
         return next(new UnauthorizedError(message));
       }
       req.user = user;
+      Service.setUser(user);
       next();
     },
   )(req, res, next);

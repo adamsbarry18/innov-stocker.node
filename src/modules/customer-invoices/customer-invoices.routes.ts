@@ -150,9 +150,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async getCustomerInvoiceById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
-    await this.pipe(res, req, next, () => this.service.findCustomerInvoiceById(id, userId));
+    await this.pipe(res, req, next, () => this.service.findCustomerInvoiceById(id));
   }
 
   /**
@@ -376,7 +374,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
       req,
       next,
       async () => {
-        await this.service.deleteCustomerInvoice(id, userId);
+        await this.service.deleteCustomerInvoice(id);
       },
       204,
     );
