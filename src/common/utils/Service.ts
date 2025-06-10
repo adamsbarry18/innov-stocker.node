@@ -1,3 +1,5 @@
+import { type User } from '@/modules/users/models/users.entity';
+
 export enum ResourcesKeys {
   USER = 'user',
   NA = 'n/a',
@@ -83,3 +85,21 @@ export function isJson(str: string): boolean {
   }
   return true;
 }
+
+export class GlobalService {
+  private _user: User | null = null;
+
+  setUser(user: User): void {
+    this._user = user;
+  }
+
+  getUser(): User | null {
+    return this._user;
+  }
+
+  clearUser(): void {
+    this._user = null;
+  }
+}
+
+export const globalService = new GlobalService();

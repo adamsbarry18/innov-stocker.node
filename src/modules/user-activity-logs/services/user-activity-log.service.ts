@@ -5,7 +5,10 @@ import {
   type CreateUserActivityLogInput,
   type UserActivityLogApiResponse,
   createUserActivityLogSchema,
+  type ActionType,
+  type EntityType,
 } from '../models/user-activity-log.entity';
+import { globalService } from '@/common/utils/Service';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';
@@ -29,6 +32,40 @@ export class UserActivityLogService {
   }
 
   /**
+   * Creates an entity changelog entry
+   * @param actionType changelog action
+   * @param entityType changelog entity type
+   * @param entityId entity id
+   * @param details entry info
+   */
+  async insertEntry(
+    actionType: ActionType,
+    entityType: EntityType,
+    entityId: string,
+    details = {},
+  ): Promise<void> {
+    const userId = globalService.getUser()?.id;
+    if (!userId) {
+      logger.error('Could not create entity changelog: User ID is undefined.');
+      throw new BadRequestError('User ID is required to create an entity changelog.');
+    }
+
+    const params = {
+      userId,
+      actionType,
+      entityId,
+      entityType,
+      details,
+    };
+
+    try {
+      await this.logAction(params);
+    } catch (err) {
+      logger.error('Could not create entity changelog', err, params);
+    }
+  }
+
+  /**
    * Logs a user action. This is the primary method to be called by other services.
    * Can be executed within an existing transaction by passing the entityManager.
    * @param input - The data for the log entry.
@@ -44,15 +81,11 @@ export class UserActivityLogService {
       const errors = validationResult.error.issues.map(
         (issue) => `${issue.path.join('.')}: ${issue.message}`,
       );
-      // In a real-world scenario, a logging failure should probably not fail the main transaction.
-      // We'll log the error and continue, rather than throwing a BadRequestError.
       logger.error({ message: 'Invalid data passed to logAction', errors, input });
       throw new BadRequestError(`Invalid log data. Errors: ${errors.join(', ')}`);
     }
     const validatedInput = validationResult.data;
 
-    // The user should already be validated by the calling service.
-    // A quick check can be done here for robustness.
     if (!(await this.userRepository.findById(validatedInput.userId))) {
       logger.error(`Attempted to log action for non-existent user ID: ${validatedInput.userId}`);
       throw new BadRequestError(
@@ -64,9 +97,6 @@ export class UserActivityLogService {
 
     try {
       const savedLog = await this.logRepository.save(logEntity, transactionalEntityManager);
-      logger.info(
-        `User action logged: { userId: ${savedLog.userId}, actionType: ${savedLog.actionType}, entityType: ${savedLog.entityType}, entityId: ${savedLog.entityId} }`,
-      );
       return savedLog;
     } catch (error) {
       logger.error({ message: 'Failed to save user activity log', error, logData: logEntity });
