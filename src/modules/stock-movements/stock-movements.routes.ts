@@ -159,8 +159,8 @@ export default class StockMovementRouter extends BaseRouter {
     if (isNaN(id)) {
       return next(new BadRequestError('Invalid ID format. ID must be a number.'));
     }
-    const userId = req.user!.id;
-    await this.pipe(res, req, next, () => this.service.findStockMovementById(id, userId));
+
+    await this.pipe(res, req, next, () => this.service.findStockMovementById(id));
   }
 
   /**

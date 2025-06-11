@@ -26,6 +26,15 @@ export class StockMovementService {
   private readonly shopRepository: ShopRepository;
   private readonly userRepository: UserRepository;
 
+  /**
+   * Creates an instance of StockMovementService.
+   * @param movementRepository - The repository for stock movements.
+   * @param productRepository - The repository for products.
+   * @param variantRepository - The repository for product variants.
+   * @param warehouseRepository - The repository for warehouses.
+   * @param shopRepository - The repository for shops.
+   * @param userRepository - The repository for users.
+   */
   constructor(
     movementRepository: StockMovementRepository = new StockMovementRepository(),
     productRepository: ProductRepository = new ProductRepository(),
@@ -42,23 +51,26 @@ export class StockMovementService {
     this.userRepository = userRepository;
   }
 
+  /**
+   * Maps a StockMovement object to a StockMovementApiResponse object.
+   * @param movement - The stock movement to map.
+   * @returns The mapped StockMovementApiResponse object, or null if the movement is null.
+   */
   mapToApiResponse(movement: StockMovement | null): StockMovementApiResponse | null {
     if (!movement) return null;
     return movement.toApi();
   }
 
   /**
-   * Internal method to create a stock movement. Usually called by other services.
-   * Can also be used for manual adjustments if the DTO is constructed correctly.
-   * Ensures product/variant and location exist.
-   * IMPORTANT: This method is designed to be called within an existing transaction if part of a larger operation.
-   * If called directly (e.g. for manual adjustment), it should initiate its own transaction.
+   * Creates a new stock movement.
+   * @param input - The input data for creating the stock movement.
+   * @param transactionalEntityManager - The transactional entity manager (optional).
+   * @returns The created stock movement.
    */
   async createMovement(
     input: CreateStockMovementInput,
-    transactionalEntityManager?: EntityManager, // Optional for use within existing transactions
+    transactionalEntityManager?: EntityManager,
   ): Promise<StockMovement> {
-    // Returns entity for internal use
     const validationResult = createStockMovementSchema.safeParse(input);
     if (!validationResult.success) {
       const errors = validationResult.error.issues.map(
@@ -96,9 +108,8 @@ export class StockMovementService {
 
     const movementEntityData: Partial<StockMovement> = {
       ...validatedInput,
-      movementDate: validatedInput.movementDate || new Date(), // Default to now
+      movementDate: validatedInput.movementDate ?? new Date(),
     };
-    // Ensure quantity has the correct sign based on movement type
     const type = validatedInput.movementType;
     if (
       (type.endsWith('_OUT') || type === StockMovementType.SALE_DELIVERY) &&
@@ -155,6 +166,12 @@ export class StockMovementService {
     }
   }
 
+  /**
+   * Creates a manual stock adjustment.
+   * @param input - The input data for creating the manual adjustment.
+   * @param createdByUserId - The ID of the user who created the adjustment.
+   * @returns The API response of the created stock movement.
+   */
   async createManualAdjustment(
     input: CreateStockMovementInput,
     createdByUserId: number,
@@ -167,25 +184,25 @@ export class StockMovementService {
         "Invalid movementType for manual adjustment. Must be 'manual_entry_in' or 'manual_entry_out'.",
       );
     }
-    input.userId = createdByUserId; // Ensure the user creating the adjustment is logged
+    input.userId = createdByUserId;
 
-    // Manual adjustments should be transactional if they update other aggregates
-    const movement = await this.createMovement(input); // createMovement handles its own transaction if no EM passed
-    const populatedMovement = await this.movementRepository.findById(movement.id); // Re-fetch with relations
+    const movement = await this.createMovement(input);
+    const populatedMovement = await this.movementRepository.findById(movement.id);
     const apiResponse = this.mapToApiResponse(populatedMovement);
     if (!apiResponse)
       throw new ServerError(`Failed to map created manual stock adjustment ${movement.id}.`);
     return apiResponse;
   }
 
-  async findStockMovementById(
-    id: number,
-    requestingUserId: number,
-  ): Promise<StockMovementApiResponse> {
+  /**
+   * Finds a stock movement by its ID.
+   * @param id - The ID of the stock movement.
+   * @returns The API response of the found stock movement.
+   */
+  async findStockMovementById(id: number): Promise<StockMovementApiResponse> {
     try {
       const movement = await this.movementRepository.findById(id);
       if (!movement) throw new NotFoundError(`Stock movement with id ${id} not found.`);
-      // TODO: Authorization, if needed
 
       const apiResponse = this.mapToApiResponse(movement);
       if (!apiResponse) throw new ServerError(`Failed to map stock movement ${id}.`);
@@ -200,20 +217,24 @@ export class StockMovementService {
     }
   }
 
+  /**
+   * Retrieves all stock movements with filtering, pagination, and sorting options.
+   * @param options - Options for the search (limit, offset, filters, sort).
+   * @returns An object containing the API-mapped stock movements and the total count.
+   */
   async findAllStockMovements(options?: {
     limit?: number;
     offset?: number;
     filters?: FindOptionsWhere<StockMovement> | FindOptionsWhere<StockMovement>[];
     sort?: FindManyOptions<StockMovement>['order'];
-    // searchTerm?: string; // Stock movements usually filtered by specific fields
   }): Promise<{ movements: StockMovementApiResponse[]; total: number }> {
     try {
       const { movements, count } = await this.movementRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { movementDate: 'DESC', createdAt: 'DESC' },
-        relations: this.movementRepository['getDefaultRelations'](), // Get all default relations
+        order: options?.sort ?? { movementDate: 'DESC', createdAt: 'DESC' },
+        relations: this.movementRepository['getDefaultRelations'](),
       });
       const apiMovements = movements
         .map((m) => this.mapToApiResponse(m))
@@ -228,6 +249,14 @@ export class StockMovementService {
     }
   }
 
+  /**
+   * Retrieves the current stock level for a given product in a warehouse or shop.
+   * @param productId - The ID of the product.
+   * @param productVariantId - The ID of the product variant (optional).
+   * @param warehouseId - The ID of the warehouse (optional).
+   * @param shopId - The ID of the shop (optional).
+   * @returns An object containing the current stock details.
+   */
   async getCurrentStock(
     productId: number,
     productVariantId: number | undefined,
@@ -296,6 +325,10 @@ export class StockMovementService {
     };
   }
 
+  /**
+   * Returns the singleton instance of StockMovementService.
+   * @returns The StockMovementService instance.
+   */
   static getInstance(): StockMovementService {
     instance ??= new StockMovementService();
     return instance;

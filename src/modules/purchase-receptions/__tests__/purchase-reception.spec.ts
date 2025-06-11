@@ -138,19 +138,23 @@ describe('Purchase Receptions API', () => {
       expect(res.status).toBe(404);
     });
 
-    it('should fail to create a reception without items', async () => {
+    it('should create a reception without items if status is PENDING_QUALITY_CHECK', async () => {
       const payload = {
         ...baseReceptionPayload,
         supplierId: testSupplierId,
         warehouseId: testWarehouseId,
         purchaseOrderId: testPurchaseOrderId,
         items: [],
+        status: PurchaseReceptionStatus.PENDING_QUALITY_CHECK,
       };
       const res = await request(app)
         .post('/api/v1/purchase-receptions')
         .set('Authorization', `Bearer ${adminToken}`)
         .send(payload);
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(201);
+      expect(res.body.status).toBe('success');
+      expect(res.body.data.items).toHaveLength(0);
+      expect(res.body.data.status).toBe(PurchaseReceptionStatus.PENDING_QUALITY_CHECK);
     });
 
     it('should fail to create reception without authentication', async () => {

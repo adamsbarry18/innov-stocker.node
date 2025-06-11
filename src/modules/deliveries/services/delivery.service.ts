@@ -2,10 +2,6 @@ import { appDataSource } from '@/database/data-source';
 import { v4 as uuidv4 } from 'uuid';
 import { IsNull, type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';
 import { DeliveryRepository } from '../data/delivery.repository';
-import { AddressRepository } from '../../addresses/data/address.repository';
-import { WarehouseRepository } from '../../warehouses/data/warehouse.repository';
-import { ShopRepository } from '../../shops/data/shop.repository';
-import { ProductRepository } from '../../products/data/product.repository';
 import { UserRepository } from '../../users/data/users.repository';
 import { StockMovementService } from '../../stock-movements/services/stock-movement.service';
 
@@ -27,12 +23,10 @@ import {
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
 import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
-import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop } from '@/modules/shops/models/shop.entity';
 import { DeliveryItemRepository } from '../delivery-items/data/delivery-item.repository';
-import { SalesOrderItemRepository } from '@/modules/sales-orders/sales-order-items/data/sales-order-item.repository';
 import { DeliveryItem } from '../delivery-items/models/delivery-item.entity';
 import { SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
@@ -43,12 +37,6 @@ export class DeliveryService {
   private readonly deliveryRepository: DeliveryRepository;
   private readonly deliveryItemRepository: DeliveryItemRepository;
   private readonly salesOrderRepository: SalesOrderRepository;
-  private readonly salesOrderItemRepository: SalesOrderItemRepository;
-  private readonly addressRepository: AddressRepository;
-  private readonly warehouseRepository: WarehouseRepository;
-  private readonly shopRepository: ShopRepository;
-  private readonly productRepository: ProductRepository;
-  private readonly variantRepository: ProductVariantRepository;
   private readonly userRepository: UserRepository;
   private readonly stockMovementService: StockMovementService;
 
@@ -56,29 +44,15 @@ export class DeliveryService {
     deliveryRepository: DeliveryRepository = new DeliveryRepository(),
     deliveryItemRepository: DeliveryItemRepository = new DeliveryItemRepository(),
     salesOrderRepository: SalesOrderRepository = new SalesOrderRepository(),
-    salesOrderItemRepository: SalesOrderItemRepository = new SalesOrderItemRepository(),
-    addressRepository: AddressRepository = new AddressRepository(),
-    warehouseRepository: WarehouseRepository = new WarehouseRepository(),
-    shopRepository: ShopRepository = new ShopRepository(),
-    productRepository: ProductRepository = new ProductRepository(),
-    variantRepository: ProductVariantRepository = new ProductVariantRepository(),
     userRepository: UserRepository = new UserRepository(),
     stockMovementService: StockMovementService = new StockMovementService(),
   ) {
     this.deliveryRepository = deliveryRepository;
     this.deliveryItemRepository = deliveryItemRepository;
     this.salesOrderRepository = salesOrderRepository;
-    this.salesOrderItemRepository = salesOrderItemRepository;
-    this.addressRepository = addressRepository;
-    this.warehouseRepository = warehouseRepository;
-    this.shopRepository = shopRepository;
-    this.productRepository = productRepository;
-    this.variantRepository = variantRepository;
     this.userRepository = userRepository;
     this.stockMovementService = stockMovementService;
   }
-
-  // ===== PUBLIC METHODS =====
 
   /**
    * Creates a new delivery.
@@ -136,7 +110,7 @@ export class DeliveryService {
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { deliveryDate: 'DESC', createdAt: 'DESC' },
+        order: options?.sort ?? { deliveryDate: 'DESC', createdAt: 'DESC' },
         searchTerm: options?.searchTerm,
         relations: this.deliveryRepository['getDefaultRelationsForFindAll'](),
       });
@@ -195,8 +169,7 @@ export class DeliveryService {
     return appDataSource.transaction(async (manager) => {
       const delivery = await this.getDeliveryForShipment(deliveryId, manager);
       await this.validateUser(createdByUserId);
-      // TODO: Dépendance - Create Stock Movement (OUT)
-      // await this.handleStockMovements(delivery, createdByUserId, actualShipDate, manager);
+      await this.handleStockMovements(delivery, createdByUserId, actualShipDate, manager);
       await this.updateSalesOrderShippedQuantities(delivery, manager);
 
       delivery.status = DeliveryStatus.SHIPPED;
@@ -231,7 +204,6 @@ export class DeliveryService {
 
       delivery.status = DeliveryStatus.DELIVERED;
       delivery.updatedByUserId = deliveredByUserId;
-      // delivery.actualDeliveryDate = new Date(); // If you have such a field
 
       await this.deliveryRepository.save(delivery, manager);
       return this.getDeliveryResponse(deliveryId, manager);
@@ -254,7 +226,6 @@ export class DeliveryService {
 
       this.validateDeliveryCanBeDeleted(delivery);
 
-      // If deleting a PENDING/IN_PREPARATION delivery, any stock reservations (TODO) should be reversed.
       if (delivery.status === DeliveryStatus.IN_PREPARATION) {
         logger.info(
           `TODO: Reverse any stock reservations for cancelled/deleted delivery ID ${id}.`,
@@ -263,15 +234,13 @@ export class DeliveryService {
       }
 
       try {
-        await this.deliveryRepository.softDelete(id, manager); // This should cascade to DeliveryItems if set in entity
+        await this.deliveryRepository.softDelete(id, manager);
       } catch (error) {
         logger.error({ message: `Error deleting delivery ${id}`, error });
         throw new ServerError(`Error deleting delivery ${id}.`);
       }
     });
   }
-
-  // ===== PRIVATE HELPER METHODS =====
 
   /**
    * Validates the input data for creating or updating a delivery.
@@ -289,7 +258,7 @@ export class DeliveryService {
   ): Promise<{ salesOrder: SalesOrder }> {
     const salesOrder = await this.validateSalesOrder(input, isUpdate, deliveryId, manager);
     await this.validateRelatedEntities(input, salesOrder, isUpdate, deliveryId, manager);
-    this.validateDispatchRules(input, salesOrder, isUpdate, deliveryId, manager);
+    this.validateDispatchRules(input, salesOrder, isUpdate);
     await this.validateDeliveryItems(input, salesOrder, isUpdate, deliveryId, manager);
 
     return { salesOrder };
@@ -425,8 +394,6 @@ export class DeliveryService {
     input: CreateDeliveryInput | UpdateDeliveryInput,
     salesOrder: SalesOrder,
     isUpdate: boolean,
-    deliveryId: number | undefined,
-    manager: EntityManager,
   ): void {
     const currentWarehouseId =
       input.dispatchWarehouseId ?? (isUpdate ? undefined : salesOrder.dispatchWarehouseId);
@@ -518,9 +485,9 @@ export class DeliveryService {
       deliveryNumber: this.generateDeliveryNumber(),
       deliveryDate: dayjs(input.deliveryDate).toDate(),
       status: DeliveryStatus.PENDING,
-      shippingAddressId: input.shippingAddressId || salesOrder.shippingAddressId,
-      dispatchWarehouseId: input.dispatchWarehouseId || salesOrder.dispatchWarehouseId,
-      dispatchShopId: input.dispatchShopId || salesOrder.dispatchShopId,
+      shippingAddressId: input.shippingAddressId ?? salesOrder.shippingAddressId,
+      dispatchWarehouseId: input.dispatchWarehouseId ?? salesOrder.dispatchWarehouseId,
+      dispatchShopId: input.dispatchShopId ?? salesOrder.dispatchShopId,
       carrierName: input.carrierName,
       trackingNumber: input.trackingNumber,
       notes: input.notes,
@@ -546,10 +513,9 @@ export class DeliveryService {
     const deliveryRepo = manager.getRepository(Delivery);
     const deliveryItemRepo = manager.getRepository(DeliveryItem);
 
-    // Create the delivery entity, ensuring 'items' is included for validation if necessary
     const deliveryEntity = deliveryRepo.create({
       ...deliveryData,
-      items: [], // Initialize items as empty array for header validation
+      items: [],
     });
 
     if (!deliveryEntity.isValid()) {
@@ -582,7 +548,7 @@ export class DeliveryService {
     });
 
     await deliveryItemRepo.save(deliveryItemsToCreate);
-    savedDelivery.items = deliveryItemsToCreate; // Attach items to the saved delivery object
+    savedDelivery.items = deliveryItemsToCreate;
 
     return savedDelivery;
   }
@@ -646,7 +612,6 @@ export class DeliveryService {
     });
 
     const deliveryRepo = manager.getRepository(Delivery);
-    const deliveryItemRepo = manager.getRepository(DeliveryItem);
 
     if (!existingDelivery.isValid()) {
       throw new BadRequestError(
@@ -811,9 +776,8 @@ export class DeliveryService {
       if (!item.salesOrderItem) {
         throw new ServerError(`SalesOrderItem link missing for delivery item ${item.id}`);
       }
-      logger.info(
-        `TODO: STOCK_MOVEMENT_OUT: ProductID ${item.productId}, VariantID ${item.productVariantId || 'N/A'}, Qty ${item.quantityShipped}, From ${delivery.dispatchWarehouseId ? 'WH ' + delivery.dispatchWarehouseId : 'Shop ' + delivery.dispatchShopId}, Ref: Delivery ${delivery.deliveryNumber}`,
-      );
+
+      const unitCost = item.salesOrderItem.product?.defaultPurchasePrice ?? 0;
       await this.stockMovementService.createMovement(
         {
           productId: item.productId,
@@ -821,16 +785,16 @@ export class DeliveryService {
           warehouseId: delivery.dispatchWarehouseId,
           shopId: delivery.dispatchShopId,
           movementType: StockMovementType.SALE_DELIVERY,
-          quantity: -Math.abs(Number(item.quantityShipped)), // Negative for OUT
+          quantity: -Math.abs(Number(item.quantityShipped)),
           movementDate: actualShipDate ? dayjs(actualShipDate).toDate() : new Date(),
-          unitCostAtMovement: item.salesOrderItem.product?.defaultPurchasePrice, // Or more accurate cost
+          unitCostAtMovement: Number(unitCost),
           userId: createdByUserId,
           referenceDocumentType: 'delivery',
           referenceDocumentId: delivery.id.toString(),
           notes: `Shipped via Delivery ${delivery.deliveryNumber} for SO ${delivery.salesOrder.orderNumber}`,
         },
         manager,
-      ); // Pass manager to stockMovementService
+      );
     }
   }
 
@@ -983,9 +947,7 @@ export class DeliveryService {
   }
 
   static getInstance(): DeliveryService {
-    if (!instance) {
-      instance = new DeliveryService();
-    }
+    instance ??= new DeliveryService();
     return instance;
   }
 }
