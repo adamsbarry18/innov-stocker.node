@@ -31,6 +31,7 @@ import { cashRegisterTransactionSchemas } from './cash-register-transactions/cas
 import { customerReturnSchemas } from './customer-returns/customer-return.schema';
 import { supplierReturnSchemas } from './supplier-returns/supplier-return.schema';
 import { userActivityLogSchemas } from './user-activity-logs/user-activity-log.schema';
+import { notificationSchemas } from './notifications/notification.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -66,6 +67,7 @@ export const schemas = {
   ...customerReturnSchemas,
   ...supplierReturnSchemas,
   ...userActivityLogSchemas,
+  ...notificationSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -108,4 +110,5 @@ export {
   customerReturnSchemas,
   supplierReturnSchemas,
   userActivityLogSchemas,
+  notificationSchemas,
 };

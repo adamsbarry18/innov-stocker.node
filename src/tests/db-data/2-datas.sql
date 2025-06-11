@@ -397,10 +397,10 @@ INSERT INTO user_activity_logs (id, user_id, action_type, entity_type, entity_id
 -- -----------------------------------------------------
 -- Table notifications
 -- -----------------------------------------------------
-INSERT INTO notifications (id, user_id, type, message, is_read, read_at, related_entity_type, related_entity_id, link_url, created_time) VALUES
-(1, 1, 'LOW_STOCK_ALERT', 'Le produit "Smartphone Modèle X - Bleu" (PROD-SP-001-BLU) est en stock bas (3 restants).', 0, NULL, 'product_variant', '1', '/products/1/variants/1', CURRENT_TIMESTAMP),
-(2, 2, 'NEW_SALES_ORDER', 'Nouvelle commande client SO-2025-00002 reçue de Entreprise ABC SARL.', 0, NULL, 'sales_order', '2', '/sales-orders/2', CURRENT_TIMESTAMP),
-(3, 1, 'INVOICE_DUE_SOON', 'La facture INV-SUP-HIGHTECH-05-001 arrive à échéance le 2025-06-14.', 0, NULL, 'supplier_invoice', '1', '/supplier-invoices/1', '2025-06-01 09:00:00'),
-(4, 2, 'QUOTE_ACCEPTED', 'Le devis QT-2025-00001 pour Jean Dupont a été accepté.', 1, '2025-05-09 14:00:00', 'quote', '1', '/quotes/1', '2025-05-09 12:00:00');
+INSERT INTO notifications (id, user_id, type, message, is_read, entity_type, entity_id, link_url, created_time) VALUES
+(1, 1, 'LOW_STOCK_ALERT', 'Le produit "Smartphone Modèle X - Bleu" (PROD-SP-001-BLU) est en stock bas (3 restants).', 0, 'product_variant', '1', '/products/1/variants/1', CURRENT_TIMESTAMP),
+(2, 2, 'NEW_SALES_ORDER', 'Nouvelle commande client SO-2025-00002 reçue de Entreprise ABC SARL.', 0, 'sales_order', '2', '/sales-orders/2', CURRENT_TIMESTAMP),
+(3, 1, 'INVOICE_DUE_SOON', 'La facture INV-SUP-HIGHTECH-05-001 arrive à échéance le 2025-06-14.', 0, 'supplier_invoice', '1', '/supplier-invoices/1', '2025-06-01 09:00:00'),
+(4, 2, 'QUOTE_ACCEPTED', 'Le devis QT-2025-00001 pour Jean Dupont a été accepté.', 1, 'quote', '1', '/quotes/1', '2025-05-09 12:00:00');
 
 SET FOREIGN_KEY_CHECKS = 1;
