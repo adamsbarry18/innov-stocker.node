@@ -50,6 +50,7 @@ import { CashRegisterTransaction } from '@/modules/cash-register-transactions/mo
 import { SupplierReturn } from '@/modules/supplier-returns/models/supplier-return.entity';
 import { SupplierReturnItem } from '@/modules/supplier-returns/supplier-return-items/models/supplier-return-item.entity';
 import { UserActivityLog } from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { Notification } from '@/modules/notifications/models/notification.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -109,6 +110,7 @@ export const appDataSourceOptions: DataSourceOptions = {
     SupplierReturn,
     SupplierReturnItem,
     UserActivityLog,
+    Notification,
   ],
   migrations: [],
   subscribers: [],

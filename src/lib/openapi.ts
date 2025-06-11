@@ -37,6 +37,7 @@ import {
   customerReturnSchemas,
   supplierReturnSchemas,
   userActivityLogSchemas,
+  notificationSchemas,
 } from './openapi-schemas';
 
 const swaggerDefinition = {
@@ -94,6 +95,7 @@ const swaggerDefinition = {
       ...customerReturnSchemas,
       ...supplierReturnSchemas,
       ...userActivityLogSchemas,
+      ...notificationSchemas,
       ErrorResponse: {
         type: 'object',
         properties: {
