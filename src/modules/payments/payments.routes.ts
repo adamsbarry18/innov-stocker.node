@@ -155,7 +155,6 @@ export default class PaymentRouter extends BaseRouter {
   @searchable(['referenceNumber', 'notes'])
   async listPaymentsRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
 
     await this.pipe(res, req, next, () =>
       this.service.findAllPayments({
@@ -163,7 +162,6 @@ export default class PaymentRouter extends BaseRouter {
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm: searchTerm,
       }),
     );
   }
@@ -204,8 +202,8 @@ export default class PaymentRouter extends BaseRouter {
     if (!paymentId) {
       return next(new BadRequestError('Payment ID required'));
     }
-    const userId = req.user!.id;
-    await this.pipe(res, req, next, () => this.service.findPaymentById(paymentId, userId));
+
+    await this.pipe(res, req, next, () => this.service.findPaymentById(paymentId));
   }
 
   /**

@@ -6,7 +6,6 @@ import { PaymentMethodRepository } from '../../payment-methods/data/payment_meth
 import { CustomerRepository } from '../../customers/data/customer.repository';
 import { SupplierRepository } from '../../suppliers/data/supplier.repository';
 import { UserRepository } from '../../users/data/users.repository';
-// import { CashRegisterTransactionService } from '../../cash-register-transactions/services/cash_register_transaction.service';
 
 import {
   NotFoundError,
@@ -52,14 +51,13 @@ import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
 import { PurchaseOrder } from '@/modules/purchase-orders/models/purchase-order.entity';
 import { BankAccount } from '@/modules/bank-accounts/models/bank-account.entity';
 import { User } from '@/modules/users';
-
-// TODO: import { CashRegisterTransactionService } from '../../cash-register-transactions/services/cash_register_transaction.service';
-
+import { CashRegisterTransactionService } from '@/modules/cash-register-transactions/services/cash-register-transaction.service';
+import { CustomerInvoiceService } from '@/modules/customer-invoices/services/customer-invoice.service';
+import { SupplierInvoiceService } from '@/modules/supplier-invoices/services/supplier-invoice.service';
 interface ValidationContext {
   transactionalEntityManager?: EntityManager;
 }
-
-const FLOAT_TOLERANCE = 0.005; // Tolerance for floating point comparisons
+const FLOAT_TOLERANCE = 0.005;
 
 let instance: PaymentService | null = null;
 
@@ -94,10 +92,11 @@ export class PaymentService {
     private readonly cashRegisterRepository: CashRegisterRepository = new CashRegisterRepository(),
     private readonly cashRegisterSessionRepository: CashRegisterSessionRepository = new CashRegisterSessionRepository(),
     private readonly userRepository: UserRepository = new UserRepository(),
-    // TODO: private readonly cashRegisterTransactionService: CashRegisterTransactionService = CashRegisterTransactionService.getInstance()
+    private readonly cashRegisterTransactionService: CashRegisterTransactionService = CashRegisterTransactionService.getInstance(),
+    private readonly customerInvoiceService: CustomerInvoiceService = CustomerInvoiceService.getInstance(),
+    private readonly supplierInvoiceService: SupplierInvoiceService = SupplierInvoiceService.getInstance(),
   ) {}
 
-  // Public API Methods
   /**
    * Records a new payment.
    * @param input - The data for creating the payment.
@@ -108,44 +107,36 @@ export class PaymentService {
     input: CreatePaymentInput,
     recordedByUserId: number,
   ): Promise<PaymentApiResponse> {
-    return appDataSource.transaction(async (manager) => {
+    return appDataSource.transaction(async (transactionalEntityManager) => {
       try {
-        await this.validatePaymentInput(input, { transactionalEntityManager: manager });
-        await this.validateUser(recordedByUserId, manager);
+        await this.validatePaymentInput(input, { transactionalEntityManager });
+        await this.validateUser(recordedByUserId, transactionalEntityManager);
 
-        const paymentEntity = manager.getRepository(Payment).create({
-          ...input,
-          recordedByUserId: recordedByUserId,
-          paymentDate: dayjs(input.paymentDate).toDate(),
-        });
+        const paymentEntity = this.paymentRepository.create(
+          {
+            ...input,
+            recordedByUserId,
+            paymentDate: dayjs(input.paymentDate).toDate(),
+          },
+          transactionalEntityManager,
+        );
+        const savedPayment = await this.paymentRepository.save(
+          paymentEntity,
+          transactionalEntityManager,
+        );
 
-        if (!paymentEntity.isValidBasic()) {
-          throw new BadRequestError(
-            'Internal payment entity state invalid. Check amount and account association.',
-          );
-        }
+        await this.applyPaymentToInvoices(
+          savedPayment,
+          recordedByUserId,
+          transactionalEntityManager,
+        );
 
-        const savedPayment = await manager.getRepository(Payment).save(paymentEntity);
+        await this.updateFinancialAccountBalances(savedPayment, transactionalEntityManager);
 
-        // Re-fetch with relations for subsequent operations and final response
-        const fullSavedPayment = await manager.getRepository(Payment).findOne({
-          where: { id: savedPayment.id },
-          relations: this.getDetailedRelations(),
-        });
-        if (!fullSavedPayment) throw new ServerError('Failed to reload payment after save.');
-
-        await this.applyPaymentToEntities(fullSavedPayment, manager, recordedByUserId);
-        await this.updateFinancialAccountBalances(fullSavedPayment, manager);
-
-        logger.info(`Payment ID ${savedPayment.id} recorded by user ${recordedByUserId}.`);
-
-        const apiResponse = this.mapToApiResponse(fullSavedPayment);
-        if (!apiResponse)
-          throw new ServerError(`Failed to map recorded payment ${savedPayment.id}.`);
-        return apiResponse;
+        return this.mapToApiResponse(savedPayment) as PaymentApiResponse;
       } catch (error: any) {
         logger.error(
-          `[recordPayment] Erreur lors de l'enregistrement du paiement: ${error.message || JSON.stringify(error)}`,
+          `[recordPayment] Error recording payment: ${error.message ?? JSON.stringify(error)}`,
           { error },
         );
         throw error;
@@ -156,10 +147,9 @@ export class PaymentService {
   /**
    * Finds a payment by its ID.
    * @param id - The ID of the payment.
-   * @param requestingUserId - The ID of the user requesting the payment (for authorization, if implemented).
    * @returns The payment API response.
    */
-  async findPaymentById(id: number, requestingUserId: number): Promise<PaymentApiResponse> {
+  async findPaymentById(id: number): Promise<PaymentApiResponse> {
     try {
       const payment = await this.paymentRepository.findById(id, {
         relations: this.getDetailedRelations(),
@@ -167,7 +157,6 @@ export class PaymentService {
       if (!payment) {
         throw new NotFoundError(`Payment with id ${id} not found.`);
       }
-      // TODO: Authorization logic: Does requestingUser have rights to see this payment?
 
       const apiResponse = this.mapToApiResponse(payment);
       if (!apiResponse) {
@@ -176,7 +165,7 @@ export class PaymentService {
       return apiResponse;
     } catch (error: any) {
       logger.error(
-        `[findPaymentById] Error finding payment by id ${id}: ${error.message || JSON.stringify(error)}`,
+        `[findPaymentById] Error finding payment by id ${id}: ${error.message ?? JSON.stringify(error)}`,
         { id },
       );
       if (error instanceof NotFoundError) throw error;
@@ -194,15 +183,13 @@ export class PaymentService {
     offset?: number;
     filters?: FindOptionsWhere<Payment> | FindOptionsWhere<Payment>[];
     sort?: FindManyOptions<Payment>['order'];
-    searchTerm?: string;
   }): Promise<{ payments: PaymentApiResponse[]; total: number }> {
     try {
       const { payments, count } = await this.paymentRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { paymentDate: 'DESC', createdAt: 'DESC' },
-        searchTerm: options?.searchTerm,
+        order: options?.sort ?? { paymentDate: 'DESC', createdAt: 'DESC' },
         relations: this.getDetailedRelations(),
       });
       const apiPayments = payments
@@ -211,7 +198,7 @@ export class PaymentService {
       return { payments: apiPayments, total: count };
     } catch (error: any) {
       logger.error(
-        `[findAllPayments] Error finding all payments: ${error.message || JSON.stringify(error)}`,
+        `[findAllPayments] Error finding all payments: ${error.message ?? JSON.stringify(error)}`,
         { options },
       );
       throw new ServerError('Error finding all payments.');
@@ -230,18 +217,13 @@ export class PaymentService {
       try {
         const payment = await this.getExistingPayment(id, manager);
 
-        // TODO: Add business logic checks here:
-        // - Is the payment part of a reconciled bank statement?
-        // - Is the accounting period closed?
-        // For now, we assume deletion is allowed and means reversal.
+        await this.reversePaymentOnInvoices(payment, deletedByUserId, manager);
 
-        await this.reverseFinancialImpacts(payment, manager, deletedByUserId);
+        await this.reverseFinancialAccountBalances(payment, manager);
 
-        // Soft delete the payment record itself
         await manager.getRepository(Payment).softDelete(id);
-        // Optionally, update notes to indicate reversal
         await manager.getRepository(Payment).update(id, {
-          notes: `[REVERSED by User ${deletedByUserId} on ${dayjs().toISOString()}] ${payment.notes || ''}`,
+          notes: `[REVERSED by User ${deletedByUserId} on ${dayjs().toISOString()}] ${payment.notes ?? ''}`,
           deletedAt: new Date(),
         });
 
@@ -250,7 +232,7 @@ export class PaymentService {
         );
       } catch (error: any) {
         logger.error(
-          `[deletePayment] Error deleting/reversing payment ${id}: ${error.message || JSON.stringify(error)}`,
+          `[deletePayment] Error deleting/reversing payment ${id}: ${error.message ?? JSON.stringify(error)}`,
           { id },
         );
         if (
@@ -265,7 +247,6 @@ export class PaymentService {
     });
   }
 
-  // Private validation methods
   /**
    * Validates the input data for creating a payment.
    * @param input - The input data for the payment.
@@ -728,9 +709,34 @@ export class PaymentService {
   }
 
   /**
-   * Updates the balances of associated financial accounts (bank or cash register).
-   * @param payment - The payment entity.
-   * @param manager - The entity manager for transactional operations.
+   * Applies payment to linked invoices.
+   */
+  private async applyPaymentToInvoices(
+    payment: Payment,
+    userId: number,
+    manager: EntityManager,
+  ): Promise<void> {
+    if (payment.customerInvoiceId) {
+      await this.customerInvoiceService.updatePaymentStatus(
+        payment.customerInvoiceId,
+        payment.amount,
+        userId,
+        manager,
+      );
+    }
+    if (payment.supplierInvoiceId) {
+      await this.supplierInvoiceService.updatePaymentStatus(
+        payment.supplierInvoiceId,
+        payment.amount,
+        userId,
+        manager,
+      );
+    }
+    // TODO: Handle deposits on Sales Orders or Purchase Orders
+  }
+
+  /**
+   * Updates financial account balances (bank or cash register) and creates a cash register transaction if applicable.
    */
   private async updateFinancialAccountBalances(
     payment: Payment,
@@ -751,15 +757,14 @@ export class PaymentService {
       const session = await manager
         .getRepository(CashRegisterSession)
         .findOne({ where: { id: payment.cashRegisterSessionId }, relations: ['cashRegister'] });
-      if (session && session.cashRegister) {
+      if (session?.cashRegister) {
         await this.cashRegisterRepository.updateBalance(
           session.cashRegister.id,
           amountForBalanceUpdate,
           manager,
         );
-        // TODO: Dépendance - Create CashRegisterTransaction record here via CashRegisterTransactionService
-        // await this.cashRegisterTransactionService.createFromPayment(payment, manager);
-        logger.info(`TODO: Create CashRegisterTransaction for payment ${payment.id}`);
+
+        await this.cashRegisterTransactionService.createTransactionFromPayment(payment, manager);
       } else {
         logger.error(
           `Cash register or session not found for payment ${payment.id} during balance update. This should ideally not happen if validatePaymentInput passed.`,
@@ -769,64 +774,62 @@ export class PaymentService {
   }
 
   /**
-   * Reverses the financial impacts of a payment (e.g., on invoices and account balances).
-   * @param payment - The payment entity to reverse.
-   * @param manager - The entity manager for transactional operations.
-   * @param deletedByUserId - The ID of the user performing the reversal.
+   * Reverses payment impact on linked invoices.
    */
-  private async reverseFinancialImpacts(
+  private async reversePaymentOnInvoices(
     payment: Payment,
+    userId: number,
     manager: EntityManager,
-    deletedByUserId: number,
   ): Promise<void> {
+    const reversalAmount = -Math.abs(Number(payment.amount));
     if (payment.customerInvoiceId) {
-      await this.updateCustomerInvoiceStatusAndAmount(
+      await this.customerInvoiceService.updatePaymentStatus(
         payment.customerInvoiceId,
-        payment.amount,
-        payment.direction === PaymentDirection.INBOUND
-          ? PaymentDirection.OUTBOUND
-          : PaymentDirection.INBOUND, // Reverse direction
-        deletedByUserId,
+        reversalAmount,
+        userId,
         manager,
       );
     }
     if (payment.supplierInvoiceId) {
-      await this.updateSupplierInvoiceStatusAndAmount(
+      await this.supplierInvoiceService.updatePaymentStatus(
         payment.supplierInvoiceId,
-        payment.amount,
-        payment.direction === PaymentDirection.INBOUND
-          ? PaymentDirection.OUTBOUND
-          : PaymentDirection.INBOUND, // Reverse direction
-        deletedByUserId,
+        reversalAmount,
+        userId,
         manager,
       );
     }
+  }
 
-    const amountToReverseInAccount =
+  /**
+   * Reverses financial account balances.
+   */
+  private async reverseFinancialAccountBalances(
+    payment: Payment,
+    manager: EntityManager,
+  ): Promise<void> {
+    const amountToReverse =
       payment.direction === PaymentDirection.INBOUND
         ? -Math.abs(Number(payment.amount))
         : Math.abs(Number(payment.amount));
-
     if (payment.bankAccountId) {
       await this.bankAccountRepository.updateBalance(
         payment.bankAccountId,
-        amountToReverseInAccount,
+        amountToReverse,
         manager,
       );
     } else if (payment.cashRegisterSessionId && payment.cashRegisterSession?.cashRegisterId) {
       await this.cashRegisterRepository.updateBalance(
         payment.cashRegisterSession.cashRegisterId,
-        amountToReverseInAccount,
+        amountToReverse,
         manager,
       );
-      // TODO: Create a REVERSAL CashRegisterTransaction
-      logger.info(
-        `TODO: Create REVERSAL CashRegisterTransaction for reversed payment ${payment.id}`,
+    } else {
+      logger.error(
+        `Cash register or session not found for payment ${payment.id} during balance reversal. This should ideally not happen if validatePaymentInput passed.`,
       );
     }
   }
 
-  // Utility methods
   /**
    * Maps a Payment entity to a PaymentApiResponse.
    * @param payment - The Payment entity.
@@ -892,9 +895,8 @@ export class PaymentService {
    * @returns The singleton instance of PaymentService.
    */
   static getInstance(): PaymentService {
-    if (!instance) {
-      instance = new PaymentService();
-    }
+    instance ??= new PaymentService();
+
     return instance;
   }
 }

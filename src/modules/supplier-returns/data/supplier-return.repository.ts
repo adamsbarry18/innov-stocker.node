@@ -19,7 +19,6 @@ interface FindAllSupplierReturnsOptions {
   where?: FindOptionsWhere<SupplierReturn> | FindOptionsWhere<SupplierReturn>[];
   order?: FindManyOptions<SupplierReturn>['order'];
   relations?: string[];
-  searchTerm?: string;
 }
 
 export class SupplierReturnRepository {
@@ -41,11 +40,12 @@ export class SupplierReturnRepository {
       'updatedByUser',
       'sourceWarehouse',
       'sourceShop',
+      'processedByUser',
     ];
   }
 
   private getDefaultRelationsForFindAll(): string[] {
-    return ['supplier', 'createdByUser', 'sourceWarehouse', 'sourceShop'];
+    return ['supplier', 'createdByUser', 'sourceWarehouse', 'sourceShop', 'processedByUser'];
   }
 
   async findById(
@@ -58,10 +58,7 @@ export class SupplierReturnRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindOne()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindOne() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -105,36 +102,14 @@ export class SupplierReturnRepository {
     options: FindAllSupplierReturnsOptions = {},
   ): Promise<{ returns: SupplierReturn[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<SupplierReturn> | FindOptionsWhere<SupplierReturn>[] =
-        options.where
-          ? Array.isArray(options.where)
-            ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-            : { ...options.where, deletedAt: IsNull() }
-          : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<SupplierReturn> = {
-          returnNumber: searchPattern,
-          deletedAt: IsNull(),
-        };
-        // TODO: Add search on supplier name, RMA (requires join or complex QueryBuilder)
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.map((wc) => ({ ...wc, ...searchSpecific }));
-        } else {
-          whereConditions = { ...whereConditions, ...searchSpecific };
-        }
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<SupplierReturn> = {
-        where: whereConditions,
-        order: options.order || { returnDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { returnDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ? this.getDefaultRelationsForFindAll() : options.relations,
       };
       const [returns, count] = await this.repository.findAndCount(findOptions);
       return { returns, count };

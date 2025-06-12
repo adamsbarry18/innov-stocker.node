@@ -19,7 +19,6 @@ interface FindAllCustomerReturnsOptions {
   where?: FindOptionsWhere<CustomerReturn> | FindOptionsWhere<CustomerReturn>[];
   order?: FindManyOptions<CustomerReturn>['order'];
   relations?: string[];
-  searchTerm?: string;
 }
 
 export class CustomerReturnRepository {
@@ -105,36 +104,13 @@ export class CustomerReturnRepository {
     options: FindAllCustomerReturnsOptions = {},
   ): Promise<{ returns: CustomerReturn[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<CustomerReturn> | FindOptionsWhere<CustomerReturn>[] =
-        options.where
-          ? Array.isArray(options.where)
-            ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-            : { ...options.where, deletedAt: IsNull() }
-          : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<CustomerReturn> = {
-          returnNumber: searchPattern,
-          deletedAt: IsNull(),
-        };
-        // TODO: Add search on customer name, SO number, Invoice number (requires join or complex QueryBuilder)
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.map((wc) => ({ ...wc, ...searchSpecific }));
-        } else {
-          whereConditions = { ...whereConditions, ...searchSpecific };
-        }
-      }
-
+      const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<CustomerReturn> = {
-        where: whereConditions,
-        order: options.order || { returnDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { returnDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ? this.getDefaultRelationsForFindAll() : options.relations,
       };
       const [returns, count] = await this.repository.findAndCount(findOptions);
       return { returns, count };

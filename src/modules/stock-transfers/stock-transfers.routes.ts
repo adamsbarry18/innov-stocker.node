@@ -109,14 +109,12 @@ export default class StockTransferRouter extends BaseRouter {
   @searchable(['transferNumber', 'notes'])
   async listStockTransfers(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
     await this.pipe(res, req, next, () =>
       this.service.findAllStockTransfers({
         limit: req.pagination?.limit,
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm: searchTerm,
       }),
     );
   }

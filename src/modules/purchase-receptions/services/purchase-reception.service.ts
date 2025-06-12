@@ -759,8 +759,6 @@ export class PurchaseReceptionService {
   ): Promise<void> {
     if (recItem.quantityReceived <= 0) return;
 
-    // TODO: The logic to get the actual unit cost should be more robust.
-    // For now, it takes the purchase order line price if available, otherwise the product's default purchase price.
     const unitCost =
       recItem.purchaseOrderItem?.unitPriceHt ?? recItem.product?.defaultPurchasePrice;
 

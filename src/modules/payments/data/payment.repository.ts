@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
@@ -19,7 +18,6 @@ interface FindAllPaymentsOptions {
   where?: FindOptionsWhere<Payment> | FindOptionsWhere<Payment>[];
   order?: FindManyOptions<Payment>['order'];
   relations?: string[];
-  searchTerm?: string; // For referenceNumber or notes
 }
 
 export class PaymentRepository {
@@ -55,8 +53,7 @@ export class PaymentRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ?? this.getDefaultRelations(),
       });
     } catch (error) {
       logger.error({ message: `Error finding payment with id ${id}`, error });
@@ -68,56 +65,14 @@ export class PaymentRepository {
     options: FindAllPaymentsOptions = {},
   ): Promise<{ payments: Payment[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<Payment> | FindOptionsWhere<Payment>[] = options.where
-        ? Array.isArray(options.where)
-          ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-          : { ...options.where, deletedAt: IsNull() }
-        : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<Payment>[] = [
-          // Search in multiple fields
-          { referenceNumber: searchPattern, deletedAt: IsNull() },
-          { notes: searchPattern, deletedAt: IsNull() },
-        ];
-
-        if (Array.isArray(whereConditions) && whereConditions.length > 0) {
-          // If whereConditions is already an array (OR conditions), this becomes complex.
-          // For simplicity, if searchTerm exists, it might override or be ANDed with simple filters.
-          // A more robust solution uses QueryBuilder for complex AND/OR combinations.
-          logger.warn(
-            'Search term with complex existing filters might require QueryBuilder for precise OR logic.',
-          );
-          const combinedSearch: FindOptionsWhere<Payment>[] = [];
-          whereConditions.forEach((wc) => {
-            searchSpecific.forEach((sc) => {
-              combinedSearch.push({ ...wc, ...sc });
-            });
-          });
-          whereConditions = combinedSearch.length > 0 ? combinedSearch : searchSpecific;
-        } else if (
-          Object.keys(whereConditions).length > 1 ||
-          (Object.keys(whereConditions).length === 1 &&
-            !(whereConditions as FindOptionsWhere<Payment>).deletedAt)
-        ) {
-          // If there are existing AND filters, combine them with OR search conditions
-          whereConditions = searchSpecific.map((sc) => ({
-            ...(whereConditions as FindOptionsWhere<Payment>),
-            ...sc,
-          }));
-        } else {
-          // Only deletedAt or no filters
-          whereConditions = searchSpecific;
-        }
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<Payment> = {
-        where: whereConditions,
-        order: options.order || { paymentDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { paymentDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options.relations || this.getDefaultRelations(),
       };
       const [payments, count] = await this.repository.findAndCount(findOptions);
       return { payments, count };
@@ -167,16 +122,7 @@ export class PaymentRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(Payment)
         : this.repository;
-      // Exclude fields that should not be updated directly
-      const {
-        amount,
-        direction,
-        currencyId,
-        paymentMethodId,
-        customerId,
-        supplierId,
-        /*...fk_ids...*/ ...updatableDto
-      } = dto;
+      const { ...updatableDto } = dto;
       if (
         Object.keys(dto).some((k) =>
           ['amount', 'direction', 'currencyId', 'paymentMethodId'].includes(k),
@@ -197,12 +143,11 @@ export class PaymentRepository {
     }
   }
 
-  async softDelete(id: string, transactionalEntityManager?: EntityManager): Promise<UpdateResult> {
+  async softDelete(id: number, transactionalEntityManager?: EntityManager): Promise<UpdateResult> {
     try {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(Payment)
         : this.repository;
-      // Service layer should handle reversal of financial impacts before soft deleting.
       return await repo.softDelete(id);
     } catch (error) {
       logger.error(

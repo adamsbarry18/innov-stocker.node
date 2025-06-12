@@ -28,6 +28,7 @@ import {
 } from '@/modules/cash-register-sessions/models/cash-register-session.entity';
 import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
 import { PaymentMethod } from '@/modules/payment-methods/models/payment-method.entity';
+import { Payment, PaymentDirection } from '@/modules/payments/models/payment.entity';
 
 interface ValidationContext {
   transactionalEntityManager?: EntityManager;
@@ -276,6 +277,51 @@ export class CashRegisterTransactionService {
       );
     }
     return apiResponse;
+  }
+
+  async createTransactionFromPayment(
+    payment: Payment,
+    manager: EntityManager,
+  ): Promise<CashRegisterTransactionApiResponse> {
+    if (!payment.cashRegisterSessionId) {
+      logger.warn(
+        `Payment ${payment.id} has no cash register session ID, skipping cash transaction creation.`,
+      );
+      throw new BadRequestError(
+        `Payment ${payment.id} requires a cash register session to create a transaction.`,
+      );
+    }
+
+    const type =
+      payment.direction === PaymentDirection.INBOUND
+        ? CashRegisterTransactionType.CASH_IN_POS_SALE
+        : CashRegisterTransactionType.CASH_OUT_OTHER;
+
+    let description = `Payment for `;
+    if (payment.customerInvoiceId) {
+      description += `Invoice #${payment.customerInvoiceId}`;
+    } else if (payment.salesOrderId) {
+      description += `Sales Order #${payment.salesOrderId}`;
+    } else if (payment.customerId) {
+      description += `Customer #${payment.customerId}`;
+    } else {
+      description = 'Payment received';
+    }
+
+    const transactionInput: CreateCashRegisterTransactionInput = {
+      cashRegisterSessionId: payment.cashRegisterSessionId,
+      transactionTimestamp: payment.paymentDate,
+      type: type,
+      amount: payment.amount,
+      description: description,
+      paymentMethodId: payment.paymentMethodId,
+      relatedSalesOrderId: payment.salesOrderId,
+      userId: payment.recordedByUserId,
+    };
+
+    const transaction = await this.createTransaction(transactionInput, manager);
+
+    return transaction;
   }
 
   /**

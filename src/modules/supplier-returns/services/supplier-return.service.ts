@@ -66,7 +66,6 @@ export class SupplierReturnService {
     private readonly stockMovementService: StockMovementService = StockMovementService.getInstance(),
   ) {}
 
-  // Public API Methods
   /**
    * Creates a new supplier return.
    * @param input - The data for creating the supplier return.
@@ -135,15 +134,13 @@ export class SupplierReturnService {
     offset?: number;
     filters?: FindOptionsWhere<SupplierReturn>;
     sort?: FindManyOptions<SupplierReturn>['order'];
-    searchTerm?: string;
   }): Promise<{ returns: SupplierReturnApiResponse[]; total: number }> {
     try {
       const { returns, count } = await this.returnRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { returnDate: 'DESC', createdAt: 'DESC' },
-        searchTerm: options?.searchTerm,
+        order: options?.sort ?? { returnDate: 'DESC', createdAt: 'DESC' },
         relations: this.getSummaryRelations(),
       });
 
@@ -259,16 +256,16 @@ export class SupplierReturnService {
       );
       const newStatus = allItemsFullyShipped
         ? SupplierReturnStatus.SHIPPED_TO_SUPPLIER
-        : SupplierReturnStatus.PENDING_SHIPMENT; // Or a new PARTIALLY_SHIPPED status
+        : SupplierReturnStatus.PENDING_SHIPMENT;
 
       await this.updateReturnStatus(
         returnId,
         newStatus,
         shippedByUserId,
         input.notes ? `Shipping Note: ${input.notes}` : undefined,
-        // shipDate is not a direct column on SupplierReturn, it's part of StockMovement
-        // { shipDate: input.shipDate ? dayjs(input.shipDate).toDate() : undefined } as Partial<SupplierReturn>,
-        undefined, // No additional payload for SupplierReturn entity itself
+        {
+          shipDate: input.shipDate ? dayjs(input.shipDate).toDate() : undefined,
+        },
         manager,
       );
 
@@ -377,7 +374,6 @@ export class SupplierReturnService {
     }
   }
 
-  // Private validation methods
   /**
    * Validates the input data for creating or updating a supplier return.
    * @param input - The input data for the return.
@@ -389,14 +385,12 @@ export class SupplierReturnService {
   ): Promise<void> {
     const { isUpdate, transactionalEntityManager: manager } = context;
 
-    // Validate supplier ID
     if ('supplierId' in input && input.supplierId !== undefined) {
       await this.validateSupplier(input.supplierId, true, manager);
     } else if (!isUpdate) {
       throw new BadRequestError('Supplier ID is required for creating a return.');
     }
 
-    // Source location validation
     if (input.hasOwnProperty('sourceWarehouseId') && input.sourceWarehouseId) {
       await this.validateWarehouse(input.sourceWarehouseId, manager);
     } else if (input.hasOwnProperty('sourceShopId') && input.sourceShopId) {
@@ -408,7 +402,6 @@ export class SupplierReturnService {
       throw new BadRequestError('Provide either sourceWarehouseId or sourceShopId, not both.');
     }
 
-    // Validate items
     if ('items' in input && input.items) {
       if (!isUpdate && input.items.length === 0) {
         throw new BadRequestError('A supplier return must have at least one item upon creation.');
@@ -617,12 +610,13 @@ export class SupplierReturnService {
   ): Promise<SupplierReturn> {
     const repo = manager.getRepository(SupplierReturn);
 
-    const { items, sourceWarehouseId, sourceShopId, ...headerInput } = input;
+    const { items, sourceWarehouseId, sourceShopId, shipDate, ...headerInput } = input;
     const returnData: Partial<SupplierReturn> = {
       ...headerInput,
       returnNumber: this.generateReturnNumber(),
       returnDate: input.returnDate ? dayjs(input.returnDate).toDate() : undefined,
-      status: SupplierReturnStatus.REQUESTED, // Default status for creation
+      shipDate: shipDate ? dayjs(shipDate).toDate() : undefined,
+      status: SupplierReturnStatus.REQUESTED,
       sourceWarehouseId: sourceWarehouseId,
       sourceShopId: sourceShopId,
       createdByUserId,
@@ -656,7 +650,6 @@ export class SupplierReturnService {
     }
 
     for (const itemInput of itemInputs) {
-      // Appliquer les valeurs par défaut et valider l'input via Zod
       const parsedItemInput = createSupplierReturnItemSchema.safeParse(itemInput);
 
       if (!parsedItemInput.success) {
@@ -692,7 +685,6 @@ export class SupplierReturnService {
     return savedItems;
   }
 
-  // Private update methods
   /**
    * Sanitizes the update input based on the return status.
    * Restricts fields that can be updated if the return is processed.
@@ -723,8 +715,8 @@ export class SupplierReturnService {
       SupplierReturnStatus.REFUNDED,
       SupplierReturnStatus.CREDIT_NOTE_RECEIVED,
       SupplierReturnStatus.COMPLETED,
-      SupplierReturnStatus.CANCELLED, // Once cancelled, only notes might be editable
-      SupplierReturnStatus.REJECTED_BY_SUPPLIER, // Once rejected, only notes might be editable
+      SupplierReturnStatus.CANCELLED,
+      SupplierReturnStatus.REJECTED_BY_SUPPLIER,
     ].includes(status);
   }
 
@@ -811,14 +803,13 @@ export class SupplierReturnService {
   ): Promise<void> {
     const repo = manager.getRepository(SupplierReturnItem);
 
-    // Soft delete existing items
     await repo.softDelete({ supplierReturnId: returnId });
 
     const newItems: SupplierReturnItem[] = [];
     for (const itemInput of items.filter((item) => !(item as any)._delete)) {
       const item: SupplierReturnItem = repo.create({
         ...itemInput,
-        id: itemInput.id ? Number(itemInput.id) : undefined, // Convert id to number if present
+        id: itemInput.id ? Number(itemInput.id) : undefined,
         supplierReturnId: returnId,
       });
 
@@ -857,7 +848,6 @@ export class SupplierReturnService {
   ): Promise<void> {
     const updateData: Partial<SupplierReturn> = { status: newStatus, updatedByUserId };
     if (notes !== undefined) {
-      // Append notes if existing, otherwise set
       let currentReturn: SupplierReturn | null;
       if (manager) {
         currentReturn = await manager.getRepository(SupplierReturn).findOneBy({ id });
@@ -882,7 +872,6 @@ export class SupplierReturnService {
     }
   }
 
-  // Private validation methods for status transitions
   /**
    * Validates a status transition for a supplier return.
    * @param supplierReturn - The current supplier return.
@@ -912,7 +901,7 @@ export class SupplierReturnService {
         SupplierReturnStatus.SHIPPED_TO_SUPPLIER,
         SupplierReturnStatus.CANCELLED,
       ],
-      [SupplierReturnStatus.REJECTED_BY_SUPPLIER]: [], // Cannot change from rejected
+      [SupplierReturnStatus.REJECTED_BY_SUPPLIER]: [],
       [SupplierReturnStatus.PENDING_SHIPMENT]: [
         SupplierReturnStatus.SHIPPED_TO_SUPPLIER,
         SupplierReturnStatus.CANCELLED,
@@ -937,8 +926,8 @@ export class SupplierReturnService {
       ],
       [SupplierReturnStatus.REFUNDED]: [SupplierReturnStatus.COMPLETED],
       [SupplierReturnStatus.CREDIT_NOTE_RECEIVED]: [SupplierReturnStatus.COMPLETED],
-      [SupplierReturnStatus.COMPLETED]: [], // Cannot change from completed
-      [SupplierReturnStatus.CANCELLED]: [], // Cannot change from cancelled
+      [SupplierReturnStatus.COMPLETED]: [],
+      [SupplierReturnStatus.CANCELLED]: [],
     };
 
     if (
@@ -1022,7 +1011,6 @@ export class SupplierReturnService {
       itemToUpdate.quantityShipped = Number(itemToUpdate.quantityShipped || 0) + quantityToShip;
       await itemRepoTx.save(itemToUpdate);
 
-      // Create Stock Movement OUT from sourceWarehouseId/sourceShopId
       const sourceWarehouseId = supplierReturn.sourceWarehouseId;
       const sourceShopId = supplierReturn.sourceShopId;
 
@@ -1038,9 +1026,9 @@ export class SupplierReturnService {
         warehouseId: sourceWarehouseId,
         shopId: sourceShopId,
         movementType: StockMovementType.SUPPLIER_RETURN,
-        quantity: -Math.abs(quantityToShip), // Quantity is negative for outbound movement
+        quantity: -Math.abs(quantityToShip),
         movementDate: input.shipDate ? dayjs(input.shipDate).toDate() : new Date(),
-        unitCostAtMovement: Number(itemToUpdate.unitPriceAtReturn), // Cost at time of return/original purchase
+        unitCostAtMovement: Number(itemToUpdate.unitPriceAtReturn),
         userId: shippedByUserId,
         referenceDocumentType: 'supplier_return',
         referenceDocumentId: supplierReturn.id.toString(),
@@ -1063,7 +1051,6 @@ export class SupplierReturnService {
     completedByUserId: number,
     manager: EntityManager,
   ): Promise<void> {
-    // Ensure items are loaded for processing
     if (!supplierReturn.items || supplierReturn.items.length === 0) {
       const populatedReturn = await this.returnRepository.findById(supplierReturn.id, {
         relations: ['items'],
@@ -1075,14 +1062,8 @@ export class SupplierReturnService {
         throw new ServerError(`Failed to load items for return ${supplierReturn.id}.`);
       }
     }
-
-    // TODO: Logic for actual refund processing or credit note application might occur here or be confirmed.
-    logger.info(
-      `TODO: Verify/Process refund or credit note for supplier return ID ${supplierReturn.id}.`,
-    );
   }
 
-  // Utility methods
   /**
    * Maps a SupplierReturn entity to a SupplierReturnApiResponse.
    * @param supplierReturn - The SupplierReturn entity.
@@ -1094,7 +1075,7 @@ export class SupplierReturnService {
     if (!supplierReturn) {
       return null;
     }
-    return supplierReturn.toApi(true); // Always include items for detailed response
+    return supplierReturn.toApi(true);
   }
 
   /**
@@ -1134,6 +1115,7 @@ export class SupplierReturnService {
       'shippedByUser',
       'sourceWarehouse',
       'sourceShop',
+      'processedByUser',
     ];
   }
 

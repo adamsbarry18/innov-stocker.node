@@ -20,7 +20,6 @@ import dayjs from 'dayjs';
 
 // Repositories
 import { SupplierInvoiceRepository } from '../data/supplier-invoice.repository';
-import { SupplierInvoicePurchaseOrderLinkRepository } from '../data/supplier-invoice-purchase-order-link.repo';
 import { SupplierRepository } from '@/modules/suppliers/data/supplier.repository';
 import { CurrencyRepository } from '@/modules/currencies/data/currency.repository';
 import { ProductRepository } from '@/modules/products/data/product.repository';
@@ -34,7 +33,6 @@ import { Currency } from '@/modules/currencies/models/currency.entity';
 import { Product } from '@/modules/products/models/product.entity';
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
 import { PurchaseOrder } from '@/modules/purchase-orders/models/purchase-order.entity';
-import { SupplierInvoiceItemRepository } from '../supplier-invoice-items/data/supplier-invoice-item.repository';
 import { PurchaseReceptionItemRepository } from '@/modules/purchase-receptions/purchase-reception-items/data/purchase-reception-item.repository';
 import { PurchaseReceptionItem } from '@/modules/purchase-receptions/purchase-reception-items/models/purchase-reception-item.entity';
 import {
@@ -48,7 +46,7 @@ interface ValidationContext {
   transactionalEntityManager?: EntityManager;
 }
 
-const FLOAT_TOLERANCE = 0.001;
+const FLOAT_TOLERANCE = 0.005;
 const UPDATABLE_FIELDS_FOR_PAID_INVOICE = ['notes', 'fileAttachmentUrl'] as const;
 
 let instance: SupplierInvoiceService | null = null;
@@ -69,8 +67,6 @@ export class SupplierInvoiceService {
    */
   constructor(
     private readonly invoiceRepository: SupplierInvoiceRepository = new SupplierInvoiceRepository(),
-    private readonly itemRepository: SupplierInvoiceItemRepository = new SupplierInvoiceItemRepository(),
-    private readonly linkRepository: SupplierInvoicePurchaseOrderLinkRepository = new SupplierInvoicePurchaseOrderLinkRepository(),
     private readonly supplierRepository: SupplierRepository = new SupplierRepository(),
     private readonly currencyRepository: CurrencyRepository = new CurrencyRepository(),
     private readonly productRepository: ProductRepository = new ProductRepository(),
@@ -113,13 +109,9 @@ export class SupplierInvoiceService {
   /**
    * Finds a supplier invoice by its ID.
    * @param id - The ID of the supplier invoice.
-   * @param requestingUserId - The ID of the user requesting the invoice.
    * @returns The supplier invoice API response.
    */
-  async findSupplierInvoiceById(
-    id: number,
-    requestingUserId: number,
-  ): Promise<SupplierInvoiceApiResponse> {
+  async findSupplierInvoiceById(id: number): Promise<SupplierInvoiceApiResponse> {
     try {
       const invoice = await this.invoiceRepository.findById(id, {
         relations: this.getDetailedRelations(),
@@ -229,9 +221,8 @@ export class SupplierInvoiceService {
   /**
    * Deletes a supplier invoice (soft delete).
    * @param id - The ID of the supplier invoice to delete.
-   * @param deletedByUserId - The ID of the user deleting the invoice.
    */
-  async deleteSupplierInvoice(id: number, deletedByUserId: number): Promise<void> {
+  async deleteSupplierInvoice(id: number): Promise<void> {
     try {
       const invoice = await this.getExistingInvoice(id);
 
@@ -531,7 +522,7 @@ export class SupplierInvoiceService {
       ...headerInput,
       invoiceDate: dayjs(input.invoiceDate).toDate(),
       dueDate: input.dueDate ? dayjs(input.dueDate).toDate() : null,
-      status: input.status || SupplierInvoiceStatus.PENDING_PAYMENT,
+      status: input.status ?? SupplierInvoiceStatus.PENDING_PAYMENT,
       amountPaid: 0,
       createdByUserId,
       updatedByUserId: createdByUserId,
@@ -749,7 +740,7 @@ export class SupplierInvoiceService {
   private validateDeletion(invoice: SupplierInvoice): void {
     const deletableStatuses = [
       SupplierInvoiceStatus.DRAFT,
-      SupplierInvoiceStatus.PENDING_PAYMENT, // Added PENDING_PAYMENT
+      SupplierInvoiceStatus.PENDING_PAYMENT,
       SupplierInvoiceStatus.CANCELLED,
     ];
 
@@ -765,7 +756,6 @@ export class SupplierInvoiceService {
    * @param invoiceId - The ID of the invoice to validate.
    */
   private async validateNoPendingPayments(invoiceId: number): Promise<void> {
-    // TODO: Implement payment validation
     const amountPaid = await this.invoiceRepository.getAmountPaidForInvoice(invoiceId);
     if (amountPaid > 0) {
       throw new BadRequestError(
@@ -774,7 +764,6 @@ export class SupplierInvoiceService {
     }
   }
 
-  // Utility Methods
   /**
    * Calculates the total amount for a single line item.
    * @param quantity - The quantity of the item.
@@ -889,7 +878,6 @@ export class SupplierInvoiceService {
     return apiResponse;
   }
 
-  // Transaction helpers (incomplete methods from original)
   /**
    * Updates the header information of a supplier invoice.
    * @param id - The ID of the supplier invoice to update.
@@ -932,7 +920,6 @@ export class SupplierInvoiceService {
   ): Promise<void> {
     const repo = manager.getRepository(SupplierInvoiceItem);
 
-    // Simple approach: delete all existing items and recreate
     await repo.delete({ supplierInvoiceId: invoiceId });
 
     const newItems: SupplierInvoiceItem[] = items
@@ -1009,9 +996,55 @@ export class SupplierInvoiceService {
    * @returns The singleton instance of SupplierInvoiceService.
    */
   static getInstance(): SupplierInvoiceService {
-    if (!instance) {
-      instance = new SupplierInvoiceService();
-    }
+    instance ??= new SupplierInvoiceService();
+
     return instance;
+  }
+
+  /**
+   * Updates the status and paid amount of a supplier invoice.
+   * Designed to be called by PaymentService within a transaction.
+   * @param invoiceId The ID of the invoice to update.
+   * @param paymentAmount The amount of the payment to apply (positive).
+   * @param updatedByUserId The ID of the user performing the action.
+   * @param manager The EntityManager of the current transaction.
+   */
+  async updatePaymentStatus(
+    invoiceId: number,
+    paymentAmount: number,
+    updatedByUserId: number,
+    manager: EntityManager,
+  ): Promise<void> {
+    const invoice = await this.invoiceRepository.findById(invoiceId, {
+      transactionalEntityManager: manager,
+    });
+
+    if (!invoice) {
+      logger.warn(
+        `Supplier Invoice ID ${invoiceId} not found during payment application. Payment recorded, but invoice status not updated.`,
+      );
+      return;
+    }
+
+    invoice.amountPaid = parseFloat(
+      (Number(invoice.amountPaid) + Number(paymentAmount)).toFixed(4),
+    );
+
+    const balanceDue = Number(invoice.totalAmountTtc) - invoice.amountPaid;
+    if (balanceDue <= FLOAT_TOLERANCE) {
+      invoice.status = SupplierInvoiceStatus.PAID;
+      invoice.amountPaid = Number(invoice.totalAmountTtc);
+    } else if (invoice.amountPaid > 0) {
+      invoice.status = SupplierInvoiceStatus.PARTIALLY_PAID;
+    } else {
+      invoice.status = SupplierInvoiceStatus.PENDING_PAYMENT;
+      invoice.amountPaid = 0;
+    }
+
+    invoice.updatedByUserId = updatedByUserId;
+    await this.invoiceRepository.save(invoice, manager);
+    logger.info(
+      `Payment status updated for Supplier Invoice ${invoice.invoiceNumber}. New status: ${invoice.status}, Amount paid: ${invoice.amountPaid}.`,
+    );
   }
 }

@@ -763,9 +763,10 @@ CREATE TABLE `supplier_returns` (
     `source_warehouse_id` INT DEFAULT NULL,
     `source_shop_id` INT DEFAULT NULL,
     `supplier_rma_number` VARCHAR(100) DEFAULT NULL,
+    `ship_date` DATE DEFAULT NULL,
     `created_by_user_id` INT DEFAULT NULL,
     `shipped_by_user_id` INT DEFAULT NULL,
-    `processed_by_user_id` INT DEFAULT NULL, -- Ajouté pour la complétion du processus de retour
+    `processed_by_user_id` INT DEFAULT NULL,
     `updated_by_user_id` INT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

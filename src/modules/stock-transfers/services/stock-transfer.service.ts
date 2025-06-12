@@ -25,14 +25,13 @@ import {
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
 import { StockTransferRepository } from '../data/stock-transfer.repository';
-import { StockTransferItemRepository } from '../stock-transfer-items/data/stock-transfer-item.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop } from '@/modules/shops/models/shop.entity';
 import { Product } from '@/modules/products/models/product.entity';
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
 import {
-  CreateStockTransferItemInput,
+  type CreateStockTransferItemInput,
   StockTransferItem,
   stockTransferItemValidationInputErrors,
 } from '../stock-transfer-items/models/stock-transfer-item.entity';
@@ -50,7 +49,6 @@ let instance: StockTransferService | null = null;
 export class StockTransferService {
   constructor(
     private readonly transferRepository: StockTransferRepository = new StockTransferRepository(),
-    private readonly itemRepository: StockTransferItemRepository = new StockTransferItemRepository(),
     private readonly warehouseRepository: WarehouseRepository = new WarehouseRepository(),
     private readonly shopRepository: ShopRepository = new ShopRepository(),
     private readonly productRepository: ProductRepository = new ProductRepository(),
@@ -130,15 +128,13 @@ export class StockTransferService {
     offset?: number;
     filters?: FindOptionsWhere<StockTransfer>;
     sort?: FindManyOptions<StockTransfer>['order'];
-    searchTerm?: string;
   }): Promise<{ transfers: StockTransferApiResponse[]; total: number }> {
     try {
       const { transfers, count } = await this.transferRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { requestDate: 'DESC', createdAt: 'DESC' },
-        searchTerm: options?.searchTerm,
+        order: options?.sort ?? { requestDate: 'DESC', createdAt: 'DESC' },
         relations: this.getDefaultRelations(),
       });
 
@@ -694,6 +690,8 @@ export class StockTransferService {
       item.quantityShipped = Number(item.quantityShipped) + Number(shipItem.quantityShipped);
       await itemRepo.save(item);
 
+      const unitCost = item.product?.defaultPurchasePrice ?? 0;
+
       await this.stockMovementService.createMovement(
         {
           productId: item.productId,
@@ -703,9 +701,7 @@ export class StockTransferService {
           movementType: StockMovementType.STOCK_TRANSFER_OUT,
           quantity: -Math.abs(Number(shipItem.quantityShipped)),
           movementDate: input.shipDate ? dayjs(input.shipDate).toDate() : new Date(),
-          unitCostAtMovement: item.product?.defaultPurchasePrice
-            ? Number(item.product.defaultPurchasePrice)
-            : null, // Ensure it's a number or null
+          unitCostAtMovement: Number(unitCost),
           userId: shippedByUserId,
           referenceDocumentType: 'stock_transfer',
           referenceDocumentId: transfer.id.toString(),
@@ -757,6 +753,8 @@ export class StockTransferService {
         allItemsFullyReceived = false;
       }
 
+      const unitCost = item.product?.defaultPurchasePrice ?? 0;
+
       await this.stockMovementService.createMovement(
         {
           productId: item.productId,
@@ -766,9 +764,7 @@ export class StockTransferService {
           movementType: StockMovementType.STOCK_TRANSFER_IN,
           quantity: Math.abs(Number(receiveItem.quantityReceived)),
           movementDate: input.receiveDate ? dayjs(input.receiveDate).toDate() : new Date(),
-          unitCostAtMovement: item.product?.defaultPurchasePrice
-            ? Number(item.product.defaultPurchasePrice)
-            : null, // Ensure it's a number or null
+          unitCostAtMovement: Number(unitCost),
           userId: receivedByUserId,
           referenceDocumentType: 'stock_transfer',
           referenceDocumentId: transfer.id.toString(),
@@ -801,7 +797,7 @@ export class StockTransferService {
     transfer.status = StockTransferStatus.IN_TRANSIT;
     transfer.shippedByUserId = shippedByUserId;
     transfer.shipDate = input.shipDate ? dayjs(input.shipDate).toDate() : new Date();
-    transfer.notes = input.notes || transfer.notes;
+    transfer.notes = input.notes ?? transfer.notes;
     transfer.updatedByUserId = shippedByUserId;
     await repo.save(transfer);
   }
@@ -825,18 +821,15 @@ export class StockTransferService {
     transfer.status = newStatus;
     transfer.receivedByUserId = receivedByUserId;
     transfer.receiveDate = input.receiveDate ? dayjs(input.receiveDate).toDate() : new Date();
-    transfer.notes = input.notes || transfer.notes;
+    transfer.notes = input.notes ?? transfer.notes;
     transfer.updatedByUserId = receivedByUserId;
     await repo.save(transfer);
   }
-
-  // Utility Methods
 
   /**
    * Generates a unique transfer number based on the current date and a sequence.
    * @returns A unique stock transfer number.
    */
-
   private generateTransferNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
     return `TRF-${datePrefix}-${uuidv4().substring(0, 8)}`;
@@ -945,8 +938,8 @@ export class StockTransferService {
     const transfer = await this.transferRepository.findById(id, {
       relations: [
         'items',
-        'items.product', // Ensure product is loaded
-        'items.productVariant', // Ensure variant is loaded
+        'items.product',
+        'items.productVariant',
         'sourceWarehouse',
         'sourceShop',
       ],
@@ -969,8 +962,8 @@ export class StockTransferService {
     const transfer = await this.transferRepository.findById(id, {
       relations: [
         'items',
-        'items.product', // Ensure product is loaded
-        'items.productVariant', // Ensure variant is loaded
+        'items.product',
+        'items.productVariant',
         'destinationWarehouse',
         'destinationShop',
       ],
@@ -1004,7 +997,7 @@ export class StockTransferService {
    * @returns The StockTransferService instance.
    */
   static getInstance(): StockTransferService {
-    if (!instance) instance = new StockTransferService();
+    instance ??= new StockTransferService();
     return instance;
   }
 }

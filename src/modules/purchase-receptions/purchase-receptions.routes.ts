@@ -307,14 +307,13 @@ export default class PurchaseReceptionRouter extends BaseRouter {
   async deleteReception(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
+
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.deleteReception(id, userId);
+        await this.service.deleteReception(id);
       },
       204,
     );

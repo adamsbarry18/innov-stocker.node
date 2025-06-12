@@ -41,6 +41,7 @@ const supplierReturnSchemaValidation = z
     sourceWarehouseId: z.number().int().positive().nullable().optional(),
     sourceShopId: z.number().int().positive().nullable().optional(),
     supplierRmaNumber: z.string().max(100).nullable().optional(), // RMA number from supplier
+    shipDate: z.coerce.date().nullable().optional(), // Date of actual shipment
   })
   .refine((data) => data.sourceWarehouseId || data.sourceShopId, {
     message:
@@ -56,6 +57,7 @@ export type CreateSupplierReturnInput = {
   sourceWarehouseId?: number | null;
   sourceShopId?: number | null;
   supplierRmaNumber?: string | null;
+  shipDate?: string | Date | null;
   items?: CreateSupplierReturnItemInput[];
 };
 
@@ -97,6 +99,7 @@ export type SupplierReturnApiResponse = {
   sourceShopId: number | null;
   sourceShop?: ShopApiResponse | null;
   supplierRmaNumber: string | null;
+  shipDate: string | null;
   items?: SupplierReturnItemApiResponse[];
   createdByUserId: number | null;
   createdByUser?: UserApiResponse | null;
@@ -171,6 +174,9 @@ export class SupplierReturn extends Model {
   @Column({ type: 'varchar', length: 100, name: 'supplier_rma_number', nullable: true })
   supplierRmaNumber: string | null = null;
 
+  @Column({ type: 'date', name: 'ship_date', nullable: true })
+  shipDate: Date | null = null;
+
   @Column({ type: 'int', name: 'shipped_by_user_id', nullable: true })
   shippedByUserId: number | null = null;
 
@@ -178,10 +184,12 @@ export class SupplierReturn extends Model {
   @JoinColumn({ name: 'shipped_by_user_id' })
   shippedByUser: User | null = null;
 
-  // This field `received_by_user_id` is not in the SQL for `supplier_returns`, but `validated_by_user_id` might be used for completion
-  // Let's assume a generic "processed_by_user_id" for the user who finalizes the return (refund/credit note processing)
-  // For now, will use validated_by_user_id logic from inventory_sessions as an example.
-  // The SQL has no direct "processed_by_user_id". `validated_by_user_id` on `inventory_sessions` is a good analogy.
+  @Column({ type: 'int', name: 'processed_by_user_id', nullable: true })
+  processedByUserId: number | null = null;
+
+  @ManyToOne(() => User, { eager: true, onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'processed_by_user_id' })
+  processedByUser: User | null = null;
 
   @Column({ type: 'text', nullable: true })
   notes: string | null = null;
@@ -227,10 +235,13 @@ export class SupplierReturn extends Model {
           } as ShopApiResponse)
         : null,
       supplierRmaNumber: this.supplierRmaNumber,
+      shipDate: Model.formatISODate(this.shipDate),
       createdByUserId: this.createdByUserId,
       createdByUser: this.createdByUser ? this.createdByUser.toApi() : null,
       shippedByUserId: this.shippedByUserId,
       shippedByUser: this.shippedByUser ? this.shippedByUser.toApi() : null,
+      processedByUserId: this.processedByUserId,
+      processedByUser: this.processedByUser ? this.processedByUser.toApi() : null,
       updatedByUserId: this.updatedByUserId,
       createdAt: Model.formatISODate(this.createdAt),
       updatedAt: Model.formatISODate(this.updatedAt),
@@ -251,6 +262,8 @@ export class SupplierReturn extends Model {
       sourceWarehouseId: this.sourceWarehouseId,
       sourceShopId: this.sourceShopId,
       supplierRmaNumber: this.supplierRmaNumber,
+      shipDate: this.shipDate,
+      processedByUserId: this.processedByUserId,
     };
     // Remove invoiceNumber from validation as it's auto-generated
     const result = supplierReturnSchemaValidation.safeParse(dataToValidate);

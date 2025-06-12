@@ -53,7 +53,7 @@ interface ValidationContext {
   transactionalEntityManager?: EntityManager;
 }
 
-const UPDATABLE_FIELDS_FOR_PROCESSED_RETURN = ['notes'] as const; // Only notes can be updated after certain statuses
+const UPDATABLE_FIELDS_FOR_PROCESSED_RETURN = ['notes'] as const;
 
 let instance: CustomerReturnService | null = null;
 
@@ -141,15 +141,13 @@ export class CustomerReturnService {
     offset?: number;
     filters?: FindOptionsWhere<CustomerReturn>;
     sort?: FindManyOptions<CustomerReturn>['order'];
-    searchTerm?: string;
   }): Promise<{ returns: CustomerReturnApiResponse[]; total: number }> {
     try {
       const { returns, count } = await this.returnRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { returnDate: 'DESC', createdAt: 'DESC' },
-        searchTerm: options?.searchTerm,
+        order: options?.sort ?? { returnDate: 'DESC', createdAt: 'DESC' },
         relations: this.getSummaryRelations(),
       });
 
@@ -915,7 +913,7 @@ export class CustomerReturnService {
         CustomerReturnStatus.RECEIVED_COMPLETE,
         CustomerReturnStatus.CANCELLED,
       ],
-      [CustomerReturnStatus.REJECTED]: [], // Cannot change from rejected
+      [CustomerReturnStatus.REJECTED]: [],
       [CustomerReturnStatus.PENDING_RECEPTION]: [
         CustomerReturnStatus.RECEIVED_PARTIAL,
         CustomerReturnStatus.RECEIVED_COMPLETE,
@@ -1022,7 +1020,7 @@ export class CustomerReturnService {
         );
       }
 
-      const quantityToReceive = Number(receivedItemInput.quantityReceived || 0);
+      const quantityToReceive = Number(receivedItemInput.quantityReceived ?? 0);
       if (quantityToReceive < 0) {
         throw new BadRequestError(
           `Quantity received for item ${itemToUpdate.id} cannot be negative.`,
@@ -1070,7 +1068,7 @@ export class CustomerReturnService {
           movementType: StockMovementType.CUSTOMER_RETURN,
           quantity: quantityToReceive,
           movementDate: input.receivedDate ? dayjs(input.receivedDate).toDate() : new Date(),
-          unitCostAtMovement: Number(itemToUpdate.unitPriceAtReturn), // Convert to number
+          unitCostAtMovement: Number(itemToUpdate.unitPriceAtReturn),
           userId: receivedByUserId,
           referenceDocumentType: 'customer_return',
           referenceDocumentId: customerReturn.id.toString(),
@@ -1300,9 +1298,7 @@ export class CustomerReturnService {
   }
 
   static getInstance(): CustomerReturnService {
-    if (!instance) {
-      instance = new CustomerReturnService();
-    }
+    instance ??= new CustomerReturnService();
     return instance;
   }
 }

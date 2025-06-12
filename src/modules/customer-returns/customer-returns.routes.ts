@@ -103,7 +103,6 @@ export default class CustomerReturnRouter extends BaseRouter {
   @searchable(['returnNumber', 'reason', 'notes'])
   async listCustomerReturns(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
 
     await this.pipe(res, req, next, () =>
       this.service.findAllCustomerReturns({
@@ -111,7 +110,6 @@ export default class CustomerReturnRouter extends BaseRouter {
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm: searchTerm,
       }),
     );
   }

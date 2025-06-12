@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
@@ -19,7 +18,6 @@ interface FindAllStockTransfersOptions {
   where?: FindOptionsWhere<StockTransfer> | FindOptionsWhere<StockTransfer>[];
   order?: FindManyOptions<StockTransfer>['order'];
   relations?: string[];
-  searchTerm?: string;
 }
 
 export class StockTransferRepository {
@@ -66,10 +64,7 @@ export class StockTransferRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindOne()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindOne() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -113,38 +108,14 @@ export class StockTransferRepository {
     options: FindAllStockTransfersOptions = {},
   ): Promise<{ transfers: StockTransfer[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<StockTransfer> | FindOptionsWhere<StockTransfer>[] =
-        options.where
-          ? Array.isArray(options.where)
-            ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-            : { ...options.where, deletedAt: IsNull() }
-          : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchConditions: FindOptionsWhere<StockTransfer>[] = [
-          { transferNumber: searchPattern, deletedAt: IsNull() },
-          { notes: searchPattern, deletedAt: IsNull() },
-        ];
-
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.flatMap((wc) =>
-            searchConditions.map((sc) => ({ ...wc, ...sc })),
-          );
-        } else {
-          whereConditions = searchConditions.map((sc) => ({ ...whereConditions, ...sc }));
-        }
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<StockTransfer> = {
-        where: whereConditions,
-        order: options.order || { requestDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { requestDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ? this.getDefaultRelationsForFindAll() : options.relations,
       };
       const [transfers, count] = await this.repository.findAndCount(findOptions);
       return { transfers, count };

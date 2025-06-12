@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
   In,
 } from 'typeorm';
@@ -20,7 +19,6 @@ interface FindAllInventorySessionsOptions {
   where?: FindOptionsWhere<InventorySession> | FindOptionsWhere<InventorySession>[];
   order?: FindManyOptions<InventorySession>['order'];
   relations?: string[];
-  searchTerm?: string;
 }
 
 export class InventorySessionRepository {
@@ -102,36 +100,14 @@ export class InventorySessionRepository {
     options: FindAllInventorySessionsOptions = {},
   ): Promise<{ sessions: InventorySession[]; count: number }> {
     try {
-      let whereConditions:
-        | FindOptionsWhere<InventorySession>
-        | FindOptionsWhere<InventorySession>[] = options.where
-        ? Array.isArray(options.where)
-          ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-          : { ...options.where, deletedAt: IsNull() }
-        : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<InventorySession> = {
-          notes: searchPattern,
-          deletedAt: IsNull(),
-        };
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.map((wc) => ({ ...wc, ...searchSpecific }));
-        } else {
-          whereConditions = { ...whereConditions, ...searchSpecific };
-        }
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<InventorySession> = {
-        where: whereConditions,
-        order: options.order || { startDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { startDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ? this.getDefaultRelationsForFindAll() : options.relations,
       };
       const [sessions, count] = await this.repository.findAndCount(findOptions);
       return { sessions, count };

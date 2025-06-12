@@ -55,7 +55,7 @@ interface ValidationContext {
   transactionalEntityManager?: EntityManager;
 }
 
-const FLOAT_TOLERANCE = 0.001;
+const FLOAT_TOLERANCE = 0.005;
 const UPDATABLE_FIELDS_FOR_PAID_INVOICE = [
   'notes',
   'termsAndConditions',
@@ -687,10 +687,10 @@ export class CustomerInvoiceService {
     const { items, salesOrderIds, ...headerInput } = input;
     const invoiceData: Partial<CustomerInvoice> = {
       ...headerInput,
-      invoiceNumber: input.invoiceNumber || this.generateInvoiceNumber(),
+      invoiceNumber: input.invoiceNumber ?? this.generateInvoiceNumber(),
       invoiceDate: dayjs(input.invoiceDate).toDate(),
       dueDate: input.dueDate ? dayjs(input.dueDate).toDate() : null,
-      status: input.status || CustomerInvoiceStatus.DRAFT,
+      status: input.status ?? CustomerInvoiceStatus.DRAFT,
       amountPaid: 0,
       createdByUserId,
       updatedByUserId: createdByUserId,
@@ -1099,7 +1099,7 @@ export class CustomerInvoiceService {
     manager: EntityManager,
   ): Promise<void> {
     const repo = manager.getRepository(CustomerInvoice);
-    const { items, salesOrderIds, ...headerInput } = input;
+    const { ...headerInput } = input;
 
     const updateData = {
       ...headerInput,
@@ -1221,9 +1221,55 @@ export class CustomerInvoiceService {
    * @returns The singleton instance of CustomerInvoiceService.
    */
   static getInstance(): CustomerInvoiceService {
-    if (!instance) {
-      instance = new CustomerInvoiceService();
-    }
+    instance ??= new CustomerInvoiceService();
+
     return instance;
+  }
+
+  /**
+   * Updates the status and paid amount of an invoice.
+   * Designed to be called by PaymentService within a transaction.
+   * @param invoiceId The ID of the invoice to update.
+   * @param paymentAmount The amount of the payment to apply (negative for a reversal).
+   * @param updatedByUserId The ID of the user performing the action.
+   * @param manager The EntityManager of the current transaction.
+   */
+  async updatePaymentStatus(
+    invoiceId: number,
+    paymentAmount: number,
+    updatedByUserId: number,
+    manager: EntityManager,
+  ): Promise<void> {
+    const invoice = await this.invoiceRepository.findById(invoiceId, {
+      transactionalEntityManager: manager,
+    });
+
+    if (!invoice) {
+      logger.warn(
+        `Customer Invoice ID ${invoiceId} not found during payment application. Payment recorded, but invoice status not updated.`,
+      );
+      return;
+    }
+
+    invoice.amountPaid = parseFloat(
+      (Number(invoice.amountPaid) + Number(paymentAmount)).toFixed(4),
+    );
+
+    const balanceDue = Number(invoice.totalAmountTtc) - invoice.amountPaid;
+    if (balanceDue <= FLOAT_TOLERANCE) {
+      invoice.status = CustomerInvoiceStatus.PAID;
+      invoice.amountPaid = Number(invoice.totalAmountTtc);
+    } else if (invoice.amountPaid > 0) {
+      invoice.status = CustomerInvoiceStatus.PARTIALLY_PAID;
+    } else {
+      invoice.status = CustomerInvoiceStatus.SENT;
+      invoice.amountPaid = 0;
+    }
+
+    invoice.updatedByUserId = updatedByUserId;
+    await this.invoiceRepository.save(invoice, manager);
+    logger.info(
+      `Payment status updated for Customer Invoice ${invoice.invoiceNumber}. New status: ${invoice.status}, Amount paid: ${invoice.amountPaid}.`,
+    );
   }
 }

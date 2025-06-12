@@ -87,7 +87,6 @@ export default class SupplierReturnRouter extends BaseRouter {
   @searchable(['returnNumber', 'supplierRmaNumber', 'notes'])
   async listSupplierReturns(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
 
     await this.pipe(res, req, next, () =>
       this.service.findAllSupplierReturns({
@@ -95,7 +94,6 @@ export default class SupplierReturnRouter extends BaseRouter {
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm: searchTerm,
       }),
     );
   }
