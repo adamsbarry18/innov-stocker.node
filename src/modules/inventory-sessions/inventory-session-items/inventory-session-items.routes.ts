@@ -58,11 +58,7 @@ export default class InventorySessionItemRouter extends BaseRouter {
     if (isNaN(sessionId)) return next(new BadRequestError('Invalid Inventory Session ID in path.'));
 
     const input: CreateOrUpdateInventorySessionItemInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
-    await this.pipe(res, req, next, () =>
-      this.itemService.addOrUpdateItem(sessionId, input, userId),
-    );
+    await this.pipe(res, req, next, () => this.itemService.addOrUpdateItem(sessionId, input));
   }
 
   /**
@@ -185,15 +181,12 @@ export default class InventorySessionItemRouter extends BaseRouter {
     if (isNaN(sessionId) || !itemId)
       return next(new BadRequestError('Invalid Inventory Session or Item ID in path.'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.itemService.removeItemFromSession(sessionId, itemId, userId);
+        await this.itemService.removeItemFromSession(sessionId, itemId);
       },
       204,
     );

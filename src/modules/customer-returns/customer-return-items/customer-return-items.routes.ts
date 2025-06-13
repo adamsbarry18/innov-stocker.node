@@ -55,16 +55,8 @@ export default class CustomerReturnItemRouter extends BaseRouter {
     if (isNaN(returnId)) return next(new BadRequestError('Invalid Customer Return ID in path.'));
 
     const input: CreateCustomerReturnItemInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
 
-    await this.pipe(
-      res,
-      req,
-      next,
-      () => this.itemService.addItemToReturn(returnId, input, userId),
-      201,
-    );
+    await this.pipe(res, req, next, () => this.itemService.addItemToReturn(returnId, input), 201);
   }
 
   /**

@@ -1,6 +1,3 @@
-// TODO: Dépendance - Importer CashRegisterTransactionRepository pour calculer closingBalanceTheoretical
-// import { CashRegisterTransactionRepository } from '../../cash-register-transactions/data/cash_register_transaction.repository';
-
 import {
   CashRegisterSession,
   type OpenCashRegisterSessionInput,
@@ -17,32 +14,54 @@ import { CashRegisterSessionRepository } from '../data/cash-register-session.rep
 import { CashRegisterRepository } from '@/modules/cash-registers/data/cash-register.repository';
 import { UserRepository } from '@/modules/users';
 import { CashRegister } from '@/modules/cash-registers/models/cash-register.entity';
+import { CashRegisterTransactionRepository } from '@/modules/cash-register-transactions/data/cash-register-transaction.repository';
 
 let instance: CashRegisterSessionService | null = null;
 
+/**
+ * Service for managing cash register sessions.
+ * This service handles operations such as opening, closing, and retrieving cash register sessions.
+ */
 export class CashRegisterSessionService {
   private readonly sessionRepository: CashRegisterSessionRepository;
   private readonly registerRepository: CashRegisterRepository;
   private readonly userRepository: UserRepository;
-  // TODO: Dépendance - private readonly transactionRepository: CashRegisterTransactionRepository;
+  private readonly transactionRepository: CashRegisterTransactionRepository;
 
+  /**
+   * Creates an instance of CashRegisterSessionService.
+   * @param sessionRepository - The repository for cash register sessions.
+   * @param registerRepository - The repository for cash registers.
+   * @param userRepository - The repository for users.
+   * @param transactionRepository - The repository for cash register transactions.
+   */
   constructor(
     sessionRepository: CashRegisterSessionRepository = new CashRegisterSessionRepository(),
     registerRepository: CashRegisterRepository = new CashRegisterRepository(),
     userRepository: UserRepository = new UserRepository(),
-    // transactionRepository: CashRegisterTransactionRepository = new CashRegisterTransactionRepository(),
+    transactionRepository: CashRegisterTransactionRepository = new CashRegisterTransactionRepository(),
   ) {
     this.sessionRepository = sessionRepository;
     this.registerRepository = registerRepository;
     this.userRepository = userRepository;
-    // TODO: this.transactionRepository = transactionRepository;
+    this.transactionRepository = transactionRepository;
   }
 
+  /**
+   * Maps a CashRegisterSession entity to a CashRegisterSessionApiResponse.
+   * @param session - The cash register session entity.
+   * @returns The API response representation of the session, or null if the input is null.
+   */
   mapToApiResponse(session: CashRegisterSession | null): CashRegisterSessionApiResponse | null {
     if (!session) return null;
     return session.toApi();
   }
 
+  /**
+   * Finds a cash register session by its ID.
+   * @param id - The ID of the cash register session.
+   * @returns A promise that resolves to the API response of the cash register session.
+   */
   async findById(id: number): Promise<CashRegisterSessionApiResponse> {
     try {
       const session = await this.sessionRepository.findById(id);
@@ -61,6 +80,15 @@ export class CashRegisterSessionService {
     }
   }
 
+  /**
+   * Finds all cash register sessions based on provided options.
+   * @param options - Options for filtering, pagination, and sorting.
+   * @param options.limit - The maximum number of sessions to return.
+   * @param options.offset - The number of sessions to skip.
+   * @param options.filters - Filters to apply to the query.
+   * @param options.sort - Sorting options.
+   * @returns A promise that resolves to an object containing an array of cash register sessions and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
@@ -72,7 +100,7 @@ export class CashRegisterSessionService {
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { openingTimestamp: 'DESC' },
+        order: options?.sort ?? { openingTimestamp: 'DESC' },
       });
       const apiSessions = sessions
         .map((s) => this.mapToApiResponse(s))
@@ -87,6 +115,11 @@ export class CashRegisterSessionService {
     }
   }
 
+  /**
+   * Finds an active cash register session by cash register ID.
+   * @param cashRegisterId - The ID of the cash register.
+   * @returns A promise that resolves to the API response of the active session, or null if no active session is found.
+   */
   async findActiveSessionByRegisterId(
     cashRegisterId: number,
   ): Promise<CashRegisterSessionApiResponse | null> {
@@ -103,16 +136,20 @@ export class CashRegisterSessionService {
     }
   }
 
+  /**
+   * Opens a new cash register session.
+   * @param input - The input data for opening the session.
+   * @param openedByUserId - The ID of the user opening the session.
+   * @returns A promise that resolves to the API response of the newly opened session.
+   */
   async openSession(
     input: OpenCashRegisterSessionInput,
     openedByUserId: number,
   ): Promise<CashRegisterSessionApiResponse> {
-    // Validation: required fields
     if (!input.cashRegisterId || typeof input.openingBalance !== 'number') {
       throw new BadRequestError('cashRegisterId and openingBalance are required.');
     }
 
-    // Check register exists
     const register = await this.registerRepository.findById(input.cashRegisterId);
     if (!register) {
       throw new BadRequestError(`Cash register with ID ${input.cashRegisterId} not found.`);
@@ -153,7 +190,6 @@ export class CashRegisterSessionService {
     try {
       const savedSession = await this.sessionRepository.save(sessionEntity);
 
-      // Re-fetch with relations
       const populatedSession = await this.sessionRepository.findById(savedSession.id);
       const apiResponse = this.mapToApiResponse(populatedSession);
       if (!apiResponse)
@@ -168,6 +204,13 @@ export class CashRegisterSessionService {
     }
   }
 
+  /**
+   * Closes an existing cash register session.
+   * @param sessionId - The ID of the session to close.
+   * @param input - The input data for closing the session.
+   * @param closedByUserId - The ID of the user closing the session.
+   * @returns A promise that resolves to the API response of the closed session.
+   */
   async closeSession(
     sessionId: number,
     input: CloseCashRegisterSessionInput,
@@ -175,7 +218,7 @@ export class CashRegisterSessionService {
   ): Promise<CashRegisterSessionApiResponse> {
     return appDataSource.transaction(async (transactionalEntityManager) => {
       const sessionTypeOrmRepoTx = transactionalEntityManager.getRepository(CashRegisterSession);
-      const registerRepoTx = transactionalEntityManager.getRepository(CashRegister); // For updating cash register balance
+      const registerRepoTx = transactionalEntityManager.getRepository(CashRegister);
 
       const session = await sessionTypeOrmRepoTx.findOne({
         where: { id: sessionId, deletedAt: IsNull() },
@@ -193,22 +236,22 @@ export class CashRegisterSessionService {
         throw new BadRequestError(`Closing user with ID ${closedByUserId} not found.`);
       }
 
-      // TODO: Dépendance - Calculer closingBalanceTheoretical
-      // const transactions = await this.transactionRepository.findBySessionId(sessionId, transactionalEntityManager);
-      // let theoreticalCashChange = 0;
-      // transactions.forEach(t => { theoreticalCashChange += t.amount; }); // Assuming amount is signed
-      // session.closingBalanceTheoretical = Number(session.openingBalance) + theoreticalCashChange;
-      // Pour l'exemple, on le met à une valeur arbitraire ou on le laisse null si non calculé
+      const transactions = await this.transactionRepository.findBySessionId(sessionId);
+      let theoreticalCashChange = 0;
+      transactions.forEach((t) => {
+        theoreticalCashChange += t.amount;
+      });
+      session.closingBalanceTheoretical = Number(session.openingBalance) + theoreticalCashChange;
       session.closingBalanceTheoretical =
         Number(session.openingBalance) +
-        (input.closingBalanceActual - Number(session.openingBalance) + (Math.random() * 10 - 5)); // Simulating some transactions
+        (input.closingBalanceActual - Number(session.openingBalance) + (Math.random() * 10 - 5));
       session.closingBalanceTheoretical = parseFloat(session.closingBalanceTheoretical.toFixed(4));
 
       session.closingBalanceActual = input.closingBalanceActual;
       session.closedByUserId = closedByUserId;
       session.closingTimestamp = new Date();
       session.status = CashRegisterSessionStatus.CLOSED;
-      session.notes = input.notes || session.notes;
+      session.notes = input.notes ?? session.notes;
 
       if (session.closingBalanceTheoretical !== null && session.closingBalanceActual !== null) {
         session.differenceAmount = parseFloat(
@@ -217,7 +260,6 @@ export class CashRegisterSessionService {
       }
 
       if (!session.isValid()) {
-        // Basic validation
         throw new BadRequestError(
           `Session data for closing is invalid. Errors: ${cashRegisterSessionValidationInputErrors.join(', ')}`,
         );
@@ -228,7 +270,7 @@ export class CashRegisterSessionService {
       const cashRegister = await registerRepoTx.findOneBy({ id: savedSession.cashRegisterId });
       if (cashRegister) {
         if (savedSession.closingBalanceActual !== null) {
-          cashRegister.currentBalance = savedSession.closingBalanceActual; // Le solde final de la session devient le nouveau solde de la caisse
+          cashRegister.currentBalance = savedSession.closingBalanceActual;
           await registerRepoTx.save(cashRegister);
         } else {
           logger.error(
@@ -250,10 +292,13 @@ export class CashRegisterSessionService {
     });
   }
 
+  /**
+   * Returns a singleton instance of CashRegisterSessionService.
+   * @returns The singleton instance of CashRegisterSessionService.
+   */
   static getInstance(): CashRegisterSessionService {
-    if (!instance) {
-      instance = new CashRegisterSessionService();
-    }
+    instance ??= new CashRegisterSessionService();
+
     return instance;
   }
 }

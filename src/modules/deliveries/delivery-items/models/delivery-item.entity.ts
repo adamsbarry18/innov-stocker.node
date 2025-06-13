@@ -93,11 +93,11 @@ export class DeliveryItem extends Model {
       productId: this.salesOrderItem?.productId || this.productId,
       productSku: this.salesOrderItem?.product?.sku || this.product?.sku,
       productName: this.salesOrderItem?.product?.name || this.product?.name,
-      productVariantId: this.salesOrderItem?.productVariantId || this.productVariantId,
+      productVariantId: this.salesOrderItem?.productVariantId ?? this.productVariantId,
       productVariantSku:
-        this.salesOrderItem?.productVariant?.skuVariant || this.productVariant?.skuVariant,
+        this.salesOrderItem?.productVariant?.skuVariant ?? this.productVariant?.skuVariant,
       productVariantName:
-        this.salesOrderItem?.productVariant?.nameVariant || this.productVariant?.nameVariant,
+        this.salesOrderItem?.productVariant?.nameVariant ?? this.productVariant?.nameVariant,
       quantityShipped: Number(this.quantityShipped),
       quantityOrderedFromSo: this.salesOrderItem ? Number(this.salesOrderItem.quantity) : null,
       createdAt: Model.formatISODate(this.createdAt),

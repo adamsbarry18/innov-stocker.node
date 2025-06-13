@@ -61,7 +61,7 @@ export class BankAccountService {
         where: whereClause,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { accountName: 'ASC' },
+        order: options?.sort ?? { accountName: 'ASC' },
       });
       const apiAccounts = accounts
         .map((acc) => this.mapToApiResponse(acc))
@@ -76,10 +76,7 @@ export class BankAccountService {
     }
   }
 
-  async create(
-    input: CreateBankAccountInput,
-    createdByUserId?: number,
-  ): Promise<BankAccountApiResponse> {
+  async create(input: CreateBankAccountInput): Promise<BankAccountApiResponse> {
     const currency = await this.currencyRepository.findById(input.currencyId);
     if (!currency) {
       throw new BadRequestError(`Currency with ID ${input.currencyId} not found.`);
@@ -98,8 +95,7 @@ export class BankAccountService {
 
     const accountEntity = this.bankAccountRepository.create({
       ...input,
-      currentBalance: input.initialBalance || 0,
-      // createdByUserId: createdByUserId, // Si audit
+      currentBalance: input.initialBalance ?? 0,
     });
 
     if (!accountEntity.isValid()) {
@@ -126,11 +122,7 @@ export class BankAccountService {
     }
   }
 
-  async update(
-    id: number,
-    input: UpdateBankAccountInput,
-    updatedByUserId?: number,
-  ): Promise<BankAccountApiResponse> {
+  async update(id: number, input: UpdateBankAccountInput): Promise<BankAccountApiResponse> {
     try {
       const account = await this.bankAccountRepository.findById(id);
       if (!account) throw new NotFoundError(`Bank account with id ${id} not found.`);
@@ -177,7 +169,6 @@ export class BankAccountService {
       }
 
       const updatePayload: Partial<BankAccount> = { ...updateData };
-      // updatePayload.updatedByUserId = updatedByUserId; // Si audit
 
       if (Object.keys(updatePayload).length === 0) {
         return this.mapToApiResponse(account) as BankAccountApiResponse;
@@ -206,14 +197,11 @@ export class BankAccountService {
     }
   }
 
-  async delete(id: number, deletedByUserId?: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     try {
       const account = await this.bankAccountRepository.findById(id);
       if (!account) throw new NotFoundError(`Bank account with id ${id} not found.`);
 
-      // TODO: Dépendance - Vérifier si le compte bancaire est utilisé (Payments)
-      // Et si currentBalance est non nul (généralement on ne supprime pas un compte avec un solde)
-      // Check if currentBalance is strictly zero (handle potential decimal string)
       if (Number(account.currentBalance) !== 0) {
         throw new BadRequestError(
           `Bank account '${account.accountName}' has a non-zero balance (${account.currentBalance}) and cannot be deleted.`,
@@ -238,9 +226,8 @@ export class BankAccountService {
   }
 
   static getInstance(): BankAccountService {
-    if (!instance) {
-      instance = new BankAccountService();
-    }
+    instance ??= new BankAccountService();
+
     return instance;
   }
 }

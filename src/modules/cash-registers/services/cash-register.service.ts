@@ -1,8 +1,6 @@
-// src/modules/cash-registers/services/cash_register.service.ts
 import { CashRegisterRepository } from '../data/cash-register.repository';
 import { ShopRepository } from '../../shops/data/shop.repository';
 import { CurrencyRepository } from '../../currencies/data/currency.repository';
-// TODO: Dépendance - Importer CashRegisterSessionRepository pour isCashRegisterInUse
 import {
   type CreateCashRegisterInput,
   type UpdateCashRegisterInput,
@@ -16,29 +14,46 @@ import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 
 let instance: CashRegisterService | null = null;
 
+/**
+ * Service for managing cash registers.
+ * This service handles operations such as creating, updating, deleting, and retrieving cash registers.
+ */
 export class CashRegisterService {
   private readonly registerRepository: CashRegisterRepository;
   private readonly shopRepository: ShopRepository;
   private readonly currencyRepository: CurrencyRepository;
-  // TODO: Dépendance - private readonly sessionRepository: CashRegisterSessionRepository;
 
+  /**
+   * Creates an instance of CashRegisterService.
+   * @param registerRepository - The repository for cash registers.
+   * @param shopRepository - The repository for shops.
+   * @param currencyRepository - The repository for currencies.
+   */
   constructor(
     registerRepository: CashRegisterRepository = new CashRegisterRepository(),
     shopRepository: ShopRepository = new ShopRepository(),
     currencyRepository: CurrencyRepository = new CurrencyRepository(),
-    // sessionRepository: CashRegisterSessionRepository = new CashRegisterSessionRepository(),
   ) {
     this.registerRepository = registerRepository;
     this.shopRepository = shopRepository;
     this.currencyRepository = currencyRepository;
-    // TODO: this.sessionRepository = sessionRepository;
   }
 
+  /**
+   * Maps a CashRegister entity to a CashRegisterApiResponse.
+   * @param register - The cash register entity.
+   * @returns The API response representation of the cash register, or null if the input is null.
+   */
   mapToApiResponse(register: CashRegister | null): CashRegisterApiResponse | null {
     if (!register) return null;
     return register.toApi();
   }
 
+  /**
+   * Finds a cash register by its ID.
+   * @param id - The ID of the cash register.
+   * @returns A promise that resolves to the API response of the cash register.
+   */
   async findById(id: number): Promise<CashRegisterApiResponse> {
     try {
       const register = await this.registerRepository.findById(id);
@@ -57,12 +72,20 @@ export class CashRegisterService {
     }
   }
 
+  /**
+   * Finds all cash registers based on provided options.
+   * @param options - Options for filtering, pagination, and sorting.
+   * @param options.limit - The maximum number of registers to return.
+   * @param options.offset - The number of registers to skip.
+   * @param options.filters - Filters to apply to the query.
+   * @param options.sort - Sorting options.
+   * @returns A promise that resolves to an object containing an array of cash registers and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
     filters?: FindOptionsWhere<CashRegister>;
     sort?: FindManyOptions<CashRegister>['order'];
-    searchTerm?: string;
   }): Promise<{ registers: CashRegisterApiResponse[]; total: number }> {
     try {
       const whereClause = options?.filters ? { ...options.filters } : {};
@@ -70,7 +93,7 @@ export class CashRegisterService {
         where: whereClause,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { name: 'ASC' },
+        order: options?.sort ?? { name: 'ASC' },
       });
       const apiRegisters = registers
         .map((reg) => this.mapToApiResponse(reg))
@@ -85,10 +108,12 @@ export class CashRegisterService {
     }
   }
 
-  async create(
-    input: CreateCashRegisterInput,
-    createdByUserId?: number,
-  ): Promise<CashRegisterApiResponse> {
+  /**
+   * Creates a new cash register.
+   * @param input - The input data for creating the cash register.
+   * @returns A promise that resolves to the API response of the newly created cash register.
+   */
+  async create(input: CreateCashRegisterInput): Promise<CashRegisterApiResponse> {
     if (input.shopId) {
       const shop = await this.shopRepository.findById(input.shopId);
       if (!shop) throw new BadRequestError(`Shop with ID ${input.shopId} not found.`);
@@ -105,8 +130,7 @@ export class CashRegisterService {
 
     const registerEntity = this.registerRepository.create({
       ...input,
-      currentBalance: 0, // Initial balance is 0, managed by opening session
-      // createdByUserId: createdByUserId, // Si audit
+      currentBalance: 0,
     });
 
     if (!registerEntity.isValid()) {
@@ -117,7 +141,7 @@ export class CashRegisterService {
 
     try {
       const savedRegister = await this.registerRepository.save(registerEntity);
-      const populatedRegister = await this.registerRepository.findById(savedRegister.id); // Re-fetch with relations
+      const populatedRegister = await this.registerRepository.findById(savedRegister.id);
       const apiResponse = this.mapToApiResponse(populatedRegister);
       if (!apiResponse)
         throw new ServerError(`Failed to map newly created cash register ${savedRegister.id}.`);
@@ -132,11 +156,13 @@ export class CashRegisterService {
     }
   }
 
-  async update(
-    id: number,
-    input: UpdateCashRegisterInput,
-    updatedByUserId?: number,
-  ): Promise<CashRegisterApiResponse> {
+  /**
+   * Updates an existing cash register.
+   * @param id - The ID of the cash register to update.
+   * @param input - The input data for updating the cash register.
+   * @returns A promise that resolves to the API response of the updated cash register.
+   */
+  async update(id: number, input: UpdateCashRegisterInput): Promise<CashRegisterApiResponse> {
     try {
       const register = await this.registerRepository.findById(id);
       if (!register) throw new NotFoundError(`Cash register with id ${id} not found.`);
@@ -198,7 +224,12 @@ export class CashRegisterService {
     }
   }
 
-  async delete(id: number, deletedByUserId?: number): Promise<void> {
+  /**
+   * Deletes a cash register by its ID.
+   * @param id - The ID of the cash register to delete.
+   * @returns A promise that resolves when the cash register is successfully deleted.
+   */
+  async delete(id: number): Promise<void> {
     try {
       const register = await this.registerRepository.findById(id);
       if (!register) throw new NotFoundError(`Cash register with id ${id} not found.`);
@@ -226,10 +257,12 @@ export class CashRegisterService {
     }
   }
 
+  /**
+   * Returns a singleton instance of CashRegisterService.
+   * @returns The singleton instance of CashRegisterService.
+   */
   static getInstance(): CashRegisterService {
-    if (!instance) {
-      instance = new CashRegisterService();
-    }
+    instance ??= new CashRegisterService();
     return instance;
   }
 }

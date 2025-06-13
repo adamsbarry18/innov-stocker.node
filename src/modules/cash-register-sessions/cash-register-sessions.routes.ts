@@ -133,7 +133,6 @@ export default class CashRegisterSessionRouter extends BaseRouter {
   async getSessionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    // TODO: Add authorization: check if req.user is owner or admin
     await this.pipe(res, req, next, () => this.service.findById(id));
   }
 
@@ -177,7 +176,6 @@ export default class CashRegisterSessionRouter extends BaseRouter {
   ): Promise<void> {
     const cashRegisterId = parseInt(req.params.cashRegisterId, 10);
     if (isNaN(cashRegisterId)) return next(new BadRequestError('Invalid Cash Register ID format.'));
-    // TODO: Authorization: check if req.user can access this cash register
     await this.pipe(res, req, next, () =>
       this.service.findActiveSessionByRegisterId(cashRegisterId),
     );
@@ -218,7 +216,6 @@ export default class CashRegisterSessionRouter extends BaseRouter {
     const input: OpenCashRegisterSessionInput = req.body;
     const userId = req.user?.id;
     if (!userId) return next(new UnauthorizedError('User ID not found.'));
-    // TODO: Authorization: check if user can open session for this register
 
     await this.pipe(res, req, next, () => this.service.openSession(input, userId), 201);
   }
@@ -265,7 +262,6 @@ export default class CashRegisterSessionRouter extends BaseRouter {
     const input: CloseCashRegisterSessionInput = req.body;
     const userId = req.user?.id;
     if (!userId) return next(new UnauthorizedError('User ID not found.'));
-    // TODO: Authorization: check if user can close THIS session
 
     await this.pipe(res, req, next, () => this.service.closeSession(id, input, userId));
   }

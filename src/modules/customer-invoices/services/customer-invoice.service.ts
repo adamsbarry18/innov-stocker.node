@@ -8,7 +8,6 @@ import {
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, IsNull, type EntityManager } from 'typeorm';
 import { CustomerInvoiceRepository } from '../data/customer-invoice.repository';
-import { CustomerInvoiceSalesOrderLinkRepository } from '../data/customer-invoice-sales-order-link.repo';
 import { CustomerRepository } from '@/modules/customers/data/customer.repository';
 import { CurrencyRepository } from '@/modules/currencies/data/currency.repository';
 import { AddressRepository } from '@/modules/addresses/data/address.repository';
@@ -17,7 +16,6 @@ import { ProductVariantRepository } from '@/modules/product-variants/data/produc
 import { UserRepository } from '@/modules/users';
 import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
 import { SalesOrderItemRepository } from '@/modules/sales-orders/sales-order-items/data/sales-order-item.repository';
-import { DeliveryRepository } from '@/modules/deliveries/data/delivery.repository';
 import { DeliveryItemRepository } from '@/modules/deliveries/delivery-items/data/delivery-item.repository';
 import {
   CustomerInvoice,
@@ -82,7 +80,6 @@ export class CustomerInvoiceService {
    */
   constructor(
     private readonly invoiceRepository: CustomerInvoiceRepository = new CustomerInvoiceRepository(),
-    private readonly linkRepository: CustomerInvoiceSalesOrderLinkRepository = new CustomerInvoiceSalesOrderLinkRepository(),
     private readonly customerRepository: CustomerRepository = new CustomerRepository(),
     private readonly currencyRepository: CurrencyRepository = new CurrencyRepository(),
     private readonly addressRepository: AddressRepository = new AddressRepository(),
@@ -91,7 +88,6 @@ export class CustomerInvoiceService {
     private readonly userRepository: UserRepository = new UserRepository(),
     private readonly soRepository: SalesOrderRepository = new SalesOrderRepository(),
     private readonly soItemRepository: SalesOrderItemRepository = new SalesOrderItemRepository(),
-    private readonly deliveryRepository: DeliveryRepository = new DeliveryRepository(),
     private readonly deliveryItemRepository: DeliveryItemRepository = new DeliveryItemRepository(),
   ) {}
 
@@ -190,15 +186,13 @@ export class CustomerInvoiceService {
     offset?: number;
     filters?: FindOptionsWhere<CustomerInvoice>;
     sort?: FindManyOptions<CustomerInvoice>['order'];
-    searchTerm?: string;
   }): Promise<{ invoices: CustomerInvoiceApiResponse[]; total: number }> {
     try {
       const { invoices, count } = await this.invoiceRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { invoiceDate: 'DESC', createdAt: 'DESC' },
-        searchTerm: options?.searchTerm,
+        order: options?.sort ?? { invoiceDate: 'DESC', createdAt: 'DESC' },
       });
 
       const apiInvoices = invoices
@@ -313,7 +307,6 @@ export class CustomerInvoiceService {
     }
   }
 
-  // Private validation methods
   /**
    * Validates the input data for creating or updating a customer invoice.
    * @param input - The input data for the invoice.
@@ -327,7 +320,6 @@ export class CustomerInvoiceService {
 
     const customerId = 'customerId' in input ? input.customerId : undefined;
 
-    // Validate only if the field is present in the input or if it's a creation operation
     if ('customerId' in input) {
       await this.validateCustomer(customerId, isUpdate, transactionalEntityManager);
     } else if (!isUpdate) {
@@ -342,7 +334,7 @@ export class CustomerInvoiceService {
 
     if ('billingAddressId' in input) {
       await this.validateAddress(
-        input.billingAddressId ?? undefined, // Handle null explicitly
+        input.billingAddressId ?? undefined,
         true,
         'billing',
         transactionalEntityManager,
@@ -353,7 +345,7 @@ export class CustomerInvoiceService {
 
     if ('shippingAddressId' in input) {
       await this.validateAddress(
-        input.shippingAddressId ?? undefined, // Handle null explicitly
+        input.shippingAddressId ?? undefined,
         false,
         'shipping',
         transactionalEntityManager,
@@ -473,7 +465,6 @@ export class CustomerInvoiceService {
     invoiceId?: number,
   ): Promise<void> {
     if (!isUpdate && !input.invoiceNumber) {
-      // Generate invoice number if not provided
       return;
     }
 
@@ -662,14 +653,12 @@ export class CustomerInvoiceService {
    * @param userId - The ID of the user.
    */
   private async validateUser(userId: number): Promise<void> {
-    // This validation is only called if userId is not null/undefined
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new BadRequestError(`User ID ${userId} not found.`);
     }
   }
 
-  // Private creation methods
   /**
    * Creates the header for a new customer invoice.
    * @param input - The input data for the invoice.
@@ -786,7 +775,6 @@ export class CustomerInvoiceService {
     await repo.save(links);
   }
 
-  // Private update methods
   /**
    * Sanitizes the update input based on the invoice status.
    * Restricts fields that can be updated if the invoice is paid or cancelled.
@@ -867,7 +855,6 @@ export class CustomerInvoiceService {
     return status === CustomerInvoiceStatus.DRAFT;
   }
 
-  // Private validation methods for status transitions
   /**
    * Validates a status transition for a customer invoice.
    * @param invoice - The current customer invoice.
@@ -951,7 +938,6 @@ export class CustomerInvoiceService {
     }
   }
 
-  // Utility methods
   /**
    * Generates a unique invoice number.
    * @returns A promise that resolves to a unique invoice number string.
@@ -1202,7 +1188,7 @@ export class CustomerInvoiceService {
    * @param invoiceId - The ID of the invoice to send a reminder for.
    * @param sentByUserId - The ID of the user sending the reminder.
    */
-  async sendInvoiceReminder(invoiceId: number, sentByUserId: number): Promise<void> {
+  async sendInvoiceReminder(invoiceId: number): Promise<void> {
     logger.warn(`sendInvoiceReminder for CI ${invoiceId} is a STUB.`);
     const invoice = await this.invoiceRepository.findById(invoiceId);
     if (!invoice) throw new NotFoundError('Invoice not found for sending reminder.');

@@ -1,10 +1,7 @@
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { CustomerRepository } from '../data/customer.repository';
-import { CustomerShippingAddressService } from './customer-shipping-address.service';
 import { AddressRepository } from '../../addresses/data/address.repository';
 import { CurrencyRepository } from '../../currencies/data/currency.repository';
-// TODO: Importer les repositories nécessaires pour la vérification des dépendances à la suppression.
-// import { SalesOrderRepository } from '../../sales_orders/data/sales_order.repository';
 
 import {
   type CreateCustomerInput,
@@ -27,30 +24,34 @@ export class CustomerService {
   private readonly addressRepository: AddressRepository;
   private readonly currencyRepository: CurrencyRepository;
   private readonly customerGroupRepository: CustomerGroupRepository;
-  private readonly customerShippingAddressService: CustomerShippingAddressService;
-  // TODO: private readonly salesOrderRepository: SalesOrderRepository;
 
   constructor(
     customerRepository: CustomerRepository = new CustomerRepository(),
     addressRepository: AddressRepository = new AddressRepository(),
     currencyRepository: CurrencyRepository = new CurrencyRepository(),
     customerGroupRepository: CustomerGroupRepository = new CustomerGroupRepository(),
-    customerShippingAddressService: CustomerShippingAddressService = new CustomerShippingAddressService(),
-    // salesOrderRepository: SalesOrderRepository = new SalesOrderRepository(),
   ) {
     this.customerRepository = customerRepository;
     this.addressRepository = addressRepository;
     this.currencyRepository = currencyRepository;
     this.customerGroupRepository = customerGroupRepository;
-    this.customerShippingAddressService = customerShippingAddressService;
-    // TODO: this.salesOrderRepository = salesOrderRepository;
   }
 
+  /**
+   * Maps a Customer entity to a CustomerApiResponse.
+   * @param customer The customer entity to map.
+   * @returns The API response representation of the customer, or null if the input is null.
+   */
   mapToApiResponse(customer: Customer | null): CustomerApiResponse | null {
     if (!customer) return null;
     return customer.toApi();
   }
 
+  /**
+   * Finds a customer by their ID.
+   * @param id The ID of the customer to find.
+   * @returns A promise that resolves to the customer API response.
+   */
   async findById(id: number): Promise<CustomerApiResponse> {
     try {
       const customer = await this.customerRepository.findById(id);
@@ -69,12 +70,16 @@ export class CustomerService {
     }
   }
 
+  /**
+   * Retrieves all customers based on provided options.
+   * @param options Options for filtering, pagination, and sorting.
+   * @returns A promise that resolves to an object containing an array of customer API responses and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
     filters?: FindOptionsWhere<Customer>;
     sort?: FindManyOptions<Customer>['order'];
-    searchTerm?: string;
   }): Promise<{ customers: CustomerApiResponse[]; total: number }> {
     try {
       const whereClause = options?.filters ? { ...options.filters } : {};
@@ -83,7 +88,7 @@ export class CustomerService {
         where: whereClause,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { companyName: 'ASC', lastName: 'ASC' },
+        order: options?.sort ?? { companyName: 'ASC', lastName: 'ASC' },
       });
       const apiCustomers = customers
         .map((c) => this.mapToApiResponse(c))
@@ -98,13 +103,17 @@ export class CustomerService {
     }
   }
 
+  /**
+   * Creates a new customer.
+   * @param input The input data for creating the customer.
+   * @param createdByUserId The ID of the user who created the customer.
+   * @returns A promise that resolves to the created customer API response.
+   */
   async create(input: CreateCustomerInput, createdByUserId: number): Promise<CustomerApiResponse> {
-    // TODO: Dépendance - Valider l'existence de input.defaultCurrencyId
     const currency = await this.currencyRepository.findById(input.defaultCurrencyId);
     if (!currency)
       throw new BadRequestError(`Currency with ID ${input.defaultCurrencyId} not found.`);
 
-    // TODO: Dépendance - Valider l'existence de input.customerGroupId si fourni
     if (input.customerGroupId) {
       const group = await this.customerGroupRepository.findById(input.customerGroupId);
       if (!group)
@@ -118,7 +127,6 @@ export class CustomerService {
       }
     }
 
-    // Gestion de la création d'adresses "à la volée"
     let billingAddressId = input.billingAddressId;
     if (input.newBillingAddress && !input.billingAddressId) {
       const createdBillingAddress = await this.addressRepository.save(
@@ -130,7 +138,6 @@ export class CustomerService {
         'Billing address information (billingAddressId or newBillingAddress) is required.',
       );
     } else if (input.billingAddressId) {
-      // TODO: Dépendance - Valider l'existence de input.billingAddressId
       const address = await this.addressRepository.findById(input.billingAddressId);
       if (!address)
         throw new BadRequestError(`Billing Address with ID ${input.billingAddressId} not found.`);
@@ -143,7 +150,6 @@ export class CustomerService {
       );
       defaultShippingAddressId = createdShippingAddress.id;
     } else if (input.defaultShippingAddressId) {
-      // TODO: Dépendance - Valider l'existence de input.defaultShippingAddressId
       const address = await this.addressRepository.findById(input.defaultShippingAddressId);
       if (!address)
         throw new BadRequestError(
@@ -163,8 +169,8 @@ export class CustomerService {
       defaultPaymentTermsDays: input.defaultPaymentTermsDays,
       creditLimit: input.creditLimit,
       customerGroupId: input.customerGroupId,
-      billingAddressId: billingAddressId, // Utiliser l'ID résolu
-      defaultShippingAddressId: defaultShippingAddressId || null, // Utiliser l'ID résolu
+      billingAddressId: billingAddressId,
+      defaultShippingAddressId: defaultShippingAddressId ?? null,
       notes: input.notes,
       createdByUserId: createdByUserId,
       updatedByUserId: createdByUserId,
@@ -203,16 +209,14 @@ export class CustomerService {
             customerId: savedCustomer.id,
             addressId: addressIdToLink,
             addressLabel: saInput.addressLabel,
-            isDefault: saInput.isDefault || false,
+            isDefault: saInput.isDefault ?? false,
           });
           await shippingAddressRepo.save(newShippingAddress);
-          // Si c'est l'adresse par défaut, mettre à jour le client principal
           if (newShippingAddress.isDefault) {
             savedCustomer.defaultShippingAddressId = newShippingAddress.addressId;
-            // Mettre à jour aussi l'entité defaultShippingAddress si elle est chargée
             if (newShippingAddress.address)
               savedCustomer.defaultShippingAddress = newShippingAddress.address;
-            await customerRepo.save(savedCustomer); // Sauvegarder la mise à jour du defaultShippingAddressId
+            await customerRepo.save(savedCustomer);
           }
         }
       }
@@ -228,53 +232,52 @@ export class CustomerService {
     });
   }
 
+  /**
+   * Updates an existing customer.
+   * @param id The ID of the customer to update.
+   * @param input The input data for updating the customer.
+   * @param updatedByUserId The ID of the user who updated the customer.
+   * @returns A promise that resolves to the updated customer API response.
+   */
   async update(
     id: number,
     input: UpdateCustomerInput,
     updatedByUserId: number,
   ): Promise<CustomerApiResponse> {
-    // Transaction pour gérer les mises à jour d'adresses et du client de manière atomique
     return appDataSource.transaction(async (transactionalEntityManager) => {
       const customerRepo = transactionalEntityManager.getRepository(Customer);
-      const addressRepo = transactionalEntityManager.getRepository(Address); // Pour valider/créer adresses
 
-      const customer = await this.customerRepository.findById(id); // findById charge les relations par défaut
+      const customer = await this.customerRepository.findById(id);
       if (!customer) throw new NotFoundError(`Customer with id ${id} not found.`);
-
-      // TODO: Dépendance - Valider les FKs si elles sont modifiées (currency, group, addresses)
       if (input.defaultCurrencyId && input.defaultCurrencyId !== customer.defaultCurrencyId) {
-        const currency = await this.currencyRepository.findById(input.defaultCurrencyId); // Utiliser this. car hors transaction
+        const currency = await this.currencyRepository.findById(input.defaultCurrencyId);
         if (!currency)
           throw new BadRequestError(`Currency with ID ${input.defaultCurrencyId} not found.`);
       }
       if (input.customerGroupId && input.customerGroupId !== customer.customerGroupId) {
-        if (input.customerGroupId === null) {
-          // Autoriser la suppression du groupe
-          // Pas de validation nécessaire si on enlève le groupe
-        } else {
-          const group = await this.customerGroupRepository.findById(input.customerGroupId); // Utiliser this.
+        if (input.customerGroupId !== null) {
+          const group = await this.customerGroupRepository.findById(input.customerGroupId);
           if (!group)
             throw new BadRequestError(`Customer group with ID ${input.customerGroupId} not found.`);
         }
       }
       if (input.billingAddressId && input.billingAddressId !== customer.billingAddressId) {
-        const address = await this.addressRepository.findById(input.billingAddressId); // Utiliser this.
+        const address = await this.addressRepository.findById(input.billingAddressId);
         if (!address)
           throw new BadRequestError(`Billing Address with ID ${input.billingAddressId} not found.`);
       }
       if (input.hasOwnProperty('defaultShippingAddressId')) {
-        // Si on veut modifier/supprimer l'adresse de livraison par défaut
-        if (input.defaultShippingAddressId === null) {
-          // OK, on supprime l'adresse par défaut direct
-        } else if (
-          input.defaultShippingAddressId &&
-          input.defaultShippingAddressId !== customer.defaultShippingAddressId
-        ) {
-          const address = await this.addressRepository.findById(input.defaultShippingAddressId); // Utiliser this.
-          if (!address)
-            throw new BadRequestError(
-              `Default Shipping Address with ID ${input.defaultShippingAddressId} not found.`,
-            );
+        if (input.defaultShippingAddressId !== null) {
+          if (
+            input.defaultShippingAddressId &&
+            input.defaultShippingAddressId !== customer.defaultShippingAddressId
+          ) {
+            const address = await this.addressRepository.findById(input.defaultShippingAddressId);
+            if (!address)
+              throw new BadRequestError(
+                `Default Shipping Address with ID ${input.defaultShippingAddressId} not found.`,
+              );
+          }
         }
       }
 
@@ -297,7 +300,6 @@ export class CustomerService {
         ...input,
         updatedByUserId: updatedByUserId,
       };
-      // Si defaultShippingAddressId est explicitement null dans l'input, on le passe
       if (
         input.hasOwnProperty('defaultShippingAddressId') &&
         input.defaultShippingAddressId === null
@@ -309,7 +311,7 @@ export class CustomerService {
         return this.mapToApiResponse(customer) as CustomerApiResponse;
       }
 
-      const result = await this.customerRepository.update(id, updatePayload); // Utiliser customerRepo transactionnel
+      const result = await this.customerRepository.update(id, updatePayload);
       if (result.affected === 0) {
         throw new NotFoundError(
           `Customer with id ${id} not found during update (or no changes applied).`,
@@ -325,7 +327,7 @@ export class CustomerService {
     });
   }
 
-  async delete(id: number, deletedByUserId: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     try {
       const customer = await this.customerRepository.findById(id);
       if (!customer) throw new NotFoundError(`Customer with id ${id} not found.`);
@@ -345,9 +347,8 @@ export class CustomerService {
   }
 
   static getInstance(): CustomerService {
-    if (!instance) {
-      instance = new CustomerService();
-    }
+    instance ??= new CustomerService();
+
     return instance;
   }
 }

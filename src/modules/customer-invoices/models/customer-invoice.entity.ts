@@ -33,11 +33,10 @@ const customerInvoiceSchemaValidation = z.object({
   shippingAddressId: z.number().int().positive().nullable().optional(),
   notes: z.string().nullable().optional(),
   termsAndConditions: z.string().nullable().optional(),
-  // fileAttachmentUrl: z.string().url().max(2048).nullable().optional(), // For generated PDF
 });
 
 export type CreateCustomerInvoiceInput = {
-  invoiceNumber?: string; // Ajouté pour permettre la spécification manuelle
+  invoiceNumber?: string;
   customerId: number;
   invoiceDate: string | Date;
   dueDate?: string | Date | null;
@@ -48,16 +47,14 @@ export type CreateCustomerInvoiceInput = {
   notes?: string | null;
   termsAndConditions?: string | null;
   items: CreateCustomerInvoiceItemInput[];
-  // Optionnel: IDs des commandes clients ou livraisons à lier
   salesOrderIds?: number[];
-  // deliveryIds?: number[]; // Pourrait être une source pour les items
 };
 
 export type UpdateCustomerInvoiceInput = Partial<
-  Omit<CreateCustomerInvoiceInput, 'items' | 'customerId'> // 'salesOrderIds' est maintenant géré comme une propriété optionnelle dans Partial
+  Omit<CreateCustomerInvoiceInput, 'items' | 'customerId'>
 > & {
   items?: Array<Partial<CreateCustomerInvoiceItemInput> & { id?: number; _delete?: boolean }>;
-  salesOrderIds?: number[]; // Ajouté explicitement pour la mise à jour
+  salesOrderIds?: number[];
 };
 
 export type SalesOrderLinkApiResponse = {
@@ -201,7 +198,6 @@ export class CustomerInvoice extends Model {
           this.totalVatAmount +=
             Number(item.totalLineAmountHt) * (Number(item.vatRatePercentage) / 100);
         }
-        // TODO: Handle default VAT from product/company if item.vatRatePercentage is null
       });
     }
     this.totalAmountHt = parseFloat(this.totalAmountHt.toFixed(4));
@@ -211,12 +207,11 @@ export class CustomerInvoice extends Model {
 
   toApi(): CustomerInvoiceApiResponse {
     const base = super.toApi();
-    // Eager load salesOrderLinks if needed for toApi by fetching them separately if not eager
     const soLinks =
       this.salesOrderLinks?.map((link) => ({
         salesOrderId: link.salesOrderId,
-        salesOrderNumber: link.salesOrder?.orderNumber, // Requires 'salesOrder' relation on link to be loaded
-      })) || undefined;
+        salesOrderNumber: link.salesOrder?.orderNumber,
+      })) ?? undefined;
 
     return {
       ...base,
@@ -281,7 +276,7 @@ export class CustomerInvoice extends Model {
       for (const item of this.items) {
         if (!item.isValid()) {
           customerInvoiceValidationInputErrors.push(
-            `Invalid item data (ProdID: ${item.productId || 'N/A'}). Errors: ${customerInvoiceItemValidationInputErrors.join('; ')}`,
+            `Invalid item data (ProdID: ${item.productId ?? 'N/A'}). Errors: ${customerInvoiceItemValidationInputErrors.join('; ')}`,
           );
           return false;
         }

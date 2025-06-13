@@ -1,5 +1,3 @@
-// TODO: Importer CustomerRepository une fois qu'il sera créé.
-// import { CustomerRepository } from '../../customers/data/customer.repository';
 import logger from '@/lib/logger';
 import { CustomerGroupRepository } from '../data/customer-group.repository';
 import {
@@ -11,26 +9,46 @@ import {
 } from '../models/customer-group.entity';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
+import { CustomerRepository } from '@/modules/customers/data/customer.repository';
 
 let instance: CustomerGroupService | null = null;
 
+/**
+ * Service for managing customer groups.
+ * This service handles operations such as creating, updating, deleting, and retrieving customer groups.
+ */
 export class CustomerGroupService {
   private readonly groupRepository: CustomerGroupRepository;
-  // TODO: private readonly customerRepository: CustomerRepository;
+  private readonly customerRepository: CustomerRepository;
 
+  /**
+   * Creates an instance of CustomerGroupService.
+   * @param groupRepository - The repository for customer groups.
+   * @param customerRepository - The repository for customers.
+   */
   constructor(
     groupRepository: CustomerGroupRepository = new CustomerGroupRepository(),
-    // customerRepository: CustomerRepository = new CustomerRepository() // Décommenter quand disponible
+    customerRepository: CustomerRepository = new CustomerRepository(),
   ) {
     this.groupRepository = groupRepository;
-    // TODO: this.customerRepository = customerRepository;
+    this.customerRepository = customerRepository;
   }
 
+  /**
+   * Maps a CustomerGroup entity to a CustomerGroupApiResponse.
+   * @param group - The customer group entity.
+   * @returns The API response representation of the group, or null if the input is null.
+   */
   mapToApiResponse(group: CustomerGroup | null): CustomerGroupApiResponse | null {
     if (!group) return null;
     return group.toApi();
   }
 
+  /**
+   * Finds a customer group by its ID.
+   * @param id - The ID of the customer group.
+   * @returns A promise that resolves to the API response of the customer group.
+   */
   async findById(id: number): Promise<CustomerGroupApiResponse> {
     try {
       const group = await this.groupRepository.findById(id);
@@ -41,9 +59,9 @@ export class CustomerGroupService {
         throw new ServerError(`Failed to map customer group ${id} to API response.`);
       }
       return apiResponse;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(
-        { message: `Error finding customer group by id ${id}`, error },
+        { message: `Error finding customer group by id ${id}`, error: (error as Error).message },
         'CustomerGroupService.findById',
       );
       if (error instanceof NotFoundError) throw error;
@@ -51,6 +69,15 @@ export class CustomerGroupService {
     }
   }
 
+  /**
+   * Finds all customer groups based on provided options.
+   * @param options - Options for filtering, pagination, and sorting.
+   * @param options.limit - The maximum number of groups to return.
+   * @param options.offset - The number of groups to skip.
+   * @param options.filters - Filters to apply to the query.
+   * @param options.sort - Sorting options.
+   * @returns A promise that resolves to an object containing an array of customer groups and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
@@ -62,25 +89,27 @@ export class CustomerGroupService {
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { name: 'ASC' },
+        order: options?.sort ?? { name: 'ASC' },
       });
       const apiGroups = groups
         .map((g) => this.mapToApiResponse(g))
         .filter(Boolean) as CustomerGroupApiResponse[];
       return { groups: apiGroups, total: count };
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(
-        { message: `Error finding all customer groups`, error, options },
+        { message: `Error finding all customer groups`, error: (error as Error).message, options },
         'CustomerGroupService.findAll',
       );
       throw new ServerError('Error finding all customer groups.');
     }
   }
 
-  async create(
-    input: CreateCustomerGroupInput,
-    createdByUserId?: number,
-  ): Promise<CustomerGroupApiResponse> {
+  /**
+   * Creates a new customer group.
+   * @param input - The input data for creating the customer group.
+   * @returns A promise that resolves to the API response of the newly created customer group.
+   */
+  async create(input: CreateCustomerGroupInput): Promise<CustomerGroupApiResponse> {
     const existingGroup = await this.groupRepository.findByName(input.name);
     if (existingGroup) {
       throw new BadRequestError(`Customer group with name '${input.name}' already exists.`);
@@ -88,7 +117,6 @@ export class CustomerGroupService {
 
     const groupEntity = this.groupRepository.create({
       ...input,
-      // createdByUserId: createdByUserId, // Si audit sur cette entité
     });
 
     if (!groupEntity.isValid()) {
@@ -106,9 +134,9 @@ export class CustomerGroupService {
         );
       }
       return apiResponse;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(
-        { message: `Error creating customer group`, error, input },
+        { message: `Error creating customer group`, error: (error as Error).message, input },
         'CustomerGroupService.create',
       );
       if (error instanceof BadRequestError) throw error;
@@ -116,11 +144,13 @@ export class CustomerGroupService {
     }
   }
 
-  async update(
-    id: number,
-    input: UpdateCustomerGroupInput,
-    updatedByUserId?: number,
-  ): Promise<CustomerGroupApiResponse> {
+  /**
+   * Updates an existing customer group.
+   * @param id - The ID of the customer group to update.
+   * @param input - The input data for updating the customer group.
+   * @returns A promise that resolves to the API response of the updated customer group.
+   */
+  async update(id: number, input: UpdateCustomerGroupInput): Promise<CustomerGroupApiResponse> {
     try {
       const group = await this.groupRepository.findById(id);
       if (!group) throw new NotFoundError(`Customer group with id ${id} not found.`);
@@ -143,7 +173,6 @@ export class CustomerGroupService {
       }
 
       const updatePayload: Partial<CustomerGroup> = { ...input };
-      // updatePayload.updatedByUserId = updatedByUserId; // Si audit
 
       if (Object.keys(updatePayload).length === 0) {
         return this.mapToApiResponse(group) as CustomerGroupApiResponse;
@@ -164,9 +193,9 @@ export class CustomerGroupService {
         throw new ServerError(`Failed to map updated group ${id} to API response.`);
       }
       return apiResponse;
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(
-        { message: `Error updating customer group ${id}`, error, input },
+        { message: `Error updating customer group ${id}`, error: (error as Error).message, input },
         'CustomerGroupService.update',
       );
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -174,17 +203,16 @@ export class CustomerGroupService {
     }
   }
 
-  async delete(id: number, deletedByUserId?: number): Promise<void> {
+  /**
+   * Deletes a customer group by its ID.
+   * @param id - The ID of the customer group to delete.
+   * @returns A promise that resolves when the customer group is successfully deleted.
+   */
+  async delete(id: number): Promise<void> {
     try {
       const group = await this.groupRepository.findById(id);
       if (!group) throw new NotFoundError(`Customer group with id ${id} not found.`);
 
-      // TODO: Dépendance - Vérifier si le groupe est utilisé par des clients
-      // const isUsed = await this.customerRepository.count({ where: { customerGroupId: id, deletedAt: IsNull() }});
-      // if (isUsed > 0) {
-      //   throw new BadRequestError(`Customer group '${group.name}' is in use by customers and cannot be deleted.`);
-      // }
-      // Utilisation du placeholder du repository pour l'instant
       const isUsedByCustomers = await this.groupRepository.isGroupUsedByCustomers(id);
       if (isUsedByCustomers) {
         throw new BadRequestError(
@@ -193,9 +221,9 @@ export class CustomerGroupService {
       }
 
       await this.groupRepository.softDelete(id);
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(
-        { message: `Error deleting customer group ${id}`, error },
+        { message: `Error deleting customer group ${id}`, error: (error as Error).message },
         'CustomerGroupService.delete',
       );
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -203,10 +231,13 @@ export class CustomerGroupService {
     }
   }
 
+  /**
+   * Returns a singleton instance of CustomerGroupService.
+   * @returns The singleton instance of CustomerGroupService.
+   */
   static getInstance(): CustomerGroupService {
-    if (!instance) {
-      instance = new CustomerGroupService();
-    }
+    instance ??= new CustomerGroupService();
+
     return instance;
   }
 }

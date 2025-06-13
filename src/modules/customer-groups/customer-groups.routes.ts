@@ -155,10 +155,8 @@ export default class CustomerGroupRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER }) // Typically an admin task
   async createGroup(req: Request, res: Response, next: NextFunction): Promise<void> {
     const groupInput: CreateCustomerGroupInput = req.body;
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.')); // For audit
 
-    await this.pipe(res, req, next, () => this.groupService.create(groupInput, userId), 201);
+    await this.pipe(res, req, next, () => this.groupService.create(groupInput), 201);
   }
 
   /**
@@ -207,10 +205,8 @@ export default class CustomerGroupRouter extends BaseRouter {
       return next(new BadRequestError('Invalid customer group ID format.'));
     }
     const updateData: UpdateCustomerGroupInput = req.body;
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
-    await this.pipe(res, req, next, () => this.groupService.update(groupId, updateData, userId));
+    await this.pipe(res, req, next, () => this.groupService.update(groupId, updateData));
   }
 
   /**
@@ -249,15 +245,13 @@ export default class CustomerGroupRouter extends BaseRouter {
     if (isNaN(groupId)) {
       return next(new BadRequestError('Invalid customer group ID format.'));
     }
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.groupService.delete(groupId, userId);
+        await this.groupService.delete(groupId);
       },
       204,
     );

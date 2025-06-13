@@ -34,8 +34,7 @@ export class InventorySessionItemRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding inventory session item by id ${id}`, error });
@@ -49,10 +48,9 @@ export class InventorySessionItemRepository {
   ): Promise<InventorySessionItem[]> {
     try {
       return await this.repository.find({
-        where: { inventorySessionId, deletedAt: IsNull(), ...(options?.where || {}) },
-        relations:
-          options?.relations === undefined ? ['product', 'productVariant'] : options.relations,
-        order: options?.order || { createdAt: 'ASC' },
+        where: { inventorySessionId, deletedAt: IsNull(), ...(options?.where ?? {}) },
+        relations: options?.relations ? ['product', 'productVariant'] : options?.relations,
+        order: options?.order ?? { createdAt: 'ASC' },
       });
     } catch (error) {
       logger.error({
@@ -72,9 +70,8 @@ export class InventorySessionItemRepository {
         ? options.transactionalEntityManager.getRepository(InventorySessionItem)
         : this.repository;
       return await repo.findOne({
-        where: { ...where, deletedAt: IsNull() }, // Always exclude soft-deleted
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        where: { ...where, deletedAt: IsNull() },
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding inventory session item by criteria`, error, where });
@@ -142,7 +139,6 @@ export class InventorySessionItemRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(InventorySessionItem)
         : this.repository;
-      // Recalculate variance if counted_quantity is in dto
       if (dto.countedQuantity !== undefined && dto.theoreticalQuantity !== undefined) {
         dto.varianceQuantity = parseFloat(
           (Number(dto.countedQuantity) - Number(dto.theoreticalQuantity)).toFixed(3),
@@ -182,7 +178,7 @@ export class InventorySessionItemRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(InventorySessionItem)
         : this.repository;
-      return await repo.delete({ inventorySessionId }); // Hard delete items if session is hard deleted or cancelled before processing
+      return await repo.delete({ inventorySessionId });
     } catch (error) {
       logger.error({
         message: `Error deleting items for inventory session ${inventorySessionId}`,

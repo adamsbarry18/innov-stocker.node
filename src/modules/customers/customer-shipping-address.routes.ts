@@ -2,7 +2,7 @@ import { BaseRouter } from '@/common/routing/BaseRouter';
 import { Get, Post, Put, Delete, Patch, authorize } from '../../common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
 import { SecurityLevel } from '@/modules/users/models/users.entity';
-import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
+import { BadRequestError } from '@/common/errors/httpErrors';
 import {
   CreateCustomerShippingAddressInput,
   UpdateCustomerShippingAddressInput,
@@ -103,14 +103,11 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
     if (isNaN(customerId)) return next(new BadRequestError('Invalid customer ID.'));
 
     const input: CreateCustomerShippingAddressInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
       next,
-      () => this.customerShippingAddressService.addShippingAddress(customerId, input, userId),
+      () => this.customerShippingAddressService.addShippingAddress(customerId, input),
       201,
     );
   }
@@ -169,15 +166,11 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
       return next(new BadRequestError('Invalid ID(s).'));
 
     const input: UpdateCustomerShippingAddressInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(res, req, next, () =>
       this.customerShippingAddressService.updateShippingAddress(
         customerId,
         shippingAddressId,
         input,
-        userId,
       ),
     );
   }
@@ -221,9 +214,6 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
     if (isNaN(customerId) || isNaN(shippingAddressId))
       return next(new BadRequestError('Invalid ID(s).'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
@@ -232,7 +222,6 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
         await this.customerShippingAddressService.removeShippingAddress(
           customerId,
           shippingAddressId,
-          userId,
         );
       },
       204,
@@ -276,22 +265,15 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Patch('/customers/:customerId/shipping-addresses/:shippingAddressId/set-default')
-  @authorize({ level: SecurityLevel.USER }) // Or ADMIN
+  @authorize({ level: SecurityLevel.USER })
   async setDefaultShippingAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
     const customerId = parseInt(req.params.customerId, 10);
     const shippingAddressId = parseInt(req.params.shippingAddressId, 10);
     if (isNaN(customerId) || isNaN(shippingAddressId))
       return next(new BadRequestError('Invalid ID(s).'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(res, req, next, () =>
-      this.customerShippingAddressService.setDefaultShippingAddress(
-        customerId,
-        shippingAddressId,
-        userId,
-      ),
+      this.customerShippingAddressService.setDefaultShippingAddress(customerId, shippingAddressId),
     );
   }
 }

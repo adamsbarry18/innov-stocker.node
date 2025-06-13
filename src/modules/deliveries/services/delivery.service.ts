@@ -38,20 +38,18 @@ export class DeliveryService {
   private readonly deliveryItemRepository: DeliveryItemRepository;
   private readonly salesOrderRepository: SalesOrderRepository;
   private readonly userRepository: UserRepository;
-  private readonly stockMovementService: StockMovementService;
+  private readonly stockMovementService: StockMovementService = StockMovementService.getInstance();
 
   constructor(
     deliveryRepository: DeliveryRepository = new DeliveryRepository(),
     deliveryItemRepository: DeliveryItemRepository = new DeliveryItemRepository(),
     salesOrderRepository: SalesOrderRepository = new SalesOrderRepository(),
     userRepository: UserRepository = new UserRepository(),
-    stockMovementService: StockMovementService = new StockMovementService(),
   ) {
     this.deliveryRepository = deliveryRepository;
     this.deliveryItemRepository = deliveryItemRepository;
     this.salesOrderRepository = salesOrderRepository;
     this.userRepository = userRepository;
-    this.stockMovementService = stockMovementService;
   }
 
   /**
@@ -103,7 +101,6 @@ export class DeliveryService {
     offset?: number;
     filters?: FindOptionsWhere<Delivery> | FindOptionsWhere<Delivery>[];
     sort?: FindManyOptions<Delivery>['order'];
-    searchTerm?: string;
   }): Promise<{ deliveries: DeliveryApiResponse[]; total: number }> {
     try {
       const { deliveries, count } = await this.deliveryRepository.findAll({
@@ -111,7 +108,6 @@ export class DeliveryService {
         skip: options?.offset,
         take: options?.limit,
         order: options?.sort ?? { deliveryDate: 'DESC', createdAt: 'DESC' },
-        searchTerm: options?.searchTerm,
         relations: this.deliveryRepository['getDefaultRelationsForFindAll'](),
       });
       const apiDeliveries = deliveries.map((d) => this.mapToApiResponse(d)).filter(Boolean);
@@ -215,7 +211,7 @@ export class DeliveryService {
    * @param id The ID of the delivery to delete.
    * @param deletedByUserId The ID of the user deleting the delivery.
    */
-  async deleteDelivery(id: number, deletedByUserId: number): Promise<void> {
+  async deleteDelivery(id: number): Promise<void> {
     await appDataSource.transaction(async (manager) => {
       const delivery = await this.deliveryRepository.findById(id, {
         transactionalEntityManager: manager,
@@ -230,7 +226,7 @@ export class DeliveryService {
         logger.info(
           `TODO: Reverse any stock reservations for cancelled/deleted delivery ID ${id}.`,
         );
-        // await this.stockService.unreserveStockForDelivery(id, delivery.items);
+        // await this.stockMovementService.unreserveStockForDelivery(id, delivery.items);
       }
 
       try {
@@ -676,8 +672,6 @@ export class DeliveryService {
           }
           itemsToSave.push(existingItem);
         } else {
-          // If itemInput has an ID but it's not found in existing delivery items, it's an error or a new item with an ID
-          // For now, treat as new if not found, but ideally this should be a specific error or a different flow.
           const newItem = deliveryItemRepo.create({
             ...itemInput,
             deliveryId: delivery.id,
@@ -711,7 +705,6 @@ export class DeliveryService {
       await deliveryItemRepo.save(itemsToSave);
     }
 
-    // Refresh items
     delivery.items = await deliveryItemRepo.find({
       where: { deliveryId: delivery.id, deletedAt: IsNull() },
     });

@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
@@ -65,10 +64,7 @@ export class DeliveryRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindOne()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindOne() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -112,37 +108,14 @@ export class DeliveryRepository {
     options: FindAllDeliveriesOptions = {},
   ): Promise<{ deliveries: Delivery[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<Delivery> | FindOptionsWhere<Delivery>[] = options.where
-        ? Array.isArray(options.where)
-          ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-          : { ...options.where, deletedAt: IsNull() }
-        : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<Delivery> = {
-          deliveryNumber: searchPattern,
-          deletedAt: IsNull(),
-        };
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.map((wc) => ({ ...wc, ...searchSpecific }));
-        } else {
-          whereConditions = { ...whereConditions, ...searchSpecific };
-        }
-        logger.warn(
-          'DeliveryRepository: Search term currently only applies to deliveryNumber. Expand with QueryBuilder.',
-        );
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<Delivery> = {
-        where: whereConditions,
-        order: options.order || { deliveryDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { deliveryDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ? this.getDefaultRelationsForFindAll() : options.relations,
       };
       const [deliveries, count] = await this.repository.findAndCount(findOptions);
       return { deliveries, count };
@@ -169,10 +142,7 @@ export class DeliveryRepository {
         : this.repository;
       return await repo.find({
         where: { salesOrderId, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindAll() : options?.relations,
         order: { deliveryDate: 'ASC' },
       });
     } catch (error) {
@@ -232,8 +202,6 @@ export class DeliveryRepository {
 
   async softDelete(id: number, transactionalEntityManager?: EntityManager): Promise<UpdateResult> {
     try {
-      // Dependency checks (e.g., if linked to customer invoices not voided) in service layer.
-      // Reversal of stock movements is also a service layer concern.
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(Delivery)
         : this.repository;

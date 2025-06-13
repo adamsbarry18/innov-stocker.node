@@ -1,7 +1,6 @@
 import { IsNull } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
-import logger from '@/lib/logger';
 import { CustomerRepository } from '../data/customer.repository';
 import { CustomerShippingAddressRepository } from '../data/customer-shipping-address.repository';
 import { AddressRepository } from '@/modules/addresses/data/address.repository';
@@ -12,7 +11,7 @@ import {
   CustomerShippingAddress,
 } from '../models/customer-shipping-addresses.entity';
 import { Address } from '@/modules/addresses/models/address.entity';
-import { Customer } from '../models/customer.entity'; // Import Customer entity for transactional repo
+import { Customer } from '../models/customer.entity';
 
 export class CustomerShippingAddressService {
   private readonly customerRepository: CustomerRepository;
@@ -29,6 +28,11 @@ export class CustomerShippingAddressService {
     this.addressRepository = addressRepository;
   }
 
+  /**
+   * Retrieves all shipping addresses for a given customer.
+   * @param customerId The ID of the customer.
+   * @returns A promise that resolves to an array of customer shipping address API responses.
+   */
   async getCustomerShippingAddresses(
     customerId: number,
   ): Promise<CustomerShippingAddressApiResponse[]> {
@@ -40,10 +44,15 @@ export class CustomerShippingAddressService {
     return shippingAddresses.map((sa) => sa.toApi());
   }
 
+  /**
+   * Adds a new shipping address for a customer.
+   * @param customerId The ID of the customer.
+   * @param input The input data for creating the shipping address.
+   * @returns A promise that resolves to the created customer shipping address API response.
+   */
   async addShippingAddress(
     customerId: number,
     input: CreateCustomerShippingAddressInput,
-    addedByUserId: number,
   ): Promise<CustomerShippingAddressApiResponse> {
     return appDataSource.transaction(async (transactionalEntityManager) => {
       const customerRepo = transactionalEntityManager.getRepository(Customer);
@@ -52,13 +61,12 @@ export class CustomerShippingAddressService {
 
       const customer = await customerRepo.findOne({
         where: { id: customerId, deletedAt: IsNull() },
-      }); // Use transactional repo
+      });
       if (!customer) throw new NotFoundError(`Customer with ID ${customerId} not found.`);
 
       let addressIdToLink = input.addressId;
       if (input.newAddress && !input.addressId) {
         const newAddrEntity = addressRepo.create(input.newAddress);
-        // TODO: Valider newAddrEntity ici si Address a une méthode isValid()
         const savedAddr = await addressRepo.save(newAddrEntity);
         addressIdToLink = savedAddr.id;
       } else if (!input.addressId && !input.newAddress) {
@@ -77,18 +85,16 @@ export class CustomerShippingAddressService {
         customerId,
         addressId: addressIdToLink,
         addressLabel: input.addressLabel,
-        isDefault: input.isDefault || false,
+        isDefault: input.isDefault ?? false,
       });
 
       if (!newShippingAddressEntity.isValid()) {
-        // Assuming isValid on CustomerShippingAddress
         throw new BadRequestError(`Shipping address data is invalid.`);
       }
 
       const savedShippingAddress = await shippingAddressRepo.save(newShippingAddressEntity);
 
       if (savedShippingAddress.isDefault) {
-        // Unset other shipping addresses for this customer as default
         if (savedShippingAddress.id) {
           await this.customerShippingAddressRepository.unsetOtherDefaults(
             customerId,
@@ -104,8 +110,6 @@ export class CustomerShippingAddressService {
             }
           }
         }
-
-        // Update the customer's default shipping address ID using the transactional repo
         customer.defaultShippingAddressId = savedShippingAddress.addressId;
         customer.defaultShippingAddress = await addressRepo.findOneBy({
           id: savedShippingAddress.addressId,
@@ -124,11 +128,17 @@ export class CustomerShippingAddressService {
     });
   }
 
+  /**
+   * Updates an existing shipping address for a customer.
+   * @param customerId The ID of the customer.
+   * @param customerShippingAddressId The ID of the customer's shipping address to update.
+   * @param input The input data for updating the shipping address.
+   * @returns A promise that resolves to the updated customer shipping address API response.
+   */
   async updateShippingAddress(
     customerId: number,
     customerShippingAddressId: number,
     input: UpdateCustomerShippingAddressInput,
-    updatedByUserId: number,
   ): Promise<CustomerShippingAddressApiResponse> {
     return appDataSource.transaction(async (transactionalEntityManager) => {
       const customerRepo = transactionalEntityManager.getRepository(Customer);
@@ -137,7 +147,7 @@ export class CustomerShippingAddressService {
 
       const customer = await customerRepo.findOne({
         where: { id: customerId, deletedAt: IsNull() },
-      }); // Use transactional repo
+      });
       if (!customer) throw new NotFoundError(`Customer with ID ${customerId} not found.`);
 
       const shippingAddress = await shippingAddressRepo.findOne({
@@ -163,10 +173,9 @@ export class CustomerShippingAddressService {
         throw new BadRequestError(`Shipping address data is invalid.`);
       }
 
-      await shippingAddressRepo.save(shippingAddress); // Save the merged entity
+      await shippingAddressRepo.save(shippingAddress);
 
       if (shippingAddress.isDefault) {
-        // Unset other shipping addresses for this customer as default
         if (shippingAddress.id) {
           await this.customerShippingAddressRepository.unsetOtherDefaults(
             customerId,
@@ -183,14 +192,12 @@ export class CustomerShippingAddressService {
           }
         }
 
-        // Update the customer's default shipping address ID using the transactional repo
         customer.defaultShippingAddressId = shippingAddress.addressId;
         customer.defaultShippingAddress = await addressRepo.findOneBy({
           id: shippingAddress.addressId,
         });
         await customerRepo.save(customer);
       } else {
-        // If this was the default and is now not, clear it from customer if it matches
         if (customer.defaultShippingAddressId === shippingAddress.addressId) {
           customer.defaultShippingAddressId = null;
           customer.defaultShippingAddress = null;
@@ -209,10 +216,15 @@ export class CustomerShippingAddressService {
     });
   }
 
+  /**
+   * Removes a shipping address for a customer.
+   * @param customerId The ID of the customer.
+   * @param customerShippingAddressId The ID of the customer's shipping address to remove.
+   * @returns A promise that resolves when the shipping address is removed.
+   */
   async removeShippingAddress(
     customerId: number,
     customerShippingAddressId: number,
-    deletedByUserId: number,
   ): Promise<void> {
     await appDataSource.transaction(async (transactionalEntityManager) => {
       const customerRepo = transactionalEntityManager.getRepository(Customer);
@@ -220,7 +232,7 @@ export class CustomerShippingAddressService {
 
       const customer = await customerRepo.findOne({
         where: { id: customerId, deletedAt: IsNull() },
-      }); // Use transactional repo
+      });
       if (!customer) throw new NotFoundError(`Customer with ID ${customerId} not found.`);
 
       const shippingAddress = await shippingAddressRepo.findOne({
@@ -234,12 +246,11 @@ export class CustomerShippingAddressService {
       const wasDefault = shippingAddress.isDefault;
       const addressIdOfDeleted = shippingAddress.addressId;
 
-      await shippingAddressRepo.softDelete(customerShippingAddressId); // Soft delete
+      await shippingAddressRepo.softDelete(customerShippingAddressId);
 
       if (wasDefault && customer.defaultShippingAddressId === addressIdOfDeleted) {
         customer.defaultShippingAddressId = null;
         customer.defaultShippingAddress = null;
-        // Try to set another shipping address as default, if any remain
         const remainingAddresses = await shippingAddressRepo.find({
           where: { customerId, deletedAt: IsNull() },
           order: { createdAt: 'ASC' },
@@ -248,7 +259,6 @@ export class CustomerShippingAddressService {
           remainingAddresses[0].isDefault = true;
           await shippingAddressRepo.save(remainingAddresses[0]);
           customer.defaultShippingAddressId = remainingAddresses[0].addressId;
-          // Re-fetch the address entity if needed for the customer object
           customer.defaultShippingAddress = await transactionalEntityManager
             .getRepository(Address)
             .findOneBy({
@@ -260,10 +270,15 @@ export class CustomerShippingAddressService {
     });
   }
 
+  /**
+   * Sets a specific shipping address as the default for a customer.
+   * @param customerId The ID of the customer.
+   * @param customerShippingAddressId The ID of the customer's shipping address to set as default.
+   * @returns A promise that resolves to the updated customer shipping address API response.
+   */
   async setDefaultShippingAddress(
     customerId: number,
     customerShippingAddressId: number,
-    setByUserId: number,
   ): Promise<CustomerShippingAddressApiResponse> {
     return appDataSource.transaction(async (transactionalEntityManager) => {
       const customerRepo = transactionalEntityManager.getRepository(Customer);
@@ -272,7 +287,7 @@ export class CustomerShippingAddressService {
 
       const customer = await customerRepo.findOne({
         where: { id: customerId, deletedAt: IsNull() },
-      }); // Use transactional repo
+      });
       if (!customer) throw new NotFoundError(`Customer with ID ${customerId} not found.`);
 
       const shippingAddressToSetDefault = await shippingAddressRepo.findOne({
@@ -284,7 +299,6 @@ export class CustomerShippingAddressService {
         );
 
       if (shippingAddressToSetDefault.isDefault) {
-        // Already default
         const populatedSA = await shippingAddressRepo.findOne({
           where: { id: customerShippingAddressId },
           relations: ['address'],
@@ -294,7 +308,6 @@ export class CustomerShippingAddressService {
         return apiResponse;
       }
 
-      // Unset current default if any, excluding the one being set as default
       if (shippingAddressToSetDefault.id) {
         await this.customerShippingAddressRepository.unsetOtherDefaults(
           customerId,
@@ -314,7 +327,6 @@ export class CustomerShippingAddressService {
       shippingAddressToSetDefault.isDefault = true;
       await shippingAddressRepo.save(shippingAddressToSetDefault);
 
-      // Update the customer's default shipping address ID using the transactional repo
       customer.defaultShippingAddressId = shippingAddressToSetDefault.addressId;
       customer.defaultShippingAddress = await addressRepo.findOneBy({
         id: shippingAddressToSetDefault.addressId,

@@ -39,8 +39,7 @@ export class DeliveryItemRepository {
         : this.repository;
       return await repo.findOne({
         where: { id },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding delivery item by id ${id}`, error });
@@ -54,12 +53,11 @@ export class DeliveryItemRepository {
   ): Promise<DeliveryItem[]> {
     try {
       return await this.repository.find({
-        where: { deliveryId, ...(options?.where || {}) },
-        relations:
-          options?.relations === undefined
-            ? ['product', 'productVariant', 'salesOrderItem']
-            : options.relations,
-        order: options?.order || { createdAt: 'ASC' },
+        where: { deliveryId, ...(options?.where ?? {}) },
+        relations: options?.relations
+          ? ['product', 'productVariant', 'salesOrderItem']
+          : options?.relations,
+        order: options?.order ?? { createdAt: 'ASC' },
       });
     } catch (error) {
       logger.error({ message: `Error finding items for delivery ${deliveryId}`, error });
@@ -161,7 +159,6 @@ export class DeliveryItemRepository {
     item: DeliveryItem,
     transactionalEntityManager?: EntityManager,
   ): Promise<DeliveryItem> {
-    // Hard delete
     try {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(DeliveryItem)
@@ -177,7 +174,6 @@ export class DeliveryItemRepository {
     items: DeliveryItem[],
     transactionalEntityManager?: EntityManager,
   ): Promise<DeliveryItem[]> {
-    // Hard delete
     try {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(DeliveryItem)
@@ -190,7 +186,6 @@ export class DeliveryItemRepository {
   }
 
   async deleteById(id: number, transactionalEntityManager?: EntityManager): Promise<DeleteResult> {
-    // Hard delete by ID
     try {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(DeliveryItem)

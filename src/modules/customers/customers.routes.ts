@@ -83,7 +83,6 @@ export default class CustomerRouter extends BaseRouter {
   @searchable(['email', 'firstName', 'lastName', 'companyName'])
   async getAllCustomers(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    // const searchTerm = req.searchQuery; // Assuming @searchable populates this
 
     await this.pipe(res, req, next, () =>
       this.customerService.findAll({
@@ -91,7 +90,6 @@ export default class CustomerRouter extends BaseRouter {
         offset: req.pagination?.offset,
         filters,
         sort,
-        // searchTerm: searchTerm
       }),
     );
   }
@@ -273,7 +271,7 @@ export default class CustomerRouter extends BaseRouter {
       req,
       next,
       async () => {
-        await this.customerService.delete(customerId, userId);
+        await this.customerService.delete(customerId);
       },
       204,
     );

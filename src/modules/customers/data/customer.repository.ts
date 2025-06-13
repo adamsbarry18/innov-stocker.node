@@ -5,7 +5,7 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  type EntityManager, // Import EntityManager
+  type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { Customer } from '../models/customer.entity';
@@ -79,10 +79,10 @@ export class CustomerRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<Customer> = {
         where,
-        order: options.order || { companyName: 'ASC', lastName: 'ASC', firstName: 'ASC' },
+        order: options.order ?? { companyName: 'ASC', lastName: 'ASC', firstName: 'ASC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations || this.getDefaultRelations(),
+        relations: options.relations ?? this.getDefaultRelations(),
       };
       const [customers, count] = await this.repository.findAndCount(findOptions);
       return { customers, count };

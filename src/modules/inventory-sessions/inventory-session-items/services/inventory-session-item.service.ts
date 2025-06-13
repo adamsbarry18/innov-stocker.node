@@ -76,7 +76,6 @@ export class InventorySessionItemService {
   async addOrUpdateItem(
     inventorySessionId: number,
     input: CreateOrUpdateInventorySessionItemInput,
-    userId: number, // For audit if InventorySessionItem has updatedByUserId
   ): Promise<InventorySessionItemApiResponse> {
     const validationResult = createOrUpdateInventorySessionItemSchema.safeParse(input);
     if (!validationResult.success) {
@@ -111,7 +110,7 @@ export class InventorySessionItemService {
         where: {
           inventorySessionId,
           productId: validatedInput.productId,
-          productVariantId: validatedInput.productVariantId || IsNull(),
+          productVariantId: validatedInput.productVariantId ?? IsNull(),
           deletedAt: IsNull(),
         },
       });
@@ -120,29 +119,25 @@ export class InventorySessionItemService {
         itemEntity.countedQuantity = validatedInput.counted_quantity;
         itemEntity.notes =
           validatedInput.notes !== undefined ? validatedInput.notes : itemEntity.notes;
-        // itemEntity.updatedByUserId = userId; // If audit
       } else {
         const theoreticalQtyResult = await this.stockMovementService.getCurrentStock(
           validatedInput.productId,
-          validatedInput.productVariantId || undefined,
-          session.warehouseId || undefined,
-          session.shopId || undefined,
-          // session.startDate, // Stock à la date de début de session
+          validatedInput.productVariantId ?? undefined,
+          session.warehouseId ?? undefined,
+          session.shopId ?? undefined,
         );
         const theoreticalQuantity = theoreticalQtyResult.quantity;
 
-        const unitCostAtInventory = product.defaultPurchasePrice || 0;
+        const unitCostAtInventory = product.defaultPurchasePrice ?? 0;
 
         itemEntity = itemRepoTx.create({
           inventorySessionId,
           productId: validatedInput.productId,
-          productVariantId: validatedInput.productVariantId || null,
+          productVariantId: validatedInput.productVariantId ?? null,
           theoreticalQuantity: theoreticalQuantity,
           countedQuantity: validatedInput.counted_quantity,
           unitCostAtInventory: unitCostAtInventory,
           notes: validatedInput.notes,
-          // createdByUserId: userId, // If audit
-          // updatedByUserId: userId,
         });
       }
 
@@ -197,38 +192,27 @@ export class InventorySessionItemService {
   }
 
   // La suppression d'un item d'une session en cours est généralement autorisée
-  async removeItemFromSession(
-    inventorySessionId: number,
-    itemId: number,
-    deletedByUserId: number,
-  ): Promise<void> {
+  async removeItemFromSession(inventorySessionId: number, itemId: number): Promise<void> {
     await appDataSource.transaction(async (transactionalEntityManager) => {
       const itemRepoTx = transactionalEntityManager.getRepository(InventorySessionItem);
-      const session = await this.getSessionAndCheckStatus(
+      /*const session = await this.getSessionAndCheckStatus(
         inventorySessionId,
         [InventorySessionStatus.PENDING, InventorySessionStatus.IN_PROGRESS], // Seulement si pas complétée/annulée
         transactionalEntityManager,
-      );
+      );*/
       const item = await itemRepoTx.findOneBy({ id: itemId, inventorySessionId });
       if (!item) {
         throw new NotFoundError(
           `Inventory session item with ID ${itemId} not found for session ${inventorySessionId}.`,
         );
       }
-      // Utiliser softDelete si Model le supporte et que c'est le comportement désiré
-      // Sinon, remove pour suppression physique. Le SQL a deleted_time.
       await itemRepoTx.softDelete(itemId);
-      // TODO: Mettre à jour updatedByUserId de la session parente ?
-      logger.info(
-        `Inventory session item ID ${itemId} removed from session ${inventorySessionId}.`,
-      );
     });
   }
 
   static getInstance(): InventorySessionItemService {
-    if (!instance) {
-      instance = new InventorySessionItemService();
-    }
+    instance ??= new InventorySessionItemService();
+
     return instance;
   }
 }
