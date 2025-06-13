@@ -59,9 +59,7 @@ export type CreatePurchaseOrderInput = {
   items: CreatePurchaseOrderItemInput[];
 };
 
-export type UpdatePurchaseOrderInput = Partial<
-  Omit<CreatePurchaseOrderInput, 'items'> // Removed 'supplierId' from Omit
-> & {
+export type UpdatePurchaseOrderInput = Partial<Omit<CreatePurchaseOrderInput, 'items'>> & {
   items?: Array<Partial<CreatePurchaseOrderItemInput> & { id?: number; _delete?: boolean }>;
 };
 
@@ -103,7 +101,7 @@ export const purchaseOrderValidationInputErrors: string[] = [];
 @Index(['orderDate'])
 export class PurchaseOrder extends Model {
   @Column({ type: 'varchar', length: 50, name: 'order_number' })
-  orderNumber!: string; // Auto-generated
+  orderNumber!: string;
 
   @Column({ type: 'int', name: 'supplier_id' })
   supplierId!: number;
@@ -189,13 +187,8 @@ export class PurchaseOrder extends Model {
   @JoinColumn({ name: 'approved_by_user_id' })
   approvedByUser: User | null = null;
 
-  @Column({ type: 'int', name: 'updated_by_user_id', nullable: true }) // Not in SQL, but good for Model pattern
+  @Column({ type: 'int', name: 'updated_by_user_id', nullable: true })
   updatedByUserId: number | null = null;
-  // Note: SQL schema doesn't have updated_by_user_id for purchase_orders, but Model expects it.
-  // If you add it to SQL:
-  // @ManyToOne(() => User, { eager: false, onDelete: 'SET NULL', nullable: true })
-  // @JoinColumn({ name: 'updated_by_user_id' })
-  // updatedByUser: User | null = null;
 
   calculateTotals(): void {
     this.totalAmountHt = 0;
@@ -210,7 +203,6 @@ export class PurchaseOrder extends Model {
             { item, quantity, unitPriceHt },
             'Invalid quantity or unitPriceHt in calculateTotals',
           );
-          // Optionally throw an error or handle this case, for now, skip this item's calculation
           return;
         }
 
@@ -313,7 +305,7 @@ export class PurchaseOrder extends Model {
       purchaseOrderValidationInputErrors.push(
         'Items: A non-draft purchase order should have items.',
       );
-      // return false; // Can be too strict
+      return false;
     }
     return true;
   }

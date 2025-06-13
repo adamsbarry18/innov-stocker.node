@@ -35,8 +35,7 @@ export class ShopRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -77,10 +76,10 @@ export class ShopRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<Shop> = {
         where,
-        order: options.order || { name: 'ASC' },
+        order: options.order ?? { name: 'ASC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options.relations ? this.getDefaultRelations() : options.relations,
       };
       const [shops, count] = await this.repository.findAndCount(findOptions);
       return { shops, count };
@@ -143,7 +142,6 @@ export class ShopRepository {
 
   async softDelete(id: number): Promise<UpdateResult> {
     try {
-      // Dependency checks (e.g., cash registers, stock) should be in the service layer.
       return await this.repository.softDelete(id);
     } catch (error) {
       logger.error(

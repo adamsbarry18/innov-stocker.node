@@ -44,8 +44,7 @@ export class QuoteRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -95,13 +94,12 @@ export class QuoteRepository {
 
       const findOptions: FindManyOptions<Quote> = {
         where,
-        order: options.order || { issueDate: 'DESC', createdAt: 'DESC' },
+        order: options.order ?? { issueDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? ['customer', 'currency', 'createdByUser']
-            : options.relations,
+        relations: options.relations
+          ? ['customer', 'currency', 'createdByUser']
+          : options.relations,
       };
       const [quotes, count] = await this.repository.findAndCount(findOptions);
       return { quotes, count };

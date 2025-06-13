@@ -100,7 +100,6 @@ export default class PurchaseOrderItemRouter extends BaseRouter {
   async listPurchaseOrderItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     if (isNaN(orderId)) return next(new BadRequestError('Invalid Purchase Order ID in path.'));
-    // TODO: Authorization - Check if user can view items of this PO
     await this.pipe(res, req, next, () => this.itemService.getOrderItems(orderId));
   }
 
@@ -143,7 +142,6 @@ export default class PurchaseOrderItemRouter extends BaseRouter {
     const itemId = parseInt(req.params.itemId, 10);
     if (isNaN(orderId) || isNaN(itemId))
       return next(new BadRequestError('Invalid Purchase Order or Item ID in path.'));
-    // TODO: Authorization
     await this.pipe(res, req, next, () => this.itemService.getOrderItemById(orderId, itemId));
   }
 
@@ -198,7 +196,6 @@ export default class PurchaseOrderItemRouter extends BaseRouter {
     const input: UpdatePurchaseOrderItemInput = req.body;
     const userId = req.user?.id;
     if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-    // TODO: Authorization
 
     await this.pipe(res, req, next, () =>
       this.itemService.updateOrderItem(orderId, itemId, input, userId),

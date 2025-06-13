@@ -4,7 +4,6 @@ import { Model } from '@/common/models/Model';
 import { Address } from '../../addresses/models/address.entity';
 import { User } from '@/modules/users/models/users.entity';
 
-// Zod Schema for validation
 const warehouseSchemaValidation = z.object({
   name: z.string().min(1, { message: 'Warehouse name is required.' }).max(255),
   code: z.string().max(50).nullable().optional(),
@@ -13,20 +12,17 @@ const warehouseSchemaValidation = z.object({
   capacityNotes: z.string().nullable().optional(),
 });
 
-// Type for creating a warehouse
 export type CreateWarehouseInput = {
   name: string;
   code?: string | null;
-  addressId: number; // ID of an existing address
-  newAddress?: CreateAddressInput; // Optional: For creating address on the fly (type from addresses module)
+  addressId: number;
+  newAddress?: CreateAddressInput;
   managerId?: number | null;
   capacityNotes?: string | null;
 };
 
-// Type for updating a warehouse
 export type UpdateWarehouseInput = Partial<Omit<CreateWarehouseInput, 'newAddress'>>;
 
-// DTO for Address to be embedded (simplified, assuming it's defined globally or in address module schema)
 type EmbeddedAddressApiResponse = {
   id: number;
   streetLine1: string;
@@ -38,7 +34,6 @@ type EmbeddedAddressApiResponse = {
   notes: string | null;
 };
 
-// DTO for User to be embedded (simplified, for manager)
 type EmbeddedUserApiResponse = {
   id: number;
   firstName: string | null;
@@ -46,7 +41,6 @@ type EmbeddedUserApiResponse = {
   email: string;
 };
 
-// Type for API response (DTO)
 export type WarehouseApiResponse = {
   id: number;
   name: string;
@@ -57,14 +51,11 @@ export type WarehouseApiResponse = {
   manager?: EmbeddedUserApiResponse | null;
   capacityNotes: string | null;
   createdByUserId: number | null;
-  // createdByUser?: EmbeddedUserApiResponse | null;
   updatedByUserId: number | null;
-  // updatedByUser?: EmbeddedUserApiResponse | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
 
-// Re-import or define CreateAddressInput if not globally available for Zod schema in service
 import { type CreateAddressInput as BaseCreateAddressInput } from '../../addresses/models/address.entity';
 export type CreateAddressInput = BaseCreateAddressInput;
 
@@ -72,7 +63,7 @@ export const warehouseValidationInputErrors: string[] = [];
 
 @Entity({ name: 'warehouses' })
 @Unique('uq_warehouse_name', ['name'])
-@Unique('uq_warehouse_code', ['code']) // Assuming code should also be unique if provided
+@Unique('uq_warehouse_code', ['code'])
 @Index(['managerId'])
 export class Warehouse extends Model {
   @Column({ type: 'varchar', length: 255 })
@@ -122,7 +113,6 @@ export class Warehouse extends Model {
       addressId: this.addressId,
       address: this.address
         ? {
-            // Map address to a simplified DTO
             id: this.address.id,
             streetLine1: this.address.streetLine1,
             streetLine2: this.address.streetLine2,
@@ -136,7 +126,6 @@ export class Warehouse extends Model {
       managerId: this.managerId,
       manager: this.manager
         ? {
-            // Map manager to a simplified DTO
             id: this.manager.id,
             firstName: this.manager.firstName,
             lastName: this.manager.lastName,
@@ -145,9 +134,7 @@ export class Warehouse extends Model {
         : null,
       capacityNotes: this.capacityNotes,
       createdByUserId: this.createdByUserId,
-      // createdByUser: this.createdByUser ? { id: this.createdByUser.id, firstName: this.createdByUser.firstName, email: this.createdByUser.email } : null,
       updatedByUserId: this.updatedByUserId,
-      // updatedByUser: this.updatedByUser ? { id: this.updatedByUser.id, firstName: this.updatedByUser.firstName, email: this.updatedByUser.email } : null,
       createdAt: Model.formatISODate(this.createdAt),
       updatedAt: Model.formatISODate(this.updatedAt),
     };

@@ -104,14 +104,13 @@ export default class PurchaseReceptionRouter extends BaseRouter {
   @searchable(['receptionNumber'])
   async getAllReceptions(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
+
     await this.pipe(res, req, next, () =>
       this.service.findAllReceptions({
         limit: req.pagination?.limit,
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm: searchTerm,
       }),
     );
   }

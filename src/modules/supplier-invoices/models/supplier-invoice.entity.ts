@@ -37,7 +37,6 @@ const supplierInvoiceSchemaValidation = z.object({
     .max(2048)
     .nullable()
     .optional(),
-  // Totals are calculated
 });
 
 export type CreateSupplierInvoiceInput = {
@@ -50,7 +49,6 @@ export type CreateSupplierInvoiceInput = {
   notes?: string | null;
   fileAttachmentUrl?: string | null;
   items: CreateSupplierInvoiceItemInput[];
-  // IDs des commandes d'achat à lier (optionnel)
   purchaseOrderIds?: number[];
 };
 
@@ -58,7 +56,6 @@ export type UpdateSupplierInvoiceInput = Partial<
   Omit<CreateSupplierInvoiceInput, 'items' | 'supplierId'>
 > & {
   items?: Array<Partial<CreateSupplierInvoiceItemInput> & { id?: number; _delete?: boolean }>;
-  // purchaseOrderIds can be part of update if links are re-evaluated, or handled separately
 };
 
 export type SupplierInvoiceApiResponse = {
@@ -89,7 +86,6 @@ export type SupplierInvoiceApiResponse = {
 export const supplierInvoiceValidationInputErrors: string[] = [];
 
 @Entity({ name: 'supplier_invoices' })
-// Le numéro de facture du fournisseur doit être unique PAR fournisseur
 @Unique('uq_supplier_invoice_number', ['supplierId', 'invoiceNumber'])
 @Index(['supplierId', 'status'])
 @Index(['invoiceDate', 'dueDate'])
@@ -152,7 +148,7 @@ export class SupplierInvoice extends Model {
   @OneToMany(() => SupplierInvoicePurchaseOrderLink, (link) => link.supplierInvoice, {
     cascade: ['insert', 'remove'],
     eager: false,
-  }) // Load on demand
+  })
   purchaseOrderLinks?: SupplierInvoicePurchaseOrderLink[];
 
   @Column({ type: 'int', name: 'created_by_user_id', nullable: true })
@@ -174,19 +170,15 @@ export class SupplierInvoice extends Model {
     this.totalVatAmount = 0;
     if (this.items && this.items.length > 0) {
       this.items.forEach((item) => {
-        // totalLineAmountHt sur l'item est calculé par l'application avant la sauvegarde de l'item
-        // ou lu de la base si la colonne est générée.
-        // Assurons-nous qu'il est calculé ou présent.
         const quantity = Number(item.quantity);
         const unitPriceHt = Number(item.unitPriceHt);
         const lineTotalHt = parseFloat((quantity * unitPriceHt).toFixed(4));
-        item.totalLineAmountHt = lineTotalHt; // Assigner ici si non généré en DB
+        item.totalLineAmountHt = lineTotalHt;
 
         this.totalAmountHt += lineTotalHt;
         if (item.vatRatePercentage !== null) {
           this.totalVatAmount += lineTotalHt * (Number(item.vatRatePercentage) / 100);
         }
-        // TODO: Gérer la TVA par défaut si item.vatRatePercentage est null
       });
     }
     this.totalAmountHt = parseFloat(this.totalAmountHt.toFixed(4));

@@ -221,14 +221,11 @@ export class SalesOrder extends Model {
         if (item.vatRatePercentage !== null) {
           this.totalVatAmount += lineTotalHt * (Number(item.vatRatePercentage) / 100);
         }
-        // TODO: Gérer la TVA par défaut si item.vatRatePercentage est null
       });
     }
     this.totalAmountHt = parseFloat(this.totalAmountHt.toFixed(4));
     this.totalVatAmount = parseFloat(this.totalVatAmount.toFixed(4));
-    // Ajouter les frais de port HT au total HT avant de calculer le TTC final
     const totalHtWithShipping = this.totalAmountHt + Number(this.shippingFeesHt || 0);
-    // TODO: Les frais de port peuvent avoir leur propre TVA. Pour l'instant, on suppose qu'ils sont taxés comme le reste.
     this.totalAmountTtc = parseFloat((totalHtWithShipping + this.totalVatAmount).toFixed(4));
   }
 

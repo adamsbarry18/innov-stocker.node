@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
@@ -18,7 +17,6 @@ interface FindAllPurchaseOrdersOptions {
   where?: FindOptionsWhere<PurchaseOrder> | FindOptionsWhere<PurchaseOrder>[];
   order?: FindManyOptions<PurchaseOrder>['order'];
   relations?: string[];
-  searchTerm?: string;
 }
 
 export class PurchaseOrderRepository {
@@ -98,35 +96,14 @@ export class PurchaseOrderRepository {
     options: FindAllPurchaseOrdersOptions = {},
   ): Promise<{ orders: PurchaseOrder[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<PurchaseOrder> | FindOptionsWhere<PurchaseOrder>[] =
-        options.where
-          ? Array.isArray(options.where)
-            ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-            : { ...options.where, deletedAt: IsNull() }
-          : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<PurchaseOrder> = {
-          orderNumber: searchPattern,
-          deletedAt: IsNull(),
-        };
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.map((wc) => ({ ...wc, ...searchSpecific }));
-        } else {
-          whereConditions = { ...whereConditions, ...searchSpecific };
-        }
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<PurchaseOrder> = {
-        where: whereConditions,
-        order: options.order || { orderDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { orderDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ? this.getDefaultRelationsForFindAll() : options.relations,
       };
       const [orders, count] = await this.repository.findAndCount(findOptions);
       return { orders, count };

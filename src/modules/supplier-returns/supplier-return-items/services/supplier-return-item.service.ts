@@ -134,7 +134,6 @@ export class SupplierReturnItemService {
       await this.validateItemProductAndVariant(validatedInput);
       await this.validateReceptionItemLink(validatedInput);
 
-      // Check for duplicate item (product/variant from same reception item if linked)
       const existingItemQuery: FindOptionsWhere<SupplierReturnItem> = {
         supplierReturnId,
         productId: validatedInput.productId,
@@ -156,7 +155,6 @@ export class SupplierReturnItemService {
         supplierReturnId,
         quantityShipped: 0,
         quantityReceived: 0,
-        // createdByUserId,
       });
 
       if (!itemEntity.isValid()) {
@@ -168,7 +166,6 @@ export class SupplierReturnItemService {
       const savedItem = await itemRepoTx.save(itemEntity);
 
       supplierReturn.updatedByUserId = createdByUserId;
-      // TODO: Recalculate any potential totals on SupplierReturn if applicable (less common for returns)
       await returnRepoTx.save(supplierReturn);
 
       logger.info(
@@ -238,11 +235,9 @@ export class SupplierReturnItemService {
         );
       }
 
-      // ProductId, ProductVariantId, purchaseReceptionItemId are not updatable on an existing item
       if (validatedInput.quantity !== undefined) item.quantity = validatedInput.quantity;
       if (validatedInput.unitPriceAtReturn !== undefined)
         item.unitPriceAtReturn = validatedInput.unitPriceAtReturn;
-      // quantityShipped/Received are updated by ship/complete actions on parent
 
       if (!item.isValid()) {
         throw new BadRequestError(
@@ -298,9 +293,7 @@ export class SupplierReturnItemService {
   }
 
   static getInstance(): SupplierReturnItemService {
-    if (!instance) {
-      instance = new SupplierReturnItemService();
-    }
+    instance ??= new SupplierReturnItemService();
     return instance;
   }
 }

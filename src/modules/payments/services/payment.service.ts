@@ -57,30 +57,10 @@ import { CashRegisterTransactionService } from '@/modules/cash-register-transact
 import { CustomerInvoiceService } from '@/modules/customer-invoices/services/customer-invoice.service';
 import { SupplierInvoiceService } from '@/modules/supplier-invoices/services/supplier-invoice.service';
 import { createPaymentSchema } from '../models/payment.entity';
-interface ValidationContext {
-  transactionalEntityManager?: EntityManager;
-}
-const FLOAT_TOLERANCE = 0.005;
 
 let instance: PaymentService | null = null;
 
 export class PaymentService {
-  /**
-   * Constructs an instance of PaymentService.
-   * @param paymentRepository - Repository for payments.
-   * @param currencyRepository - Repository for currencies.
-   * @param paymentMethodRepository - Repository for payment methods.
-   * @param customerRepository - Repository for customers.
-   * @param supplierRepository - Repository for suppliers.
-   * @param customerInvoiceRepository - Repository for customer invoices.
-   * @param supplierInvoiceRepository - Repository for supplier invoices.
-   * @param salesOrderRepository - Repository for sales orders.
-   * @param purchaseOrderRepository - Repository for purchase orders.
-   * @param bankAccountRepository - Repository for bank accounts.
-   * @param cashRegisterRepository - Repository for cash registers.
-   * @param cashRegisterSessionRepository - Repository for cash register sessions.
-   * @param userRepository - Repository for users.
-   */
   constructor(
     private readonly paymentRepository: PaymentRepository = new PaymentRepository(),
     private readonly currencyRepository: CurrencyRepository = new CurrencyRepository(),
@@ -112,7 +92,7 @@ export class PaymentService {
   ): Promise<PaymentApiResponse> {
     return appDataSource.transaction(async (transactionalEntityManager) => {
       try {
-        await this.validatePaymentInput(input, { transactionalEntityManager });
+        await this.validatePaymentInput(input, transactionalEntityManager);
         await this.validateUser(recordedByUserId, transactionalEntityManager);
 
         const paymentEntity = this.paymentRepository.create(
@@ -292,7 +272,7 @@ export class PaymentService {
     };
 
     try {
-      await this.validatePaymentInput(paymentInput, { transactionalEntityManager: manager });
+      await this.validatePaymentInput(paymentInput, manager);
 
       const recordedByUserId = customerReturn.updatedByUserId ?? 1;
 
@@ -324,10 +304,8 @@ export class PaymentService {
    */
   private async validatePaymentInput(
     input: CreatePaymentInput,
-    context: ValidationContext,
+    manager: EntityManager,
   ): Promise<void> {
-    const { transactionalEntityManager: manager } = context;
-
     const validationResult = createPaymentSchema.safeParse(input);
     if (!validationResult.success) {
       const errors = validationResult.error.issues.map(
@@ -663,127 +641,6 @@ export class PaymentService {
     }
   }
 
-  // Private update/impact methods
-  /**
-   * Applies the payment amount to the associated entities (invoices, orders).
-   * @param payment - The payment entity.
-   * @param manager - The entity manager for transactional operations.
-   * @param recordedByUserId - The ID of the user who recorded the payment.
-   */
-  private async applyPaymentToEntities(
-    payment: Payment,
-    manager: EntityManager,
-    recordedByUserId: number,
-  ): Promise<void> {
-    if (payment.customerInvoiceId) {
-      await this.updateCustomerInvoiceStatusAndAmount(
-        payment.customerInvoiceId,
-        payment.amount,
-        payment.direction,
-        recordedByUserId,
-        manager,
-      );
-    }
-    if (payment.supplierInvoiceId) {
-      await this.updateSupplierInvoiceStatusAndAmount(
-        payment.supplierInvoiceId,
-        payment.amount,
-        payment.direction,
-        recordedByUserId,
-        manager,
-      );
-    }
-    // TODO: Handle payments directly against Sales Orders or Purchase Orders (deposits/prepayments)
-  }
-
-  /**
-   * Updates the status and amount paid for a customer invoice.
-   * @param invoiceId - The ID of the customer invoice.
-   * @param paymentAmount - The amount of the payment.
-   * @param direction - The direction of the payment (inbound/outbound).
-   * @param userId - The ID of the user performing the update.
-   * @param manager - The entity manager for transactional operations.
-   */
-  private async updateCustomerInvoiceStatusAndAmount(
-    invoiceId: number,
-    paymentAmount: number,
-    direction: PaymentDirection,
-    userId: number,
-    manager: EntityManager,
-  ): Promise<void> {
-    const invoiceRepo = manager.getRepository(CustomerInvoice);
-    const invoice = await invoiceRepo.findOneBy({ id: invoiceId });
-    if (!invoice) {
-      logger.warn(`Customer Invoice ${invoiceId} not found during payment application.`);
-      return;
-    }
-
-    const newAmountPaid =
-      direction === PaymentDirection.INBOUND
-        ? Number(invoice.amountPaid) + Number(paymentAmount)
-        : Number(invoice.amountPaid) - Number(paymentAmount);
-
-    invoice.amountPaid = parseFloat(newAmountPaid.toFixed(4));
-
-    const balanceDue = Number(invoice.totalAmountTtc) - invoice.amountPaid;
-
-    if (balanceDue <= FLOAT_TOLERANCE) {
-      invoice.status = CustomerInvoiceStatus.PAID;
-      invoice.amountPaid = Number(invoice.totalAmountTtc); // Ensure exact total
-    } else if (invoice.amountPaid > 0) {
-      invoice.status = CustomerInvoiceStatus.PARTIALLY_PAID;
-    } else {
-      // If amountPaid becomes 0 or less, revert to SENT or DRAFT based on original status logic
-      // For simplicity, assuming SENT if it was previously PARTIALLY_PAID or PAID
-      invoice.status = CustomerInvoiceStatus.SENT; // Or determine based on prior state
-    }
-    invoice.updatedByUserId = userId;
-    await invoiceRepo.save(invoice);
-  }
-
-  /**
-   * Updates the status and amount paid for a supplier invoice.
-   * @param invoiceId - The ID of the supplier invoice.
-   * @param paymentAmount - The amount of the payment.
-   * @param direction - The direction of the payment (inbound/outbound).
-   * @param userId - The ID of the user performing the update.
-   * @param manager - The entity manager for transactional operations.
-   */
-  private async updateSupplierInvoiceStatusAndAmount(
-    invoiceId: number,
-    paymentAmount: number,
-    direction: PaymentDirection,
-    userId: number,
-    manager: EntityManager,
-  ): Promise<void> {
-    const invoiceRepo = manager.getRepository(SupplierInvoice);
-    const invoice = await invoiceRepo.findOneBy({ id: invoiceId });
-    if (!invoice) {
-      logger.warn(`Supplier Invoice ${invoiceId} not found during payment application.`);
-      return;
-    }
-
-    const newAmountPaid =
-      direction === PaymentDirection.INBOUND
-        ? Number(invoice.amountPaid) + Number(paymentAmount)
-        : Number(invoice.amountPaid) - Number(paymentAmount);
-
-    invoice.amountPaid = parseFloat(newAmountPaid.toFixed(4));
-
-    const balanceDue = Number(invoice.totalAmountTtc) - invoice.amountPaid;
-
-    if (balanceDue <= FLOAT_TOLERANCE) {
-      invoice.status = SupplierInvoiceStatus.PAID;
-      invoice.amountPaid = Number(invoice.totalAmountTtc);
-    } else if (invoice.amountPaid > 0) {
-      invoice.status = SupplierInvoiceStatus.PARTIALLY_PAID;
-    } else {
-      invoice.status = SupplierInvoiceStatus.PENDING_PAYMENT;
-    }
-    invoice.updatedByUserId = userId;
-    await invoiceRepo.save(invoice);
-  }
-
   /**
    * Applies payment to linked invoices.
    */
@@ -808,7 +665,6 @@ export class PaymentService {
         manager,
       );
     }
-    // TODO: Handle deposits on Sales Orders or Purchase Orders
   }
 
   /**

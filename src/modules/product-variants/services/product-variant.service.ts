@@ -18,6 +18,12 @@ export class ProductVariantService {
   private readonly variantRepository: ProductVariantRepository;
   private readonly imageRepository: ProductImageRepository;
 
+  /**
+   * Creates an instance of ProductVariantService.
+   * @param productRepository - The product repository.
+   * @param variantRepository - The product variant repository.
+   * @param imageRepository - The product image repository.
+   */
   constructor(
     productRepository: ProductRepository = new ProductRepository(),
     variantRepository: ProductVariantRepository = new ProductVariantRepository(),
@@ -28,11 +34,23 @@ export class ProductVariantService {
     this.imageRepository = imageRepository;
   }
 
+  /**
+   * Maps a ProductVariant entity to a ProductVariantApiResponse.
+   * @param variant - The product variant entity.
+   * @returns The API response for the product variant, or null if the variant is null.
+   */
   mapToApiResponse(variant: ProductVariant | null): ProductVariantApiResponse | null {
     if (!variant) return null;
-    return variant.toApi({ includeProductSuppliers: false }); // Par défaut, ne pas inclure les fournisseurs ici
+    return variant.toApi({ includeProductSuppliers: false });
   }
 
+  /**
+   * Creates a new product variant for a given product.
+   * @param productId - The ID of the product to which the variant belongs.
+   * @param input - The input data for creating the product variant.
+   * @param createdByUserId - The ID of the user who created the variant.
+   * @returns The API response for the created product variant.
+   */
   async createProductVariant(
     productId: number,
     input: CreateProductVariantInput,
@@ -97,6 +115,11 @@ export class ProductVariantService {
     }
   }
 
+  /**
+   * Retrieves all product variants for a specific product.
+   * @param productId - The ID of the product.
+   * @returns An array of API responses for the product variants.
+   */
   async getProductVariants(productId: number): Promise<ProductVariantApiResponse[]> {
     const product = await this.productRepository.findById(productId);
     if (!product) {
@@ -108,6 +131,12 @@ export class ProductVariantService {
       .filter(Boolean) as ProductVariantApiResponse[];
   }
 
+  /**
+   * Retrieves a specific product variant by its ID and product ID.
+   * @param productId - The ID of the product the variant belongs to.
+   * @param variantId - The ID of the product variant.
+   * @returns The API response for the found product variant.
+   */
   async getProductVariantById(
     productId: number,
     variantId: number,
@@ -123,6 +152,14 @@ export class ProductVariantService {
     return apiResponse;
   }
 
+  /**
+   * Updates an existing product variant.
+   * @param productId - The ID of the product the variant belongs to.
+   * @param variantId - The ID of the product variant to update.
+   * @param input - The input data for updating the product variant.
+   * @param updatedByUserId - The ID of the user who updated the variant.
+   * @returns The API response for the updated product variant.
+   */
   async updateProductVariant(
     productId: number,
     variantId: number,
@@ -227,11 +264,12 @@ export class ProductVariantService {
     }
   }
 
-  async deleteProductVariant(
-    productId: number,
-    variantId: number,
-    deletedByUserId: number,
-  ): Promise<void> {
+  /**
+   * Deletes a product variant.
+   * @param productId - The ID of the product the variant belongs to.
+   * @param variantId - The ID of the product variant to delete.
+   */
+  async deleteProductVariant(productId: number, variantId: number): Promise<void> {
     const product = await this.productRepository.findById(productId);
     if (!product) {
       throw new NotFoundError(`Product with ID ${productId} not found.`);
@@ -251,17 +289,19 @@ export class ProductVariantService {
 
     try {
       await this.variantRepository.softDelete(variantId);
-      // await this.variantRepository.update(variantId, { updatedByUserId: deletedByUserId }); // Audit
     } catch (error) {
       logger.error({ message: `Error deleting variant ${variantId}`, error });
       throw new ServerError('Error deleting product variant.');
     }
   }
 
+  /**
+   * Returns a singleton instance of the ProductVariantService.
+   * @returns The singleton instance of ProductVariantService.
+   */
   static getInstance(): ProductVariantService {
-    if (!instance) {
-      instance = new ProductVariantService();
-    }
+    instance ??= new ProductVariantService();
+
     return instance;
   }
 }

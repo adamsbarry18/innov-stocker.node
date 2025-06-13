@@ -1,10 +1,8 @@
 import { SupplierRepository } from '../data/supplier.repository';
-// TODO: Importer AddressRepository et CurrencyRepository pour valider les IDs.
-// import { AddressRepository } from '../../addresses/data/address.repository';
-// import { CurrencyRepository } from '../../currencies/data/currency.repository';
-// TODO: Importer les repositories nécessaires pour la vérification des dépendances à la suppression.
-// import { PurchaseOrderRepository } from '../../purchase-orders/data/purchase-order.repository';
-// import { ProductSupplierRepository } from '../../products/data/product_supplier.repository'; // Si elle existe en tant que repo dédié
+
+import { AddressRepository } from '../../addresses/data/address.repository';
+import { CurrencyRepository } from '../../currencies/data/currency.repository';
+import { PurchaseOrderRepository } from '../../purchase-orders/data/purchase-order.repository';
 
 import {
   type CreateSupplierInput,
@@ -21,28 +19,44 @@ let instance: SupplierService | null = null;
 
 export class SupplierService {
   private readonly supplierRepository: SupplierRepository;
-  // TODO: private readonly addressRepository: AddressRepository;
-  // TODO: private readonly currencyRepository: CurrencyRepository;
-  // TODO: private readonly purchaseOrderRepository: PurchaseOrderRepository;
+  private readonly addressRepository: AddressRepository;
+  private readonly currencyRepository: CurrencyRepository;
+  private readonly purchaseOrderRepository: PurchaseOrderRepository;
 
+  /**
+   * Constructs a new SupplierService instance.
+   * @param supplierRepository - The repository for supplier data.
+   * @param addressRepository - The repository for address data.
+   * @param currencyRepository - The repository for currency data.
+   * @param purchaseOrderRepository - The repository for purchase order data.
+   */
   constructor(
     supplierRepository: SupplierRepository = new SupplierRepository(),
-    // addressRepository: AddressRepository = new AddressRepository(),
-    // currencyRepository: CurrencyRepository = new CurrencyRepository(),
-    // purchaseOrderRepository: PurchaseOrderRepository = new PurchaseOrderRepository(),
+    addressRepository: AddressRepository = new AddressRepository(),
+    currencyRepository: CurrencyRepository = new CurrencyRepository(),
+    purchaseOrderRepository: PurchaseOrderRepository = new PurchaseOrderRepository(),
   ) {
     this.supplierRepository = supplierRepository;
-    // TODO: this.addressRepository = addressRepository;
-    // TODO: this.currencyRepository = currencyRepository;
-    // TODO: this.purchaseOrderRepository = purchaseOrderRepository;
+    this.addressRepository = addressRepository;
+    this.currencyRepository = currencyRepository;
+    this.purchaseOrderRepository = purchaseOrderRepository;
   }
 
+  /**
+   * Maps a Supplier entity to a SupplierApiResponse.
+   * @param supplier - The supplier entity to map.
+   * @returns The API response representation of the supplier, or null if the input is null.
+   */
   mapToApiResponse(supplier: Supplier | null): SupplierApiResponse | null {
     if (!supplier) return null;
-    // The supplier.toApi() method already handles mapping of eager-loaded relations
     return supplier.toApi();
   }
 
+  /**
+   * Finds a supplier by its unique ID.
+   * @param id - The ID of the supplier to find.
+   * @returns A promise that resolves to the API response of the found supplier.
+   */
   async findById(id: number): Promise<SupplierApiResponse> {
     try {
       const supplier = await this.supplierRepository.findById(id, {
@@ -65,20 +79,24 @@ export class SupplierService {
     }
   }
 
+  /**
+   * Retrieves all suppliers based on provided options.
+   * @param options - An object containing limit, offset, filters, and sort.
+   * @returns A promise that resolves to an object containing an array of supplier API responses and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
     filters?: FindOptionsWhere<Supplier>;
     sort?: FindManyOptions<Supplier>['order'];
-    // Add searchTerm for full-text or specific field search if needed
   }): Promise<{ suppliers: SupplierApiResponse[]; total: number }> {
     try {
       const { suppliers, count } = await this.supplierRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { name: 'ASC' },
-        relations: ['address', 'defaultCurrency'], // Eager load for list view
+        order: options?.sort ?? { name: 'ASC' },
+        relations: ['address', 'defaultCurrency'],
       });
       const apiSuppliers = suppliers
         .map((s) => this.mapToApiResponse(s))
@@ -93,15 +111,21 @@ export class SupplierService {
     }
   }
 
+  /**
+   * Creates a new supplier.
+   * @param input - The data for creating the supplier.
+   * @param createdByUserId - The ID of the user creating the supplier.
+   * @returns A promise that resolves to the API response of the newly created supplier.
+   */
   async create(input: CreateSupplierInput, createdByUserId: number): Promise<SupplierApiResponse> {
-    // TODO: Dépendance - Valider l'existence de input.addressId si fourni
-    // if (input.addressId) {
-    //   const addressExists = await this.addressRepository.findById(input.addressId);
-    //   if (!addressExists) throw new BadRequestError(`Address with ID ${input.addressId} not found.`);
-    // }
-    // TODO: Dépendance - Valider l'existence de input.defaultCurrencyId
-    // const currencyExists = await this.currencyRepository.findById(input.defaultCurrencyId);
-    // if (!currencyExists) throw new BadRequestError(`Currency with ID ${input.defaultCurrencyId} not found.`);
+    if (input.addressId) {
+      const addressExists = await this.addressRepository.findById(input.addressId);
+      if (!addressExists)
+        throw new BadRequestError(`Address with ID ${input.addressId} not found.`);
+    }
+    const currencyExists = await this.currencyRepository.findById(input.defaultCurrencyId);
+    if (!currencyExists)
+      throw new BadRequestError(`Currency with ID ${input.defaultCurrencyId} not found.`);
 
     if (input.email) {
       const existingByEmail = await this.supplierRepository.findByEmail(input.email);
@@ -140,6 +164,13 @@ export class SupplierService {
     }
   }
 
+  /**
+   * Updates an existing supplier.
+   * @param id - The ID of the supplier to update.
+   * @param input - The data for updating the supplier.
+   * @param updatedByUserId - The ID of the user updating the supplier.
+   * @returns A promise that resolves to the API response of the updated supplier.
+   */
   async update(
     id: number,
     input: UpdateSupplierInput,
@@ -149,16 +180,16 @@ export class SupplierService {
       const supplier = await this.supplierRepository.findById(id);
       if (!supplier) throw new NotFoundError(`Supplier with id ${id} not found.`);
 
-      // TODO: Dépendance - Valider l'existence de input.addressId si fourni et différent
-      // if (input.addressId && input.addressId !== supplier.addressId) {
-      //   const addressExists = await this.addressRepository.findById(input.addressId);
-      //   if (!addressExists) throw new BadRequestError(`New address with ID ${input.addressId} not found.`);
-      // }
-      // TODO: Dépendance - Valider l'existence de input.defaultCurrencyId si fourni et différent
-      // if (input.defaultCurrencyId && input.defaultCurrencyId !== supplier.defaultCurrencyId) {
-      //   const currencyExists = await this.currencyRepository.findById(input.defaultCurrencyId);
-      //   if (!currencyExists) throw new BadRequestError(`New currency with ID ${input.defaultCurrencyId} not found.`);
-      // }
+      if (input.addressId && input.addressId !== supplier.addressId) {
+        const addressExists = await this.addressRepository.findById(input.addressId);
+        if (!addressExists)
+          throw new BadRequestError(`New address with ID ${input.addressId} not found.`);
+      }
+      if (input.defaultCurrencyId && input.defaultCurrencyId !== supplier.defaultCurrencyId) {
+        const currencyExists = await this.currencyRepository.findById(input.defaultCurrencyId);
+        if (!currencyExists)
+          throw new BadRequestError(`New currency with ID ${input.defaultCurrencyId} not found.`);
+      }
 
       if (input.email && input.email !== supplier.email) {
         const existingByEmail = await this.supplierRepository.findByEmail(input.email);
@@ -168,7 +199,6 @@ export class SupplierService {
       }
 
       const tempSupplierData = { ...supplier, ...input };
-      // TypeORM merges, so just create with new data to validate
       const tempSupplier = this.supplierRepository.create(tempSupplierData);
       if (!tempSupplier.isValid()) {
         throw new BadRequestError(
@@ -182,8 +212,7 @@ export class SupplierService {
       };
 
       if (Object.keys(updatePayload).length <= 1 && updatePayload.updatedByUserId !== undefined) {
-        // Only audit field
-        const currentSupplier = await this.supplierRepository.findById(id); // Re-fetch to ensure latest data for response
+        const currentSupplier = await this.supplierRepository.findById(id);
         return this.mapToApiResponse(currentSupplier) as SupplierApiResponse;
       }
 
@@ -212,7 +241,12 @@ export class SupplierService {
     }
   }
 
-  async delete(id: number, deletedByUserId: number): Promise<void> {
+  /**
+   * Deletes a supplier by its unique ID.
+   * @param id - The ID of the supplier to delete.
+   * @returns A promise that resolves when the supplier is successfully deleted.
+   */
+  async delete(id: number): Promise<void> {
     try {
       const supplier = await this.supplierRepository.findById(id);
       if (!supplier) throw new NotFoundError(`Supplier with id ${id} not found.`);
@@ -225,8 +259,6 @@ export class SupplierService {
       // }
 
       await this.supplierRepository.softDelete(id);
-      // Log who deleted it if audit is extended
-      // await this.auditLogService.logAction(deletedByUserId, 'delete', 'supplier', id, { name: supplier.name });
     } catch (error) {
       logger.error({ message: `Error deleting supplier ${id}`, error }, 'SupplierService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -234,10 +266,13 @@ export class SupplierService {
     }
   }
 
+  /**
+   * Returns a singleton instance of the SupplierService.
+   * @returns The singleton instance of SupplierService.
+   */
   static getInstance(): SupplierService {
-    if (!instance) {
-      instance = new SupplierService();
-    }
+    instance ??= new SupplierService();
+
     return instance;
   }
 }

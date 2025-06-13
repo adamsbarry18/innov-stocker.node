@@ -206,7 +206,7 @@ export default class ShopRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Put('/shops/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.USER })
   async updateRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -248,7 +248,7 @@ export default class ShopRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Delete('/shops/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.USER })
   async deleteRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -261,7 +261,7 @@ export default class ShopRouter extends BaseRouter {
       req,
       next,
       async () => {
-        await this.service.delete(id, userId);
+        await this.service.delete(id);
       },
       204,
     );

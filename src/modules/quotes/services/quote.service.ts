@@ -27,11 +27,13 @@ import { ProductVariantRepository } from '@/modules/product-variants/data/produc
 import { QuoteItemRepository } from '../quote-items/data/quote-item.repository';
 import { QuoteItem, quoteItemValidationInputErrors } from '../quote-items/models/quote-item.entity';
 
-// TODO: Dépendance - Importer SalesOrderService pour la conversion
-// import { SalesOrderService } from '../../sales-orders/services/sales_order.service';
-
 let instance: QuoteService | null = null;
 
+/**
+ * Service for managing quotes.
+ * Provides methods for creating, retrieving, updating, and deleting quotes,
+ * as well as managing quote items and status changes.
+ */
 export class QuoteService {
   private readonly quoteRepository: QuoteRepository;
   private readonly itemRepository: QuoteItemRepository;
@@ -41,8 +43,18 @@ export class QuoteService {
   private readonly productRepository: ProductRepository;
   private readonly variantRepository: ProductVariantRepository;
   private readonly userRepository: UserRepository;
-  // TODO: Dépendance - private readonly salesOrderService: SalesOrderService;
 
+  /**
+   * Creates an instance of QuoteService.
+   * @param quoteRepository - Repository for quote entities.
+   * @param itemRepository - Repository for quote item entities.
+   * @param customerRepository - Repository for customer entities.
+   * @param currencyRepository - Repository for currency entities.
+   * @param addressRepository - Repository for address entities.
+   * @param productRepository - Repository for product entities.
+   * @param variantRepository - Repository for product variant entities.
+   * @param userRepository - Repository for user entities.
+   */
   constructor(
     quoteRepository: QuoteRepository = new QuoteRepository(),
     itemRepository: QuoteItemRepository = new QuoteItemRepository(),
@@ -52,7 +64,6 @@ export class QuoteService {
     productRepository: ProductRepository = new ProductRepository(),
     variantRepository: ProductVariantRepository = new ProductVariantRepository(),
     userRepository: UserRepository = new UserRepository(),
-    // salesOrderService: SalesOrderService = new SalesOrderService(),
   ) {
     this.quoteRepository = quoteRepository;
     this.itemRepository = itemRepository;
@@ -62,20 +73,34 @@ export class QuoteService {
     this.productRepository = productRepository;
     this.variantRepository = variantRepository;
     this.userRepository = userRepository;
-    // TODO: this.salesOrderService = salesOrderService;
   }
 
+  /**
+   * Maps a Quote entity to a QuoteApiResponse object.
+   * @param quote - The Quote entity to map.
+   * @returns The mapped QuoteApiResponse object, or null if the input quote is null.
+   */
   mapToApiResponse(quote: Quote | null): QuoteApiResponse | null {
     if (!quote) return null;
     return quote.toApi();
   }
 
+  /**
+   * Generates a unique quote number.
+   * The format is 'QT-YYYYMMDD-UUID_short'.
+   * @returns A unique quote number string.
+   */
   private generateQuoteNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
     return `QT-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }
 
-  async findById(id: number, requestingUserId: number): Promise<QuoteApiResponse> {
+  /**
+   * Finds a quote by its ID.
+   * @param id - The ID of the quote to find.
+   * @returns A Promise that resolves to the QuoteApiResponse.
+   */
+  async findById(id: number): Promise<QuoteApiResponse> {
     try {
       const quote = await this.quoteRepository.findById(id, {
         relations: [
@@ -86,12 +111,11 @@ export class QuoteService {
           'createdByUser',
           'updatedByUser',
           'items',
-          'items.product', // Load product for item description fallback
-          'items.productVariant', // Load variant for item description fallback
+          'items.product',
+          'items.productVariant',
         ],
       });
       if (!quote) throw new NotFoundError(`Quote with id ${id} not found.`);
-      // TODO: Autorisation - Vérifier si l'utilisateur a le droit de voir ce devis (ex: si c'est son devis ou s'il est admin)
 
       const apiResponse = this.mapToApiResponse(quote);
       if (!apiResponse) throw new ServerError(`Failed to map quote ${id}.`);
@@ -103,6 +127,16 @@ export class QuoteService {
     }
   }
 
+  /**
+   * Retrieves all quotes with optional filtering, pagination, and sorting.
+   * @param options - Options for filtering, pagination, and sorting.
+   * @param options.limit - The maximum number of quotes to return.
+   * @param options.offset - The number of quotes to skip.
+   * @param options.filters - Filters to apply to the quotes.
+   * @param options.sort - Sorting order for the quotes.
+   * @param options.searchTerm - A term to search for within quotes.
+   * @returns A Promise that resolves to an object containing an array of QuoteApiResponse and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
@@ -111,13 +145,12 @@ export class QuoteService {
     searchTerm?: string;
   }): Promise<{ quotes: QuoteApiResponse[]; total: number }> {
     try {
-      // TODO: Ajouter une logique de recherche plus avancée pour searchTerm si nécessaire
       const { quotes, count } = await this.quoteRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { issueDate: 'DESC', createdAt: 'DESC' },
-        relations: ['customer', 'currency', 'createdByUser'], // Lighter relations for list
+        order: options?.sort ?? { issueDate: 'DESC', createdAt: 'DESC' },
+        relations: ['customer', 'currency', 'createdByUser'],
       });
       const apiQuotes = quotes
         .map((q) => this.mapToApiResponse(q))
@@ -129,8 +162,14 @@ export class QuoteService {
     }
   }
 
+  /**
+   * Creates a new quote.
+   * This operation is performed within a transaction to ensure data consistency.
+   * @param input - The data for creating the quote.
+   * @param createdByUserId - The ID of the user creating the quote.
+   * @returns A Promise that resolves to the created QuoteApiResponse.
+   */
   async createQuote(input: CreateQuoteInput, createdByUserId: number): Promise<QuoteApiResponse> {
-    // Validate foreign keys
     const customer = await this.customerRepository.findById(input.customerId);
     if (!customer) throw new BadRequestError(`Customer with ID ${input.customerId} not found.`);
 
@@ -154,7 +193,6 @@ export class QuoteService {
       const quoteRepoTx = transactionalEntityManager.getRepository(Quote);
       const itemRepoTx = transactionalEntityManager.getRepository(QuoteItem);
 
-      // Validate that items array is not empty for new quotes
       if (!input.items || input.items.length === 0) {
         throw new BadRequestError('Quote must contain at least one item.');
       }
@@ -163,21 +201,20 @@ export class QuoteService {
         ...input,
         issueDate: dayjs(input.issueDate).toDate(),
         expiryDate: input.expiryDate ? dayjs(input.expiryDate).toDate() : null,
-        status: input.status || QuoteStatus.DRAFT,
-        quoteNumber: this.generateQuoteNumber(), // Generate unique quote number
+        status: input.status ?? QuoteStatus.DRAFT,
+        quoteNumber: this.generateQuoteNumber(),
         createdByUserId: createdByUserId,
         updatedByUserId: createdByUserId,
-        items: [], // Initialize items array, will be populated next
+        items: [],
       });
 
-      // Validate main quote entity (basic validation)
       if (!quoteEntity.isValid()) {
         throw new BadRequestError(
           `Quote data is invalid. Errors: ${quoteValidationInputErrors.join(', ')}`,
         );
       }
 
-      const savedQuote = await quoteRepoTx.save(quoteEntity); // Save quote first to get an ID
+      const savedQuote = await quoteRepoTx.save(quoteEntity);
 
       const quoteItems: QuoteItem[] = [];
       for (const itemInput of input.items) {
@@ -195,9 +232,9 @@ export class QuoteService {
 
         const itemEntity: any = itemRepoTx.create({
           ...itemInput,
-          quoteId: savedQuote.id, // Link to the saved quote
+          quoteId: savedQuote.id,
           description:
-            itemInput.description ||
+            itemInput.description ??
             (itemInput.productVariantId
               ? (await this.variantRepository.findById(itemInput.productVariantId))?.nameVariant
               : product.name),
@@ -244,6 +281,14 @@ export class QuoteService {
     });
   }
 
+  /**
+   * Updates an existing quote.
+   * This operation is performed within a transaction to ensure data consistency.
+   * @param id - The ID of the quote to update.
+   * @param input - The data for updating the quote.
+   * @param updatedByUserId - The ID of the user updating the quote.
+   * @returns A Promise that resolves to the updated QuoteApiResponse.
+   */
   async updateQuote(
     id: number,
     input: UpdateQuoteInput,
@@ -262,12 +307,10 @@ export class QuoteService {
           'shippingAddress',
           'createdByUser',
         ],
-      }); // Load items for update
+      });
       if (!quote) throw new NotFoundError(`Quote with id ${id} not found.`);
 
       if (quote.status !== QuoteStatus.DRAFT && quote.status !== QuoteStatus.SENT) {
-        // Example: Allow editing only if draft or sent
-        // Allow certain fields like notes or terms to be updated for other statuses if needed
         if (
           Object.keys(input).some(
             (key) => !['notes', 'termsAndConditions', 'status', 'expiryDate'].includes(key),
@@ -279,7 +322,6 @@ export class QuoteService {
         }
       }
 
-      // Validate FKs if changed
       if (input.currencyId && input.currencyId !== quote.currencyId) {
         if (!(await this.currencyRepository.findById(input.currencyId)))
           throw new BadRequestError(`Currency ID ${input.currencyId} not found.`);
@@ -289,14 +331,12 @@ export class QuoteService {
           throw new BadRequestError(`Billing Address ID ${input.billingAddressId} not found.`);
       }
       if (input.hasOwnProperty('shippingAddressId')) {
-        // Handles null
         if (input.shippingAddressId && input.shippingAddressId !== quote.shippingAddressId) {
           if (!(await this.addressRepository.findById(input.shippingAddressId)))
             throw new BadRequestError(`Shipping Address ID ${input.shippingAddressId} not found.`);
         }
       }
 
-      // Prepare update payload for quote entity
       const quoteUpdatePayload: Partial<Quote> = { updatedByUserId };
       if (input.issueDate) quoteUpdatePayload.issueDate = dayjs(input.issueDate).toDate();
       if (input.hasOwnProperty('expiryDate'))
@@ -310,7 +350,6 @@ export class QuoteService {
       if (input.hasOwnProperty('termsAndConditions'))
         quoteUpdatePayload.termsAndConditions = input.termsAndConditions;
 
-      // Validate the merged entity before saving (for Zod based checks)
       const tempQuote = quoteRepoTx.create({ ...quote, ...quoteUpdatePayload });
       if (!tempQuote.isValid()) {
         throw new BadRequestError(
@@ -318,17 +357,13 @@ export class QuoteService {
         );
       }
 
-      // Apply main quote updates
       await quoteRepoTx.update(id, quoteUpdatePayload);
 
-      // Handle items update
       if (input.items) {
-        const existingItemIds = quote.items?.map((item) => item.id) || [];
         const inputItemIds = input.items
           .map((item) => item.id)
           .filter((itemId) => itemId !== undefined);
 
-        // Items to delete: in existing but not in input
         const itemsToDelete = quote.items?.filter((item) => !inputItemIds.includes(item.id)) || [];
         if (itemsToDelete.length > 0) {
           await itemRepoTx.remove(itemsToDelete);
@@ -336,8 +371,7 @@ export class QuoteService {
 
         const itemsToUpdateOrAdd: QuoteItem[] = [];
         for (const itemInput of input.items) {
-          // TODO: Dépendance - Validate product/variant existence
-          const product = await this.productRepository.findById(itemInput.productId as number); // Assuming productId is present
+          const product = await this.productRepository.findById(itemInput.productId as number);
           if (!product)
             throw new BadRequestError(`Product with ID ${itemInput.productId} not found for item.`);
           if (itemInput.productVariantId) {
@@ -353,7 +387,7 @@ export class QuoteService {
             ...itemInput,
             quoteId: id,
             description:
-              itemInput.description ||
+              itemInput.description ??
               (itemInput.productVariantId
                 ? (await this.variantRepository.findById(itemInput.productVariantId))?.nameVariant
                 : product.name),
@@ -365,7 +399,6 @@ export class QuoteService {
 
           let itemEntity;
           if (itemInput.id) {
-            // Update existing item
             const existingItem = quote.items?.find((i) => i.id === itemInput.id);
             if (!existingItem)
               throw new NotFoundError(
@@ -373,7 +406,6 @@ export class QuoteService {
               );
             itemEntity = itemRepoTx.merge(existingItem, itemEntityData as Partial<QuoteItem>);
           } else {
-            // Add new item
             itemEntity = itemRepoTx.create(itemEntityData as Partial<QuoteItem>);
           }
           if (!itemEntity.isValid()) {
@@ -425,7 +457,13 @@ export class QuoteService {
     });
   }
 
-  async deleteQuote(id: number, deletedByUserId: number): Promise<void> {
+  /**
+   * Soft deletes a quote by its ID.
+   * A quote cannot be deleted if its status is ACCEPTED or CONVERTED_TO_ORDER.
+   * @param id - The ID of the quote to delete.
+   * @returns A Promise that resolves when the quote is successfully soft deleted.
+   */
+  async deleteQuote(id: number): Promise<void> {
     try {
       const quote = await this.quoteRepository.findById(id);
       if (!quote) throw new NotFoundError(`Quote with id ${id} not found.`);
@@ -451,6 +489,13 @@ export class QuoteService {
     }
   }
 
+  /**
+   * Updates the status of a quote.
+   * @param id - The ID of the quote to update.
+   * @param status - The new status for the quote.
+   * @param updatedByUserId - The ID of the user updating the quote status.
+   * @returns A Promise that resolves to the updated QuoteApiResponse.
+   */
   async updateQuoteStatus(
     id: number,
     status: QuoteStatus,
@@ -494,11 +539,13 @@ export class QuoteService {
     }
   }
 
-  // TODO: Dépendance - Implémenter la conversion en SalesOrder
-  async convertQuoteToOrder(
-    quoteId: number,
-    createdByUserId: number,
-  ): Promise<any /* SalesOrderApiResponse */> {
+  /**
+   * Converts an accepted quote to a sales order.
+   * This method is currently a stub and requires the SalesOrder module to be implemented.
+   * @param quoteId - The ID of the quote to convert.
+   * @returns A Promise that resolves to the created sales order API response (currently throws an error).
+   */
+  async convertQuoteToOrder(quoteId: number): Promise<any> {
     const quote = await this.quoteRepository.findById(quoteId);
     if (!quote) throw new NotFoundError(`Quote with ID ${quoteId} not found.`);
     if (quote.status !== QuoteStatus.ACCEPTED) {
@@ -526,10 +573,12 @@ export class QuoteService {
     throw new ServerError('Conversion to Sales Order not implemented yet.');
   }
 
+  /**
+   * Returns a singleton instance of the QuoteService.
+   * @returns The singleton instance of QuoteService.
+   */
   static getInstance(): QuoteService {
-    if (!instance) {
-      instance = new QuoteService();
-    }
+    instance ??= new QuoteService();
     return instance;
   }
 }

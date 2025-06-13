@@ -238,15 +238,12 @@ export default class ProductVariantRouter extends BaseRouter {
     if (isNaN(productId) || isNaN(variantId))
       return next(new BadRequestError('Invalid Product or Variant ID.'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.productVariantService.deleteProductVariant(productId, variantId, userId);
+        await this.productVariantService.deleteProductVariant(productId, variantId);
       },
       204,
     );

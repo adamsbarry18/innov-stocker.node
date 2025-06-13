@@ -26,18 +26,14 @@ export class ProductVariantRepository {
   }
 
   private getDefaultRelations(): string[] {
-    return [
-      'image',
-      'product' /* 'createdByUser', 'updatedByUser', 'productSuppliers', 'productSuppliers.supplier', 'productSuppliers.currency' */,
-    ];
+    return ['image', 'product'];
   }
 
   async findById(id: number, options?: { relations?: string[] }): Promise<ProductVariant | null> {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding product variant by id ${id}`, error });
@@ -53,8 +49,7 @@ export class ProductVariantRepository {
       return await this.repository.find({
         where: { productId, deletedAt: IsNull() },
         order: { nameVariant: 'ASC' },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding variants for product ${productId}`, error });
@@ -122,7 +117,6 @@ export class ProductVariantRepository {
 
   async softDelete(id: number): Promise<UpdateResult> {
     try {
-      // TODO: Check dependencies (e.g., stock movements, order items) in service layer
       return await this.repository.softDelete(id);
     } catch (error) {
       logger.error({ message: `Error soft-deleting product variant ${id}`, error });

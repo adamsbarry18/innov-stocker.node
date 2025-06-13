@@ -5,7 +5,6 @@ import { User } from '@/modules/users/models/users.entity';
 import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { z } from 'zod';
 
-// Zod Schema for validation
 const supplierSchemaValidation = z.object({
   name: z.string().min(1, { message: 'Supplier name is required.' }).max(255),
   contactPersonName: z.string().max(255).nullable().optional(),
@@ -20,7 +19,6 @@ const supplierSchemaValidation = z.object({
   notes: z.string().nullable().optional(),
 });
 
-// Type for creating a supplier
 export type CreateSupplierInput = {
   name: string;
   contactPersonName?: string | null;
@@ -35,10 +33,8 @@ export type CreateSupplierInput = {
   notes?: string | null;
 };
 
-// Type for updating a supplier (all fields optional)
 export type UpdateSupplierInput = Partial<CreateSupplierInput>;
 
-// Type for API response (DTO)
 export type SupplierApiResponse = {
   id: number;
   name: string;
@@ -49,27 +45,24 @@ export type SupplierApiResponse = {
   vatNumber: string | null;
   siretNumber: string | null;
   defaultCurrencyId: number;
-  defaultCurrency?: CurrencyApiResponse | null; // Populated
+  defaultCurrency?: CurrencyApiResponse | null;
   defaultPaymentTermsDays: number | null;
   addressId: number | null;
-  address?: AddressApiResponse | null; // Populated
+  address?: AddressApiResponse | null;
   notes: string | null;
   createdByUserId?: number | null;
   updatedByUserId?: number | null;
-  // createdByUser?: UserApiResponse | null; // If exposing user details
-  // updatedByUser?: UserApiResponse | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
 
-// DTO for Currency to be embedded (simplified)
 type CurrencyApiResponse = {
   id: number;
   code: string;
   name: string;
   symbol: string;
 };
-// DTO for Address to be embedded (simplified)
+
 type AddressApiResponse = {
   id: number;
   streetLine1: string;
@@ -81,7 +74,7 @@ type AddressApiResponse = {
 export const supplierValidationInputErrors: string[] = [];
 
 @Entity({ name: 'suppliers' })
-@Index(['email'], { where: '"email" IS NOT NULL', unique: true }) // Conditional unique index for email
+@Index(['email'], { where: '"email" IS NOT NULL', unique: true })
 export class Supplier extends Model {
   @Column({ type: 'varchar', length: 255 })
   name!: string;
@@ -107,7 +100,7 @@ export class Supplier extends Model {
   @Column({ type: 'int', name: 'default_currency_id' })
   defaultCurrencyId!: number;
 
-  @ManyToOne(() => Currency, { eager: true, onDelete: 'RESTRICT' }) // Eager load for convenience
+  @ManyToOne(() => Currency, { eager: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'default_currency_id' })
   defaultCurrency!: Currency;
 
@@ -117,7 +110,7 @@ export class Supplier extends Model {
   @Column({ type: 'int', nullable: true, name: 'address_id' })
   addressId: number | null = null;
 
-  @ManyToOne(() => Address, { eager: true, onDelete: 'SET NULL', nullable: true }) // Eager load
+  @ManyToOne(() => Address, { eager: true, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'address_id' })
   address: Address | null = null;
 
@@ -153,7 +146,6 @@ export class Supplier extends Model {
       defaultCurrencyId: this.defaultCurrencyId,
       defaultCurrency: this.defaultCurrency
         ? {
-            // Simplified inline DTO mapping
             id: this.defaultCurrency.id,
             code: this.defaultCurrency.code,
             name: this.defaultCurrency.name,
@@ -164,7 +156,6 @@ export class Supplier extends Model {
       addressId: this.addressId,
       address: this.address
         ? {
-            // Simplified inline DTO mapping
             id: this.address.id,
             streetLine1: this.address.streetLine1,
             city: this.address.city,
@@ -175,15 +166,12 @@ export class Supplier extends Model {
       notes: this.notes,
       createdByUserId: this.createdByUserId,
       updatedByUserId: this.updatedByUserId,
-      // createdByUser: this.createdByUser ? this.createdByUser.toApi() : null, // Requires User.toApi()
-      // updatedByUser: this.updatedByUser ? this.updatedByUser.toApi() : null,
       createdAt: Model.formatISODate(this.createdAt),
       updatedAt: Model.formatISODate(this.updatedAt),
     };
   }
 
   isValid(): boolean {
-    // Normalize email before validation
     if (this.email) {
       this.email = this.email.toLowerCase().trim();
     }

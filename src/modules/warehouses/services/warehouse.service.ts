@@ -21,6 +21,12 @@ export class WarehouseService {
   private readonly addressRepository: AddressRepository;
   private readonly userRepository: UserRepository;
 
+  /**
+   * Constructs a new WarehouseService instance.
+   * @param warehouseRepository - The repository for warehouse data.
+   * @param addressRepository - The repository for address data.
+   * @param userRepository - The repository for user data.
+   */
   constructor(
     warehouseRepository: WarehouseRepository = new WarehouseRepository(),
     addressRepository: AddressRepository = new AddressRepository(),
@@ -31,11 +37,21 @@ export class WarehouseService {
     this.userRepository = userRepository;
   }
 
+  /**
+   * Maps a Warehouse entity to a WarehouseApiResponse.
+   * @param warehouse - The warehouse entity to map.
+   * @returns The API response representation of the warehouse, or null if the input is null.
+   */
   mapToApiResponse(warehouse: Warehouse | null): WarehouseApiResponse | null {
     if (!warehouse) return null;
     return warehouse.toApi();
   }
 
+  /**
+   * Finds a warehouse by its unique ID.
+   * @param id - The ID of the warehouse to find.
+   * @returns A promise that resolves to the API response of the found warehouse.
+   */
   async findById(id: number): Promise<WarehouseApiResponse> {
     try {
       const warehouse = await this.warehouseRepository.findById(id);
@@ -54,33 +70,19 @@ export class WarehouseService {
     }
   }
 
+  /**
+   * Retrieves all warehouses based on provided options.
+   * @param options - An object containing limit, offset, filters, and sort.
+   * @returns A promise that resolves to an object containing an array of warehouse API responses and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
     filters?: FindOptionsWhere<Warehouse>;
     sort?: FindManyOptions<Warehouse>['order'];
-    searchTerm?: string;
   }): Promise<{ warehouses: WarehouseApiResponse[]; total: number }> {
     try {
-      const whereClause: FindOptionsWhere<Warehouse> | FindOptionsWhere<Warehouse>[] =
-        options?.filters ? { ...options.filters } : {};
-      if (options?.searchTerm) {
-        logger.warn(
-          'Search term functionality for warehouses is basic. Consider full-text search or QueryBuilder for complex OR logic.',
-        );
-        // This is a simplified search. For proper OR across multiple fields, QueryBuilder is better.
-        // For now, this will likely only work if the DB/TypeORM setup supports it directly on a simple where.
-        // A more robust approach would be to build an array of OR conditions.
-        // Example:
-        // whereClause = [
-        //   { ...options.filters, name: ILike(`%${options.searchTerm}%`), deletedAt: IsNull() },
-        //   { ...options.filters, code: ILike(`%${options.searchTerm}%`), deletedAt: IsNull() },
-        // ];
-        // However, this structure might conflict if options.filters already has name/code.
-        // For now, let's assume the filterable decorator or buildTypeORMCriteria handles 'q' into specific fields.
-        // If not, this needs to be implemented more robustly.
-      }
-
+      const whereClause = options?.filters ? { ...options.filters } : {};
       const { warehouses, count } = await this.warehouseRepository.findAll({
         where: whereClause,
         skip: options?.offset,
@@ -100,6 +102,12 @@ export class WarehouseService {
     }
   }
 
+  /**
+   * Creates a new warehouse.
+   * @param input - The data for creating the warehouse.
+   * @param createdByUserId - The ID of the user creating the warehouse.
+   * @returns A promise that resolves to the API response of the newly created warehouse.
+   */
   async create(
     input: CreateWarehouseInput,
     createdByUserId: number,
@@ -170,6 +178,13 @@ export class WarehouseService {
     });
   }
 
+  /**
+   * Updates an existing warehouse.
+   * @param id - The ID of the warehouse to update.
+   * @param input - The data for updating the warehouse.
+   * @param updatedByUserId - The ID of the user updating the warehouse.
+   * @returns A promise that resolves to the API response of the updated warehouse.
+   */
   async update(
     id: number,
     input: UpdateWarehouseInput,
@@ -256,7 +271,12 @@ export class WarehouseService {
     });
   }
 
-  async delete(id: number, deletedByUserId: number): Promise<void> {
+  /**
+   * Deletes a warehouse by its unique ID.
+   * @param id - The ID of the warehouse to delete.
+   * @returns A promise that resolves when the warehouse is successfully deleted.
+   */
+  async delete(id: number): Promise<void> {
     try {
       const warehouse = await this.warehouseRepository.findById(id);
       if (!warehouse) throw new NotFoundError(`Warehouse with id ${id} not found.`);
@@ -268,7 +288,6 @@ export class WarehouseService {
         );
       }*/
 
-      // await this.warehouseRepository.update(id, { updatedByUserId: deletedByUserId }); // Optional audit before delete
       await this.warehouseRepository.softDelete(id);
     } catch (error) {
       logger.error({ message: `Error deleting warehouse ${id}`, error }, 'WarehouseService.delete');
@@ -277,6 +296,10 @@ export class WarehouseService {
     }
   }
 
+  /**
+   * Returns a singleton instance of the WarehouseService.
+   * @returns The singleton instance of WarehouseService.
+   */
   static getInstance(): WarehouseService {
     instance ??= new WarehouseService();
     return instance;

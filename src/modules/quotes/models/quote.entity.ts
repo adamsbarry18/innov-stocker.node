@@ -159,7 +159,7 @@ export class Quote extends Model {
   @Column({ type: 'int', name: 'updated_by_user_id', nullable: true })
   updatedByUserId: number | null = null;
 
-  @ManyToOne(() => User, { eager: true, onDelete: 'SET NULL', nullable: true }) // Eager load user for API response
+  @ManyToOne(() => User, { eager: true, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'updated_by_user_id' })
   updatedByUser: User | null = null;
 
@@ -173,7 +173,6 @@ export class Quote extends Model {
         if (item.vatRatePercentage !== null) {
           this.totalVatAmount += lineTotalHt * (item.vatRatePercentage / 100);
         }
-        // TODO: Gérer la TVA par défaut du produit ou de l'entreprise si item.vatRatePercentage est null
       });
     }
     this.totalAmountHt = parseFloat(this.totalAmountHt.toFixed(4));

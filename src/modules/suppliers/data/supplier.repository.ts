@@ -35,10 +35,7 @@ export class SupplierRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations: options?.relations || [
-          'address',
-          'defaultCurrency' /*, 'createdByUser', 'updatedByUser'*/,
-        ],
+        relations: options?.relations ?? ['address', 'defaultCurrency'],
       });
     } catch (error) {
       logger.error(
@@ -65,8 +62,6 @@ export class SupplierRepository {
   }
 
   async findByName(name: string): Promise<Supplier | null> {
-    // Note: Name is not set as unique in the DB schema provided earlier.
-    // This method can be used to check if a supplier with a similar name exists if needed.
     try {
       return await this.repository.findOne({
         where: { name, deletedAt: IsNull() },
@@ -87,10 +82,10 @@ export class SupplierRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<Supplier> = {
         where,
-        order: options.order || { name: 'ASC' },
+        order: options.order ?? { name: 'ASC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations || ['address', 'defaultCurrency'],
+        relations: options.relations ?? ['address', 'defaultCurrency'],
       };
       const [suppliers, count] = await this.repository.findAndCount(findOptions);
       return { suppliers, count };
@@ -118,7 +113,6 @@ export class SupplierRepository {
       }
       return await this.repository.save(supplier);
     } catch (error: any) {
-      // ER_DUP_ENTRY for MySQL, UNIQUE constraint failed for SQLite
       if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
         if (
           error.message?.includes('email_unique_if_not_null') ||
@@ -126,7 +120,6 @@ export class SupplierRepository {
         ) {
           throw new BadRequestError(`Supplier with email '${supplier.email}' already exists.`);
         }
-        // Add other unique constraint checks if necessary
       }
       logger.error(
         { message: `Error saving supplier ${supplier.id || supplier.name}`, error },
@@ -164,7 +157,6 @@ export class SupplierRepository {
 
   async softDelete(id: number): Promise<UpdateResult> {
     try {
-      // Dependency checks (e.g., on purchase orders) should be in the service layer
       return await this.repository.softDelete(id);
     } catch (error) {
       logger.error(

@@ -142,7 +142,7 @@ export class PurchaseReceptionItemService {
     purchaseReceptionId: number,
     itemId: number,
   ): Promise<PurchaseReceptionItemApiResponse> {
-    await this.getReceptionAndCheckStatus(purchaseReceptionId); // Ensure reception exists
+    await this.getReceptionAndCheckStatus(purchaseReceptionId);
 
     try {
       const item = await this.itemRepository.findById(itemId);
@@ -201,18 +201,17 @@ export class PurchaseReceptionItemService {
       ]);
       await this.validateItemProductAndVariant(validatedInput);
 
-      // Check for duplicate item (product/variant from same PO line if applicable)
       const existingItem = await itemRepoTx.findOne({
         where: {
           purchaseReceptionId,
           productId: validatedInput.productId,
-          productVariantId: validatedInput.productVariantId || IsNull(),
-          purchaseOrderItemId: validatedInput.purchaseOrderItemId || IsNull(),
+          productVariantId: validatedInput.productVariantId ?? IsNull(),
+          purchaseOrderItemId: validatedInput.purchaseOrderItemId ?? IsNull(),
         },
       });
       if (existingItem) {
         throw new BadRequestError(
-          `This product/variant (from PO line ${validatedInput.purchaseOrderItemId || 'N/A'}) is already recorded in this reception.`,
+          `This product/variant (from PO line ${validatedInput.purchaseOrderItemId ?? 'N/A'}) is already recorded in this reception.`,
         );
       }
 
@@ -236,7 +235,7 @@ export class PurchaseReceptionItemService {
           .createSumQuantityReceivedQuery(validatedInput.purchaseOrderItemId, purchaseReceptionId)
           .getRawOne();
 
-        const currentTotalReceived = Number(totalPreviouslyReceived?.total || 0);
+        const currentTotalReceived = Number(totalPreviouslyReceived?.total ?? 0);
         const remainingQuantity = Number(poItem.quantity) - currentTotalReceived;
 
         if (validatedInput.quantityReceived > remainingQuantity) {
@@ -249,14 +248,7 @@ export class PurchaseReceptionItemService {
       const itemEntity = itemRepoTx.create({
         ...validatedInput,
         purchaseReceptionId: reception.id,
-        // createdBy: createdByUserId, // Removed as 'createdBy' is not on the entity
       });
-
-      // Zod validation is already done, isValid() on entity might be redundant if Zod is comprehensive
-      // if (!itemEntity.isValid()) {
-      //   throw new BadRequestError(`Reception item data invalid: ${purchaseReceptionItemValidationInputErrors.join(', ')}`);
-      // }
-
       const savedItem = await itemRepoTx.save(itemEntity);
 
       if (poItem) {
@@ -264,14 +256,6 @@ export class PurchaseReceptionItemService {
           Number(poItem.quantityReceived) + Number(savedItem.quantityReceived);
         await poItemRepoTx.save(poItem);
       }
-
-      // TODO: Dépendance - Create StockMovement (This should ideally be handled by a dedicated StockMovementService)
-      // Example: await new StockMovementService(manager).createMovement({ type: 'purchase_reception', ... });
-
-      // TODO: Update PurchaseOrder status if all items are now received
-      // This logic is better placed in PurchaseReceptionService when a reception is finalized/validated.
-
-      // Re-fetch the item with relations for the API response
       const populatedItem = await itemRepoTx.findOne({
         where: { id: savedItem.id },
         relations: this.itemRepository.getDefaultRelations(),
@@ -338,7 +322,6 @@ export class PurchaseReceptionItemService {
 
       const oldQuantityReceived = Number(item.quantityReceived);
 
-      // Apply updates
       if (validatedInput.quantityReceived !== undefined) {
         item.quantityReceived = validatedInput.quantityReceived;
       }
@@ -353,7 +336,6 @@ export class PurchaseReceptionItemService {
       if (validatedInput.notes !== undefined) {
         item.notes = validatedInput.notes;
       }
-      // item.updatedBy = updatedByUserId; // Removed as 'updatedBy' is not on the entity
 
       if (item.purchaseOrderItemId) {
         const poItem = await poItemRepoTx.findOne({ where: { id: item.purchaseOrderItemId } });
@@ -365,7 +347,7 @@ export class PurchaseReceptionItemService {
           .createSumQuantityReceivedQuery(item.purchaseOrderItemId, itemId)
           .getRawOne();
 
-        const currentTotalReceived = Number(totalPreviouslyReceivedForPoItem?.total || 0);
+        const currentTotalReceived = Number(totalPreviouslyReceivedForPoItem?.total ?? 0);
         const remainingQuantity = Number(poItem.quantity) - currentTotalReceived;
 
         if (item.quantityReceived > remainingQuantity) {
@@ -386,9 +368,6 @@ export class PurchaseReceptionItemService {
         );
       }
 
-      // TODO: Dépendance - Adjust StockMovement if quantity changed
-
-      // Re-fetch the item with relations for the API response
       const populatedItem = await itemRepoTx.findOne({
         where: { id: savedItem.id },
         relations: this.itemRepository.getDefaultRelations(),
@@ -447,7 +426,6 @@ export class PurchaseReceptionItemService {
           quantityReversed,
         );
       }
-      // TODO: Dépendance - Reverse StockMovement
     };
 
     if (transactionalEntityManager) {
@@ -462,9 +440,7 @@ export class PurchaseReceptionItemService {
    * @returns The singleton instance.
    */
   static getInstance(): PurchaseReceptionItemService {
-    if (!instance) {
-      instance = new PurchaseReceptionItemService();
-    }
+    instance ??= new PurchaseReceptionItemService();
     return instance;
   }
 }

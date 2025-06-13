@@ -36,7 +36,6 @@ export class SupplierInvoicePurchaseOrderLinkRepository {
         error.message?.includes('UNIQUE constraint failed') ||
         error.message?.includes('PRIMARY')
       ) {
-        // PRIMARY for composite PK
         throw new BadRequestError(
           `Link between Supplier Invoice ID ${link.supplierInvoiceId} and Purchase Order ID ${link.purchaseOrderId} already exists.`,
         );
