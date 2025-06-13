@@ -91,9 +91,6 @@ export class InventorySessionItem extends Model {
   @Column({ type: 'text', nullable: true })
   notes: string | null = null;
 
-  // deletedAt is inherited from Model if needed, but for items of a session, usually hard delete or cascade.
-  // SQL schema has deleted_time, so Model's soft delete applies.
-
   calculateVariance(): void {
     this.varianceQuantity = parseFloat(
       (Number(this.countedQuantity) - Number(this.theoreticalQuantity)).toFixed(3),
@@ -102,7 +99,6 @@ export class InventorySessionItem extends Model {
 
   toApi(): InventorySessionItemApiResponse {
     const base = super.toApi();
-    // const apiId = typeof this.id === 'number' ? this.id.toString() : this.id;
 
     return {
       ...base,

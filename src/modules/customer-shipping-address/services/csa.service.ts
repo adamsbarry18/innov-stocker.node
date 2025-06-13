@@ -21,24 +21,37 @@ let instance: CustomerShippingAddressService | null = null;
 
 export class CustomerShippingAddressService {
   private readonly shippingAddressRepository: CustomerShippingAddressRepository;
-  private readonly addressRepository: AddressRepository;
   private readonly customerRepository: CustomerRepository;
 
+  /**
+   * Creates an instance of CustomerShippingAddressService.
+   * @param shippingAddressRepository - The repository for customer shipping addresses.
+   * @param addressRepository - The repository for addresses.
+   * @param customerRepository - The repository for customers.
+   */
   constructor(
     shippingAddressRepository: CustomerShippingAddressRepository = new CustomerShippingAddressRepository(),
-    addressRepository: AddressRepository = new AddressRepository(),
     customerRepository: CustomerRepository = new CustomerRepository(),
   ) {
     this.shippingAddressRepository = shippingAddressRepository;
-    this.addressRepository = addressRepository;
     this.customerRepository = customerRepository;
   }
 
+  /**
+   * Maps a CustomerShippingAddress entity to a CustomerShippingAddressApiResponse.
+   * @param sa - The CustomerShippingAddress entity.
+   * @returns The API response object or null if the input is null.
+   */
   mapToApiResponse(sa: CustomerShippingAddress | null): CustomerShippingAddressApiResponse | null {
     if (!sa) return null;
     return sa.toApi();
   }
 
+  /**
+   * Finds a customer shipping address by its ID.
+   * @param id - The ID of the customer shipping address.
+   * @returns A promise that resolves to the customer shipping address API response.
+   */
   async findById(id: number): Promise<CustomerShippingAddressApiResponse> {
     try {
       const shippingAddress = await this.shippingAddressRepository.findById(id, {
@@ -58,10 +71,15 @@ export class CustomerShippingAddressService {
     }
   }
 
+  /**
+   * Finds all customer shipping addresses based on provided options.
+   * @param options - Options for filtering, pagination, and sorting.
+   * @returns A promise that resolves to an object containing an array of customer shipping address API responses and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
-    filters?: FindOptionsWhere<CustomerShippingAddress>; // e.g., { customerId: number }
+    filters?: FindOptionsWhere<CustomerShippingAddress>;
     sort?: FindManyOptions<CustomerShippingAddress>['order'];
   }): Promise<{ shippingAddresses: CustomerShippingAddressApiResponse[]; total: number }> {
     if (options?.filters?.customerId) {
@@ -74,7 +92,7 @@ export class CustomerShippingAddressService {
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { customerId: 'ASC', isDefault: 'DESC', addressLabel: 'ASC' },
+        order: options?.sort ?? { customerId: 'ASC', isDefault: 'DESC', addressLabel: 'ASC' },
         relations: ['address'],
       });
       const apiSAs = shippingAddresses
@@ -87,9 +105,13 @@ export class CustomerShippingAddressService {
     }
   }
 
+  /**
+   * Creates a new customer shipping address.
+   * @param input - The input data for creating the customer shipping address.
+   * @returns A promise that resolves to the created customer shipping address API response.
+   */
   async create(
     input: CreateCustomerShippingAddressInput,
-    createdByUserId: number, // For audit, if CustomerShippingAddress entity had createdByUserId
   ): Promise<CustomerShippingAddressApiResponse> {
     const validationResult = createCustomerShippingAddressSchema.safeParse(input);
     if (!validationResult.success) {
@@ -100,7 +122,6 @@ export class CustomerShippingAddressService {
     }
     const validatedInput = validationResult.data;
 
-    // Valider l'existence de validatedInput.customerId
     const customer = await this.customerRepository.findById(validatedInput.customerId);
     if (!customer)
       throw new NotFoundError(`Customer with ID ${validatedInput.customerId} not found.`);
@@ -113,11 +134,9 @@ export class CustomerShippingAddressService {
       let addressIdToLink = validatedInput.addressId;
 
       if (validatedInput.newAddress) {
-        // newAddress is already validated by Zod schema for its structure
         const newAddressEntity = addressRepo.create(
           validatedInput.newAddress as CreateAddressInput,
         );
-        // TODO: if Address entity has its own .isValid(), call it here
         const savedNewAddress = await addressRepo.save(newAddressEntity);
         addressIdToLink = savedNewAddress.id;
       } else if (validatedInput.addressId) {
@@ -125,7 +144,6 @@ export class CustomerShippingAddressService {
         if (!existingAddress)
           throw new BadRequestError(`Address with ID ${validatedInput.addressId} not found.`);
       } else {
-        // Should be caught by Zod union, but as a safeguard
         throw new BadRequestError('Either existing addressId or newAddress data must be provided.');
       }
       if (!addressIdToLink) throw new ServerError('Could not determine address ID to link.');
@@ -155,7 +173,6 @@ export class CustomerShippingAddressService {
         addressLabel: validatedInput.addressLabel,
         isDefault: validatedInput.isDefault || false,
       });
-      shippingAddressEntity.createdByUserId = createdByUserId;
 
       const savedShippingAddress = await shippingAddressRepo.save(shippingAddressEntity);
 
@@ -164,7 +181,6 @@ export class CustomerShippingAddressService {
           validatedInput.customerId,
           savedShippingAddress.id,
         );
-        // update customer.defaultShippingAddressId
         const customerToUpdate = await customerRepo.findOneBy({ id: validatedInput.customerId });
         if (customerToUpdate) {
           customerToUpdate.defaultShippingAddressId = savedShippingAddress.addressId;
@@ -173,7 +189,7 @@ export class CustomerShippingAddressService {
       }
       const populatedSA = await shippingAddressRepo.findById(savedShippingAddress.id, {
         relations: ['address'],
-      }); // Re-fetch avec address
+      });
       const apiResponse = this.mapToApiResponse(populatedSA);
       if (!apiResponse)
         throw new ServerError('Failed to map new shipping address to API response.');
@@ -181,10 +197,15 @@ export class CustomerShippingAddressService {
     });
   }
 
+  /**
+   * Updates an existing customer shipping address.
+   * @param id - The ID of the customer shipping address to update.
+   * @param input - The input data for updating the customer shipping address.
+   * @returns A promise that resolves to the updated customer shipping address API response.
+   */
   async update(
-    id: number, // ID of the customer_shipping_addresses record
+    id: number,
     input: UpdateCustomerShippingAddressInput,
-    updatedByUserId: number, // For audit
   ): Promise<CustomerShippingAddressApiResponse> {
     const validationResult = updateCustomerShippingAddressSchema.safeParse(input);
     if (!validationResult.success) {
@@ -202,11 +223,11 @@ export class CustomerShippingAddressService {
       const addressRepo = new AddressRepository(transactionalEntityManager);
       const customerRepo = new CustomerRepository(transactionalEntityManager);
 
-      const shippingAddress = await shippingAddressRepo.findById(id, { relations: ['address'] }); // Load current address
+      const shippingAddress = await shippingAddressRepo.findById(id, { relations: ['address'] });
       if (!shippingAddress) {
         throw new NotFoundError(`Customer shipping address link with id ${id} not found.`);
       }
-      const customerId = shippingAddress.customerId; // Get customerId from existing record
+      const customerId = shippingAddress.customerId;
 
       const updatePayload: Partial<CustomerShippingAddress> = {};
 
@@ -253,11 +274,9 @@ export class CustomerShippingAddressService {
         updatePayload.isDefault = validatedInput.isDefault;
         defaultStatusChanged = true;
       }
-      // updatePayload.updatedByUserId = updatedByUserId; // Si audit
 
       if (Object.keys(updatePayload).length === 0) {
-        // No actual changes
-        return this.mapToApiResponse(shippingAddress) as CustomerShippingAddressApiResponse; // Return current
+        return this.mapToApiResponse(shippingAddress) as CustomerShippingAddressApiResponse;
       }
 
       const result = await shippingAddressRepo.update(id, updatePayload);
@@ -270,14 +289,12 @@ export class CustomerShippingAddressService {
 
       if (defaultStatusChanged && updatedSA.isDefault === true) {
         await shippingAddressRepo.unsetDefaultForOthers(customerId, id);
-        // Mettre à jour customer.defaultShippingAddressId
         const customerToUpdate = await customerRepo.findOneBy({ id: customerId });
         if (customerToUpdate) {
           customerToUpdate.defaultShippingAddressId = updatedSA.addressId;
           await customerRepo.save(customerToUpdate);
         }
       } else if (defaultStatusChanged && updatedSA.isDefault === false) {
-        // Si on désactive l'adresse par défaut, vérifier si c'était celle du client
         const customerToUpdate = await customerRepo.findOneBy({ id: customerId });
         if (customerToUpdate && customerToUpdate.defaultShippingAddressId === updatedSA.addressId) {
           customerToUpdate.defaultShippingAddressId = null;
@@ -292,7 +309,12 @@ export class CustomerShippingAddressService {
     });
   }
 
-  async delete(id: number, deletedByUserId: number): Promise<void> {
+  /**
+   * Deletes a customer shipping address by its ID.
+   * @param id - The ID of the customer shipping address to delete.
+   * @returns A promise that resolves when the deletion is complete.
+   */
+  async delete(id: number): Promise<void> {
     await appDataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const shippingAddressRepo = new CustomerShippingAddressRepository(transactionalEntityManager);
       const customerRepo = new CustomerRepository(transactionalEntityManager);
@@ -308,15 +330,13 @@ export class CustomerShippingAddressService {
       await shippingAddressRepo.softDelete(id);
 
       if (wasDefault) {
-        // Mettre à jour customer.defaultShippingAddressId
         const customerToUpdate = await customerRepo.findOneBy({ id: customerId });
         if (customerToUpdate && customerToUpdate.defaultShippingAddressId === addressIdOfDeleted) {
           customerToUpdate.defaultShippingAddressId = null;
           const remainingAddresses = await shippingAddressRepo.findByCustomerId(customerId);
           if (remainingAddresses.length > 0) {
-            // Trouver la première adresse non supprimée ou la première restante
             const newDefault =
-              remainingAddresses.find((sa) => !sa.deletedAt) || remainingAddresses[0];
+              remainingAddresses.find((sa) => !sa.deletedAt) ?? remainingAddresses[0];
             if (newDefault) {
               newDefault.isDefault = true;
               await shippingAddressRepo.save(newDefault);
@@ -329,7 +349,12 @@ export class CustomerShippingAddressService {
     });
   }
 
-  async setAsDefault(id: number, setByUserId: number): Promise<CustomerShippingAddressApiResponse> {
+  /**
+   * Sets a customer shipping address as the default for the customer.
+   * @param id - The ID of the customer shipping address to set as default.
+   * @returns A promise that resolves to the updated customer shipping address API response.
+   */
+  async setAsDefault(id: number): Promise<CustomerShippingAddressApiResponse> {
     return appDataSource.transaction(async (transactionalEntityManager: EntityManager) => {
       const shippingAddressRepo = new CustomerShippingAddressRepository(transactionalEntityManager);
       const customerRepo = new CustomerRepository(transactionalEntityManager);
@@ -352,7 +377,6 @@ export class CustomerShippingAddressService {
       shippingAddressToSetDefault.isDefault = true;
       await shippingAddressRepo.save(shippingAddressToSetDefault);
 
-      // update customer.defaultShippingAddressId
       const customerToUpdate = await customerRepo.findOneBy({ id: customerId });
       if (customerToUpdate) {
         customerToUpdate.defaultShippingAddressId = shippingAddressToSetDefault.addressId;
@@ -368,10 +392,12 @@ export class CustomerShippingAddressService {
     });
   }
 
+  /**
+   * Returns the singleton instance of CustomerShippingAddressService.
+   * @returns The singleton instance.
+   */
   static getInstance(): CustomerShippingAddressService {
-    if (!instance) {
-      instance = new CustomerShippingAddressService();
-    }
+    instance ??= new CustomerShippingAddressService();
     return instance;
   }
 }

@@ -57,7 +57,7 @@ export class CustomerGroupRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<CustomerGroup> = {
         where,
-        order: options.order || { name: 'ASC' },
+        order: options.order ?? { name: 'ASC' },
         skip: options.skip,
         take: options.take,
       };

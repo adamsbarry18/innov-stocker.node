@@ -38,9 +38,8 @@ export class CustomerInvoiceItemService {
   ) {}
 
   public static getInstance(): CustomerInvoiceItemService {
-    if (!instance) {
-      instance = new CustomerInvoiceItemService();
-    }
+    instance ??= new CustomerInvoiceItemService();
+
     return instance;
   }
 
@@ -56,32 +55,17 @@ export class CustomerInvoiceItemService {
     allowedStatuses?: CustomerInvoiceStatus[],
     transactionalEntityManager?: EntityManager,
   ): Promise<CustomerInvoice> {
-    let invoice: CustomerInvoice | null;
+    const invoice = await this.invoiceRepository.findById(invoiceId, {
+      relations: [
+        'items',
+        'items.product',
+        'items.productVariant',
+        'items.salesOrderItem',
+        'items.deliveryItem',
+      ],
+      transactionalEntityManager,
+    });
 
-    if (transactionalEntityManager) {
-      // Utilise findOne du repo natif TypeORM
-      const repo = transactionalEntityManager.getRepository(CustomerInvoice);
-      invoice = await repo.findOne({
-        where: { id: invoiceId },
-        relations: [
-          'items',
-          'items.product',
-          'items.productVariant',
-          'items.purchaseReceptionItem',
-        ],
-      });
-    } else {
-      // Utilise la méthode custom de ton repository
-      invoice = await this.invoiceRepository.findById(invoiceId, {
-        relations: [
-          'items',
-          'items.product',
-          'items.productVariant',
-          'items.salesOrderItem',
-          'items.deliveryItem',
-        ],
-      });
-    }
     if (!invoice) {
       throw new NotFoundError(`Customer Invoice with ID ${invoiceId} not found.`);
     }
@@ -125,23 +109,20 @@ export class CustomerInvoiceItemService {
     return { productName, variantName, defaultVat };
   }
 
-  private async validateSourceItemLinks(
-    input: { salesOrderItemId?: number | null; deliveryItemId?: number | null; quantity: number },
-    isUpdate: boolean,
-    existingItem?: CustomerInvoiceItem,
-  ): Promise<void> {
+  private async validateSourceItemLinks(input: {
+    salesOrderItemId?: number | null;
+    deliveryItemId?: number | null;
+    quantity: number;
+  }): Promise<void> {
     if (input.salesOrderItemId) {
       const soItem = await this.soItemRepository.findById(input.salesOrderItemId);
       if (!soItem)
         throw new BadRequestError(`Sales Order Item ID ${input.salesOrderItemId} not found.`);
-      // TODO: Check if quantity invoiced on SOItem + current input.quantity > soItem.quantity
-      // (complex if multiple invoices can link to same SOItem line)
     }
     if (input.deliveryItemId) {
       const delItem = await this.deliveryItemRepository.findById(input.deliveryItemId);
       if (!delItem)
         throw new BadRequestError(`Delivery Item ID ${input.deliveryItemId} not found.`);
-      // TODO: Check if quantity invoiced on DeliveryItem + current input.quantity > delItem.quantityShipped
     }
   }
 
@@ -160,28 +141,27 @@ export class CustomerInvoiceItemService {
     const validatedInput = validationResult.data;
 
     return appDataSource.transaction(async (transactionalEntityManager) => {
-      const invoiceRepo = transactionalEntityManager.getRepository(CustomerInvoice); // Utilisez getRepository pour le manager transactionnel
+      const invoiceRepo = transactionalEntityManager.getRepository(CustomerInvoice);
       const itemRepo = transactionalEntityManager.getRepository(CustomerInvoiceItem);
 
       const invoice = await this.getInvoiceAndCheckStatus(
         customerInvoiceId,
-        [CustomerInvoiceStatus.DRAFT], // Only allow adding items to DRAFT invoices
+        [CustomerInvoiceStatus.DRAFT],
         transactionalEntityManager,
       );
 
       const { productName, variantName, defaultVat } =
         await this.validateItemProductAndVariant(validatedInput);
-      await this.validateSourceItemLinks(validatedInput, false);
+      await this.validateSourceItemLinks(validatedInput);
 
       const itemEntity = itemRepo.create({
         ...validatedInput,
         customerInvoiceId,
-        description: validatedInput.description || variantName || productName || 'N/A',
+        description: validatedInput.description ?? variantName ?? productName ?? 'N/A',
         vatRatePercentage:
           validatedInput.vatRatePercentage !== undefined
             ? validatedInput.vatRatePercentage
             : defaultVat,
-        // totalLineAmountHt is calculated in entity or before save by repo
       });
       itemEntity.totalLineAmountHt = itemEntity.calculateTotalLineAmountHt();
 
@@ -193,7 +173,7 @@ export class CustomerInvoiceItemService {
 
       const savedItem = await itemRepo.save(itemEntity);
 
-      invoice.items.push(savedItem); // Add to in-memory collection for recalculation
+      invoice.items.push(savedItem);
       invoice.calculateTotals();
       invoice.updatedByUserId = createdByUserId;
       await invoiceRepo.save(invoice);
@@ -255,7 +235,7 @@ export class CustomerInvoiceItemService {
 
       const invoice = await this.getInvoiceAndCheckStatus(
         customerInvoiceId,
-        [CustomerInvoiceStatus.DRAFT], // Only allow updates if DRAFT
+        [CustomerInvoiceStatus.DRAFT],
         transactionalEntityManager,
       );
       const item = await itemRepo.findOne({
@@ -277,7 +257,7 @@ export class CustomerInvoiceItemService {
       if (validatedInput.vatRatePercentage !== undefined)
         item.vatRatePercentage = validatedInput.vatRatePercentage;
 
-      item.totalLineAmountHt = item.calculateTotalLineAmountHt(); // Recalculate before validation
+      item.totalLineAmountHt = item.calculateTotalLineAmountHt();
 
       if (!item.isValid()) {
         throw new BadRequestError(
@@ -316,7 +296,7 @@ export class CustomerInvoiceItemService {
 
       const invoice = await this.getInvoiceAndCheckStatus(
         customerInvoiceId,
-        [CustomerInvoiceStatus.DRAFT], // Only allow removal if DRAFT
+        [CustomerInvoiceStatus.DRAFT],
         transactionalEntityManager,
       );
       const item = await itemRepo.findOneBy({ id: itemId, customerInvoiceId });
@@ -326,7 +306,7 @@ export class CustomerInvoiceItemService {
         );
       }
 
-      await itemRepo.remove(item); // Hard delete the item
+      await itemRepo.remove(item);
 
       const itemsForTotal = await itemRepo.find({ where: { customerInvoiceId } });
       invoice.items = itemsForTotal;

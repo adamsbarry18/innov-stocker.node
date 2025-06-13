@@ -1,6 +1,4 @@
 import { appDataSource } from '@/database/data-source';
-// TODO: Dépendance - StockMovementService si des actions sur les items modifient directement le stock avant la réception globale du retour.
-
 import {
   NotFoundError,
   BadRequestError,
@@ -32,7 +30,7 @@ export class CustomerReturnItemService {
     private readonly itemRepository: CustomerReturnItemRepository = new CustomerReturnItemRepository(),
     private readonly productRepository: ProductRepository = new ProductRepository(),
     private readonly variantRepository: ProductVariantRepository = new ProductVariantRepository(),
-    // TODO: private readonly stockMovementService: StockMovementService = StockMovementService.getInstance(),
+    // private readonly stockMovementService: StockMovementService = StockMovementService.getInstance(),
   ) {}
 
   private mapToApiResponse(item: CustomerReturnItem | null): CustomerReturnItemApiResponse | null {
@@ -80,7 +78,6 @@ export class CustomerReturnItemService {
   async addItemToReturn(
     customerReturnId: number,
     input: CreateCustomerReturnItemInput,
-    createdByUserId: number, // For audit on parent CustomerReturn if item addition updates it
   ): Promise<CustomerReturnItemApiResponse> {
     const validationResult = createCustomerReturnItemSchema.safeParse(input);
     if (!validationResult.success) {
@@ -97,31 +94,29 @@ export class CustomerReturnItemService {
 
       const customerReturn = await this.getReturnAndCheckStatus(
         customerReturnId,
-        [CustomerReturnStatus.REQUESTED, CustomerReturnStatus.APPROVED], // Only allow adding items to returns in these statuses
+        [CustomerReturnStatus.REQUESTED, CustomerReturnStatus.APPROVED],
         transactionalEntityManager,
       );
 
       await this.validateItemProductAndVariant(validatedInput);
 
-      // Check for duplicate item (product/variant) in this return
       const existingItem = await itemRepoTx.findOne({
         where: {
           customerReturnId,
           productId: validatedInput.productId,
-          productVariantId: validatedInput.productVariantId || IsNull(),
+          productVariantId: validatedInput.productVariantId ?? IsNull(),
           deletedAt: IsNull(),
         },
       });
       if (existingItem) {
         throw new BadRequestError(
-          `Product/Variant (ID: ${validatedInput.productId}/${validatedInput.productVariantId || 'N/A'}) already exists in this return (Item ID: ${existingItem.id}). Update its quantity instead.`,
+          `Product/Variant (ID: ${validatedInput.productId}/${validatedInput.productVariantId ?? 'N/A'}) already exists in this return (Item ID: ${existingItem.id}). Update its quantity instead.`,
         );
       }
 
       const itemEntity = itemRepoTx.create({
         ...validatedInput,
         customerReturnId,
-        // createdByUserId, // If CustomerReturnItem has audit fields
       });
 
       if (!itemEntity.isValid()) {
@@ -131,9 +126,6 @@ export class CustomerReturnItemService {
       }
 
       const savedItem = await itemRepoTx.save(itemEntity);
-
-      customerReturn.updatedByUserId = createdByUserId; // Audit for parent return update
-      // TODO: Recalculate any potential totals on CustomerReturn if applicable
       await returnRepoTx.save(customerReturn);
 
       logger.info(
@@ -150,7 +142,7 @@ export class CustomerReturnItemService {
   }
 
   async getReturnItems(customerReturnId: number): Promise<CustomerReturnItemApiResponse[]> {
-    await this.getReturnAndCheckStatus(customerReturnId, Object.values(CustomerReturnStatus)); // Validate Return existence
+    await this.getReturnAndCheckStatus(customerReturnId, Object.values(CustomerReturnStatus));
     const items = await this.itemRepository.findByCustomerReturnId(customerReturnId);
     return items
       .map((item) => this.mapToApiResponse(item))
@@ -207,14 +199,12 @@ export class CustomerReturnItemService {
         );
       }
 
-      // Apply updates from validatedInput
       if (validatedInput.quantity !== undefined) item.quantity = validatedInput.quantity;
       if (validatedInput.unitPriceAtReturn !== undefined)
         item.unitPriceAtReturn = validatedInput.unitPriceAtReturn;
       if (validatedInput.condition !== undefined) item.condition = validatedInput.condition;
       if (validatedInput.actionTaken !== undefined) item.actionTaken = validatedInput.actionTaken;
       if (validatedInput.notes !== undefined) item.notes = validatedInput.notes;
-      // item.updatedByUserId = updatedByUserId; // If audit on item
 
       if (!item.isValid()) {
         throw new BadRequestError(
@@ -250,7 +240,7 @@ export class CustomerReturnItemService {
 
       const customerReturn = await this.getReturnAndCheckStatus(
         customerReturnId,
-        [CustomerReturnStatus.REQUESTED, CustomerReturnStatus.APPROVED], // Only allow removal if not yet physically processed
+        [CustomerReturnStatus.REQUESTED, CustomerReturnStatus.APPROVED],
         transactionalEntityManager,
       );
       const item = await itemRepoTx.findOneBy({ id: itemId, customerReturnId });
@@ -260,7 +250,7 @@ export class CustomerReturnItemService {
         );
       }
 
-      await itemRepoTx.softDelete(itemId); // Assuming soft delete
+      await itemRepoTx.softDelete(itemId);
 
       customerReturn.updatedByUserId = deletedByUserId;
       await returnRepoTx.save(customerReturn);
@@ -270,9 +260,7 @@ export class CustomerReturnItemService {
   }
 
   static getInstance(): CustomerReturnItemService {
-    if (!instance) {
-      instance = new CustomerReturnItemService();
-    }
+    instance ??= new CustomerReturnItemService();
     return instance;
   }
 }

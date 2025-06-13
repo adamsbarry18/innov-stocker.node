@@ -39,8 +39,7 @@ export class CashRegisterRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -70,10 +69,10 @@ export class CashRegisterRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<CashRegister> = {
         where,
-        order: options.order || { name: 'ASC' },
+        order: options.order ?? { name: 'ASC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options.relations ? this.getDefaultRelations() : options.relations,
       };
       const [registers, count] = await this.repository.findAndCount(findOptions);
       return { registers, count };
@@ -92,7 +91,6 @@ export class CashRegisterRepository {
 
   async save(register: CashRegister): Promise<CashRegister> {
     try {
-      // currentBalance is initialized to 0 by default or by input, then managed by sessions
       return await this.repository.save(register);
     } catch (error: any) {
       if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {

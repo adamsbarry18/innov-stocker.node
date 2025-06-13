@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
@@ -20,7 +19,6 @@ interface FindAllCustomerInvoicesOptions {
   where?: FindOptionsWhere<CustomerInvoice> | FindOptionsWhere<CustomerInvoice>[];
   order?: FindManyOptions<CustomerInvoice>['order'];
   relations?: string[];
-  searchTerm?: string;
 }
 
 export class CustomerInvoiceRepository {
@@ -62,10 +60,7 @@ export class CustomerInvoiceRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindOne()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindOne() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -132,36 +127,14 @@ export class CustomerInvoiceRepository {
     options: FindAllCustomerInvoicesOptions = {},
   ): Promise<{ invoices: CustomerInvoice[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<CustomerInvoice> | FindOptionsWhere<CustomerInvoice>[] =
-        options.where
-          ? Array.isArray(options.where)
-            ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-            : { ...options.where, deletedAt: IsNull() }
-          : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<CustomerInvoice> = {
-          invoiceNumber: searchPattern,
-          deletedAt: IsNull(),
-        };
-        // TODO: Add search on customer name (requires join or complex QueryBuilder)
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.map((wc) => ({ ...wc, ...searchSpecific }));
-        } else {
-          whereConditions = { ...whereConditions, ...searchSpecific };
-        }
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<CustomerInvoice> = {
-        where: whereConditions,
-        order: options.order || { invoiceDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { invoiceDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ? this.getDefaultRelationsForFindAll() : options.relations,
       };
       const [invoices, count] = await this.repository.findAndCount(findOptions);
       return { invoices, count };
@@ -250,7 +223,6 @@ export class CustomerInvoiceRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(CustomerInvoice)
         : this.repository;
-      // TODO: Service layer should check if payments applied before allowing soft delete / void.
       return await repo.softDelete(id);
     } catch (error) {
       logger.error(
@@ -274,6 +246,6 @@ export class CustomerInvoiceRepository {
       .where('payment.customerInvoiceId = :invoiceId', { invoiceId })
       .andWhere("payment.direction = 'inbound'")
       .getRawOne();
-    return Number(result?.totalPaid || 0);
+    return Number(result?.totalPaid ?? 0);
   }
 }

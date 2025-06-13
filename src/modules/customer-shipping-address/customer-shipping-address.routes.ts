@@ -129,8 +129,6 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
-    // TODO: Add authorization to ensure user can access this specific link,
-    // e.g., if req.user.id matches the customerId of the link, or if admin.
     await this.pipe(res, req, next, () => this.service.findById(id));
   }
 
@@ -170,11 +168,8 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async createRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateCustomerShippingAddressInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
-    // TODO: Authorization: Ensure req.user can create a shipping address for input.customerId
 
-    await this.pipe(res, req, next, () => this.service.create(input, userId), 201);
+    await this.pipe(res, req, next, () => this.service.create(input), 201);
   }
 
   /**
@@ -222,11 +217,8 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
     const input: UpdateCustomerShippingAddressInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
-    // TODO: Authorization: Ensure req.user can update this link
 
-    await this.pipe(res, req, next, () => this.service.update(id, input, userId));
+    await this.pipe(res, req, next, () => this.service.update(id, input));
   }
 
   /**
@@ -261,16 +253,12 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
-    // TODO: Authorization: Ensure req.user can delete this link
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.delete(id, userId);
+        await this.service.delete(id);
       },
       204,
     );
@@ -314,10 +302,6 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
-    // TODO: Authorization: Ensure req.user can modify this link's default status
-
-    await this.pipe(res, req, next, () => this.service.setAsDefault(id, userId));
+    await this.pipe(res, req, next, () => this.service.setAsDefault(id));
   }
 }

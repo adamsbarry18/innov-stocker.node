@@ -3,7 +3,7 @@ import { Get, Post, Put, Delete, authorize } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
 import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { CreateDeliveryItemInput, UpdateDeliveryItemInput } from './models/delivery-item.entity';
-import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
+import { BadRequestError } from '@/common/errors/httpErrors';
 import { DeliveryItemService } from './services/delivery-item.service';
 
 export default class DeliveryItemRouter extends BaseRouter {
@@ -56,14 +56,12 @@ export default class DeliveryItemRouter extends BaseRouter {
     if (isNaN(deliveryId)) return next(new BadRequestError('Invalid Delivery ID in path.'));
 
     const input: CreateDeliveryItemInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
 
     await this.pipe(
       res,
       req,
       next,
-      () => this.itemService.addItemToDelivery(deliveryId, input, userId),
+      () => this.itemService.addItemToDelivery(deliveryId, input),
       201,
     );
   }
@@ -193,11 +191,9 @@ export default class DeliveryItemRouter extends BaseRouter {
       return next(new BadRequestError('Invalid Delivery or Item ID in path.'));
 
     const input: UpdateDeliveryItemInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
 
     await this.pipe(res, req, next, () =>
-      this.itemService.updateDeliveryItem(deliveryId, itemId, input, userId),
+      this.itemService.updateDeliveryItem(deliveryId, itemId, input),
     );
   }
 
@@ -236,15 +232,12 @@ export default class DeliveryItemRouter extends BaseRouter {
     if (isNaN(deliveryId) || isNaN(itemId))
       return next(new BadRequestError('Invalid Delivery or Item ID in path.'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.itemService.removeDeliveryItem(deliveryId, itemId, userId);
+        await this.itemService.removeDeliveryItem(deliveryId, itemId);
       },
       204,
     );

@@ -40,8 +40,7 @@ export class CashRegisterSessionRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -78,10 +77,10 @@ export class CashRegisterSessionRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<CashRegisterSession> = {
         where,
-        order: options.order || { openingTimestamp: 'DESC' },
+        order: options.order ?? { openingTimestamp: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options.relations ? this.getDefaultRelations() : options.relations,
       };
       const [sessions, count] = await this.repository.findAndCount(findOptions);
       return { sessions, count };
@@ -121,8 +120,4 @@ export class CashRegisterSessionRepository {
       throw new ServerError(`Error updating cash register session with id ${id}.`);
     }
   }
-
-  // Soft delete is usually inherited from Model if Model implements it.
-  // If not, a specific softDelete method or update for deletedAt would be here.
-  // For now, assuming Model's softDelete or no soft delete for sessions, only status change.
 }

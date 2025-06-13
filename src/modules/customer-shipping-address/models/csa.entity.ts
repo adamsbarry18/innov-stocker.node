@@ -4,7 +4,6 @@ import { Customer } from '@/modules/customers/models/customer.entity';
 import { Entity, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { z } from 'zod';
 
-// Zod Schema for validation
 const baseCustomerShippingAddressSchema = z.object({
   customerId: z
     .number()
@@ -14,7 +13,6 @@ const baseCustomerShippingAddressSchema = z.object({
   isDefault: z.boolean().optional().default(false),
 });
 
-// Schema for creation: either addressId or newAddress
 export const createCustomerShippingAddressSchema = baseCustomerShippingAddressSchema.and(
   z.union([
     z.object({
@@ -24,7 +22,6 @@ export const createCustomerShippingAddressSchema = baseCustomerShippingAddressSc
     z.object({
       addressId: z.undefined().optional(),
       newAddress: z.object({
-        // Assuming CreateAddressInput structure from Address module
         streetLine1: z.string().min(1).max(255),
         streetLine2: z.string().max(255).nullable().optional(),
         city: z.string().min(1).max(255),
@@ -37,17 +34,14 @@ export const createCustomerShippingAddressSchema = baseCustomerShippingAddressSc
   ]),
 );
 
-// Schema for update: addressId and newAddress are not typically updated together here.
-// Updating the linked address (addressId) or the label/isDefault status.
 export const updateCustomerShippingAddressSchema = z.object({
-  addressId: z.number().int().positive().optional(), // To link to a different existing address
+  addressId: z.number().int().positive().optional(),
   addressLabel: z
     .string()
     .min(1, { message: 'Address label is required if provided.' })
     .max(255)
     .optional(),
   isDefault: z.boolean().optional(),
-  // newAddress is not part of update for an existing link record; create a new address separately if needed.
 });
 
 export type CreateCustomerShippingAddressInput = z.infer<
@@ -58,7 +52,6 @@ export type UpdateCustomerShippingAddressInput = z.infer<
 >;
 
 export type EmbeddedAddressApiResponse = {
-  // Simplified Address DTO for embedding
   id: number;
   streetLine1: string;
   streetLine2: string | null;
@@ -89,11 +82,7 @@ export class CustomerShippingAddress extends Model {
   @Column({ type: 'int', name: 'customer_id' })
   customerId!: number;
 
-  // TODO: Dépendance - S'assurer que Customer est correctement implémenté et importé
-  @ManyToOne(
-    () => Customer,
-    /* customer => customer.shippingAddresses, */ { onDelete: 'CASCADE', nullable: false },
-  )
+  @ManyToOne(() => Customer)
   @JoinColumn({ name: 'customer_id' })
   customer!: Customer;
 

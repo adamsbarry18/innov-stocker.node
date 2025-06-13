@@ -36,8 +36,7 @@ export class BankAccountRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -80,10 +79,10 @@ export class BankAccountRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<BankAccount> = {
         where,
-        order: options.order || { accountName: 'ASC' },
+        order: options.order ?? { accountName: 'ASC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options.relations ? this.getDefaultRelations() : options.relations,
       };
       const [accounts, count] = await this.repository.findAndCount(findOptions);
       return { accounts, count };
@@ -155,7 +154,6 @@ export class BankAccountRepository {
 
   async softDelete(id: number): Promise<UpdateResult> {
     try {
-      // TODO: Dépendance - Check if bank account is in use (e.g., in payments) before deletion
       return await this.repository.softDelete(id);
     } catch (error) {
       logger.error(
@@ -172,7 +170,6 @@ export class BankAccountRepository {
     return count > 0;
   }
 
-  // Method to update currentBalance (should be used by transaction services)
   async updateBalance(
     accountId: number,
     amountChange: number,

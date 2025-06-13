@@ -6,7 +6,7 @@ import {
   type UpdateResult,
   type FindManyOptions,
   Not,
-  type EntityManager, // Import EntityManager
+  type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
@@ -24,13 +24,8 @@ interface FindAllCSAsOptions {
 export class CustomerShippingAddressRepository {
   private readonly repository: Repository<CustomerShippingAddress>;
 
-  // Accept optional EntityManager
   constructor(dataSource: DataSource | EntityManager = appDataSource) {
     this.repository = dataSource.getRepository(CustomerShippingAddress);
-  }
-
-  private getDefaultRelations(): string[] {
-    return ['address', 'customer'];
   }
 
   async findById(
@@ -40,7 +35,7 @@ export class CustomerShippingAddressRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations: options?.relations || ['address'], // Load address by default
+        relations: options?.relations ?? ['address'],
       });
     } catch (error) {
       logger.error({ message: `Error finding CSA with id ${id}`, error }, 'CSARepository.findById');
@@ -55,10 +50,10 @@ export class CustomerShippingAddressRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<CustomerShippingAddress> = {
         where,
-        order: options.order || { customerId: 'ASC', isDefault: 'DESC', addressLabel: 'ASC' },
+        order: options.order ?? { customerId: 'ASC', isDefault: 'DESC', addressLabel: 'ASC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations || ['address'], // Default to loading address part
+        relations: options.relations ?? ['address'],
       };
       const [shippingAddresses, count] = await this.repository.findAndCount(findOptions);
       return { shippingAddresses, count };
@@ -75,7 +70,7 @@ export class CustomerShippingAddressRepository {
     try {
       return await this.repository.find({
         where: { customerId, deletedAt: IsNull() },
-        relations: options?.relations || ['address'],
+        relations: options?.relations ?? ['address'],
         order: { isDefault: 'DESC', addressLabel: 'ASC' },
       });
     } catch (error) {
@@ -168,7 +163,7 @@ export class CustomerShippingAddressRepository {
       if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
         if (dto.addressLabel && error.message?.includes('uq_customer_address_label')) {
           throw new BadRequestError(
-            `Cannot update: Customer ID ${dto.customerId || 'unknown'} already has another shipping address with label '${dto.addressLabel}'.`,
+            `Cannot update: Customer ID ${dto.customerId ?? 'unknown'} already has another shipping address with label '${dto.addressLabel}'.`,
           );
         }
         // uq_customer_address_link check if addressId or customerId changes

@@ -11,7 +11,6 @@ import { appDataSource } from '@/database/data-source';
 import dayjs from 'dayjs';
 
 import { CustomerReturnRepository } from '../data/customer-return.repository';
-import { CustomerReturnItemRepository } from '../customer-return-items/data/customer-return-item.repository';
 import { CustomerRepository } from '@/modules/customers/data/customer.repository';
 import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
 import { CustomerInvoiceRepository } from '@/modules/customer-invoices/data/customer-invoice.repository';
@@ -60,7 +59,6 @@ let instance: CustomerReturnService | null = null;
 export class CustomerReturnService {
   constructor(
     private readonly returnRepository: CustomerReturnRepository = new CustomerReturnRepository(),
-    private readonly itemRepository: CustomerReturnItemRepository = new CustomerReturnItemRepository(),
     private readonly customerRepository: CustomerRepository = new CustomerRepository(),
     private readonly salesOrderRepository: SalesOrderRepository = new SalesOrderRepository(),
     private readonly customerInvoiceRepository: CustomerInvoiceRepository = new CustomerInvoiceRepository(),
@@ -72,7 +70,6 @@ export class CustomerReturnService {
     // TODO: private readonly creditNoteService: CreditNoteService = CreditNoteService.getInstance(),
   ) {}
 
-  // Public API Methods
   /**
    * Creates a new customer return.
    * @param input - The data for creating the customer return.
@@ -417,31 +414,25 @@ export class CustomerReturnService {
   ): Promise<void> {
     const { isUpdate, transactionalEntityManager: manager } = context;
 
-    // Validate customer ID
     if ('customerId' in input && input.customerId !== undefined) {
       await this.validateCustomer(input.customerId, true, manager);
     } else if (!isUpdate) {
       throw new BadRequestError('Customer ID is required for creating a return.');
     }
 
-    // Validate sales order ID
     if ('salesOrderId' in input && input.salesOrderId !== undefined) {
       await this.validateSalesOrder(input.salesOrderId, input.customerId, manager);
     }
 
-    // Validate customer invoice ID
     if ('customerInvoiceId' in input && input.customerInvoiceId !== undefined) {
       await this.validateCustomerInvoice(input.customerInvoiceId, input.customerId, manager);
     }
 
-    // Validate items
     if ('items' in input && input.items) {
       await this.validateItems(input.items, isUpdate, manager);
-    } /* else if (!isUpdate) {
-      // This validation might be too strict depending on workflow, allowing returns to be created without items initially.
-      // If items are always required, uncomment this.
+    } else if (!isUpdate) {
       throw new BadRequestError('A customer return must have at least one item upon creation.');
-    } */
+    }
   }
 
   /**
@@ -451,7 +442,7 @@ export class CustomerReturnService {
    * @param manager - The entity manager for transactional operations.
    */
   private async validateCustomer(
-    customerId: number | undefined | null, // Allow undefined or null
+    customerId: number | undefined | null,
     isRequired: boolean,
     manager?: EntityManager,
   ): Promise<void> {
@@ -474,7 +465,7 @@ export class CustomerReturnService {
    * @param manager - The entity manager for transactional operations.
    */
   private async validateSalesOrder(
-    salesOrderId: number | undefined | null, // Allow undefined or null
+    salesOrderId: number | undefined | null,
     customerId: number | undefined | null,
     manager?: EntityManager,
   ): Promise<void> {
@@ -502,7 +493,7 @@ export class CustomerReturnService {
    * @param manager - The entity manager for transactional operations.
    */
   private async validateCustomerInvoice(
-    customerInvoiceId: number | undefined | null, // Allow undefined or null
+    customerInvoiceId: number | undefined | null,
     customerId: number | undefined | null,
     manager?: EntityManager,
   ): Promise<void> {
@@ -628,7 +619,7 @@ export class CustomerReturnService {
       ...headerInput,
       returnNumber: this.generateReturnNumber(),
       returnDate: dayjs(input.returnDate).toDate(),
-      status: input.status || CustomerReturnStatus.REQUESTED,
+      status: input.status ?? CustomerReturnStatus.REQUESTED,
       warehouseId: warehouseId,
       shopId: shopId,
       createdByUserId,
@@ -662,16 +653,12 @@ export class CustomerReturnService {
     }
 
     for (const itemInput of itemInputs) {
-      // Appliquer les valeurs par défaut et valider l'input via Zod
       const parsedItemInput = createCustomerReturnItemSchema.safeParse(itemInput);
 
       if (!parsedItemInput.success) {
         const errors = parsedItemInput.error.issues
           .map((issue) => `${issue.path.join('.') || 'Field'}: ${issue.message}`)
           .join('; ');
-        logger.error(
-          `[createReturnItems] Validation échouée pour l'élément de retour (Product ID: ${itemInput.productId || 'N/A'}). Erreurs: ${errors}`,
-        );
         throw new BadRequestError(
           `Invalid data for return item (Product ID: ${itemInput.productId || 'N/A'}). Errors: ${errors}`,
         );
@@ -683,9 +670,6 @@ export class CustomerReturnService {
       });
 
       if (!item.isValid()) {
-        logger.error(
-          `[createReturnItems] Validation échouée pour l'élément de retour (Product ID: ${itemInput.productId || 'N/A'}). Erreurs: ${customerReturnItemValidationInputErrors.join('; ')}`,
-        );
         throw new BadRequestError(
           `Invalid data for return item (Product ID: ${itemInput.productId || 'N/A'}). Errors: ${customerReturnItemValidationInputErrors.join('; ')}`,
         );
@@ -698,7 +682,6 @@ export class CustomerReturnService {
     return savedItems;
   }
 
-  // Private update methods
   /**
    * Sanitizes the update input based on the return status.
    * Restricts fields that can be updated if the return is processed.
@@ -732,8 +715,8 @@ export class CustomerReturnService {
       CustomerReturnStatus.REFUNDED,
       CustomerReturnStatus.EXCHANGED,
       CustomerReturnStatus.COMPLETED,
-      CustomerReturnStatus.CANCELLED, // Once cancelled, only notes might be editable
-      CustomerReturnStatus.REJECTED, // Once rejected, only notes might be editable
+      CustomerReturnStatus.CANCELLED,
+      CustomerReturnStatus.REJECTED,
     ].includes(status);
   }
 
@@ -816,7 +799,6 @@ export class CustomerReturnService {
   ): Promise<void> {
     const repo = manager.getRepository(CustomerReturnItem);
 
-    // Soft delete existing items
     await repo.softDelete({ customerReturnId: returnId });
 
     const newItems: CustomerReturnItem[] = [];
@@ -824,14 +806,14 @@ export class CustomerReturnService {
       const item: CustomerReturnItem = repo.create({
         ...itemInput,
         customerReturnId: returnId,
-      } as Partial<CustomerReturnItem>); // Cast to Partial to allow creation with partial data
+      } as Partial<CustomerReturnItem>);
 
       if (!item.isValid()) {
         logger.error(
-          `[updateReturnItems] Validation échouée pour l'élément de retour (Product ID: ${itemInput.productId || 'N/A'}). Erreurs: ${customerReturnItemValidationInputErrors.join('; ')}`,
+          `[updateReturnItems] Validation échouée pour l'élément de retour (Product ID: ${itemInput.productId ?? 'N/A'}). Erreurs: ${customerReturnItemValidationInputErrors.join('; ')}`,
         );
         throw new BadRequestError(
-          `Invalid data for return item (Product ID: ${itemInput.productId || 'N/A'}). Errors: ${customerReturnItemValidationInputErrors.join('; ')}`,
+          `Invalid data for return item (Product ID: ${itemInput.productId ?? 'N/A'}). Errors: ${customerReturnItemValidationInputErrors.join('; ')}`,
         );
       }
       newItems.push(item);
@@ -859,7 +841,6 @@ export class CustomerReturnService {
   ): Promise<void> {
     const updateData: Partial<CustomerReturn> = { status: newStatus, updatedByUserId };
     if (notes !== undefined) {
-      // Append notes if existing, otherwise set
       let currentReturn: CustomerReturn | null;
       if (manager) {
         currentReturn = await manager.getRepository(CustomerReturn).findOneBy({ id });
@@ -873,8 +854,7 @@ export class CustomerReturnService {
         updateData.notes = notes;
       }
     }
-    // If manager is present, repo is a TypeORM Repository, so use update directly.
-    // If manager is not present, repo is CustomerReturnRepository, which also has an update method.
+
     if (manager) {
       await manager.getRepository(CustomerReturn).update(id, updateData);
     } else {
@@ -882,7 +862,6 @@ export class CustomerReturnService {
     }
   }
 
-  // Private validation methods for status transitions
   /**
    * Validates a status transition for a customer return.
    * @param customerReturn - The current customer return.
@@ -900,7 +879,6 @@ export class CustomerReturnService {
 
     const currentStatus = customerReturn.status;
 
-    // Define allowed transitions
     const allowedTransitions: Record<CustomerReturnStatus, CustomerReturnStatus[]> = {
       [CustomerReturnStatus.REQUESTED]: [
         CustomerReturnStatus.APPROVED,
@@ -951,8 +929,8 @@ export class CustomerReturnService {
       [CustomerReturnStatus.CREDIT_NOTE_ISSUED]: [CustomerReturnStatus.COMPLETED],
       [CustomerReturnStatus.REFUNDED]: [CustomerReturnStatus.COMPLETED],
       [CustomerReturnStatus.EXCHANGED]: [CustomerReturnStatus.COMPLETED],
-      [CustomerReturnStatus.COMPLETED]: [], // Cannot change from completed
-      [CustomerReturnStatus.CANCELLED]: [], // Cannot change from cancelled
+      [CustomerReturnStatus.COMPLETED]: [],
+      [CustomerReturnStatus.CANCELLED]: [],
     };
 
     if (
@@ -995,8 +973,6 @@ export class CustomerReturnService {
       );
     }*/
   }
-
-  // Private processing methods
   /**
    * Processes the reception of return items, including stock movements.
    * @param customerReturn - The customer return entity.
@@ -1027,7 +1003,6 @@ export class CustomerReturnService {
         );
       }
 
-      // Log current state of the item before calculating remaining quantity
       const remainingToReceiveOnItem =
         Number(itemToUpdate.quantity) - Number(itemToUpdate.quantityReceived || 0);
       if (quantityToReceive > remainingToReceiveOnItem) {
@@ -1046,7 +1021,6 @@ export class CustomerReturnService {
           `Reception Note: ${receivedItemInput.itemNotes}`;
       }
       await itemRepoTx.save(itemToUpdate);
-      // Create Stock Movement IN (if actionTaken is RESTOCK or RESTOCK_QUARANTINE)
       if (
         itemToUpdate.actionTaken === ReturnItemActionTaken.RESTOCK ||
         itemToUpdate.actionTaken === ReturnItemActionTaken.RESTOCK_QUARANTINE
@@ -1092,7 +1066,6 @@ export class CustomerReturnService {
     completedByUserId: number,
     manager: EntityManager,
   ): Promise<void> {
-    // Ensure items are loaded for processing
     if (!customerReturn.items || customerReturn.items.length === 0) {
       const populatedReturn = await this.returnRepository.findById(customerReturn.id, {
         relations: ['items'],
@@ -1107,29 +1080,23 @@ export class CustomerReturnService {
 
     const totalRefundAmount = customerReturn.items.reduce((sum, item) => {
       if (item.actionTaken === ReturnItemActionTaken.REFUND_APPROVED) {
-        return sum + Number(item.quantityReceived) * Number(item.unitPriceAtReturn || 0);
+        return sum + Number(item.quantityReceived) * Number(item.unitPriceAtReturn ?? 0);
       }
       return sum;
     }, 0);
 
-    /*if (totalRefundAmount > 0) {
-      // TODO: Pass correct payment method, currency, etc.
+    if (totalRefundAmount > 0) {
       await this.paymentService.createRefundPayment(
         {
           customerId: customerReturn.customerId,
           amount: totalRefundAmount,
           relatedReturnId: customerReturn.id,
-          // Add other necessary payment details
         },
         manager,
       );
-    }*/
-
-    // TODO: Handle EXCHANGE_APPROVED and CREDIT_NOTE_ISSUED actions
-    logger.info(`TODO: Process exchanges/credit notes for return ID ${customerReturn.id}.`);
+    }
   }
 
-  // Utility methods
   /**
    * Maps a CustomerReturn entity to a CustomerReturnApiResponse.
    * @param customerReturn - The CustomerReturn entity.
@@ -1141,7 +1108,7 @@ export class CustomerReturnService {
     if (!customerReturn) {
       return null;
     }
-    return customerReturn.toApi(true); // Always include items for detailed response
+    return customerReturn.toApi(true);
   }
 
   /**
@@ -1150,7 +1117,7 @@ export class CustomerReturnService {
    */
   private generateReturnNumber(): string {
     const datePrefix = dayjs().format('YYYYMMDD');
-    return `RMA-${datePrefix}-${uuidv4().substring(0, 8)}`; // Use a portion of UUID for uniqueness
+    return `RMA-${datePrefix}-${uuidv4().substring(0, 8)}`;
   }
 
   /**

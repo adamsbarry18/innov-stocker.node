@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
@@ -39,7 +38,6 @@ export class CustomerReturnRepository {
       'items.product',
       'items.productVariant',
       'createdByUser',
-      // 'updatedByUser', // From Model
     ];
   }
 
@@ -57,10 +55,7 @@ export class CustomerReturnRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindOne()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindOne() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -184,7 +179,6 @@ export class CustomerReturnRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(CustomerReturn)
         : this.repository;
-      // Service layer should check status and dependencies (e.g., if refund/exchange processed) before allowing delete/cancel.
       return await repo.softDelete(id);
     } catch (error) {
       logger.error(

@@ -1222,6 +1222,7 @@ CREATE TABLE `payments` (
     `supplier_invoice_id` INT DEFAULT NULL,
     `sales_order_id` INT DEFAULT NULL,
     `purchase_order_id` INT DEFAULT NULL,
+    `related_return_id` INT DEFAULT NULL, -- New column for customer returns
     `bank_account_id` INT DEFAULT NULL,
     `cash_register_session_id` INT DEFAULT NULL,
     `reference_number` VARCHAR(255) DEFAULT NULL,
@@ -1238,6 +1239,7 @@ CREATE TABLE `payments` (
     CONSTRAINT `fk_p_supplier_invoice` FOREIGN KEY (`supplier_invoice_id`) REFERENCES `supplier_invoices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_p_sales_order` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_p_purchase_order` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_p_related_return` FOREIGN KEY (`related_return_id`) REFERENCES `customer_returns` (`id`) ON DELETE SET NULL ON UPDATE CASCADE, -- New FK
     CONSTRAINT `fk_p_bank_account` FOREIGN KEY (`bank_account_id`) REFERENCES `bank_accounts` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_p_cash_session` FOREIGN KEY (`cash_register_session_id`) REFERENCES `cash_register_sessions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_p_recorded_by` FOREIGN KEY (`recorded_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE

@@ -164,10 +164,8 @@ export default class BankAccountRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async createRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateBankAccountInput = req.body;
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
-    await this.pipe(res, req, next, () => this.service.create(input, userId), 201);
+    await this.pipe(res, req, next, () => this.service.create(input), 201);
   }
 
   /**
@@ -211,10 +209,8 @@ export default class BankAccountRouter extends BaseRouter {
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
     const input: UpdateBankAccountInput = req.body;
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
-    await this.pipe(res, req, next, () => this.service.update(id, input, userId));
+    await this.pipe(res, req, next, () => this.service.update(id, input));
   }
 
   /**
@@ -247,15 +243,12 @@ export default class BankAccountRouter extends BaseRouter {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.delete(id, userId);
+        await this.service.delete(id);
       },
       204,
     );

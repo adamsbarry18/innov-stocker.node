@@ -18,44 +18,28 @@ import logger from '@/lib/logger';
 import { type EntityManager } from 'typeorm';
 import { DeliveryRepository } from '@/modules/deliveries/data/delivery.repository';
 import { DeliveryItemRepository } from '../data/delivery-item.repository';
-import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
-import { ProductRepository } from '@/modules/products/data/product.repository';
-import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
-import { StockMovementService } from '@/modules/stock-movements/services/stock-movement.service';
 import { type Delivery, DeliveryStatus } from '@/modules/deliveries/models/delivery.entity';
 import { type SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
 import { type Product } from '@/modules/products/models/product.entity';
 import { type ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
 import { SalesOrderItemRepository } from '@/modules/sales-orders/sales-order-items/data/sales-order-item.repository';
-import { SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
+import { type SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
 
 let instance: DeliveryItemService | null = null;
 
 export class DeliveryItemService {
   private readonly deliveryRepository: DeliveryRepository;
   private readonly itemRepository: DeliveryItemRepository;
-  private readonly salesOrderRepository: SalesOrderRepository;
   private readonly salesOrderItemRepository: SalesOrderItemRepository;
-  private readonly productRepository: ProductRepository;
-  private readonly variantRepository: ProductVariantRepository;
-  private readonly stockMovementService: StockMovementService;
 
   constructor(
     deliveryRepository: DeliveryRepository = new DeliveryRepository(),
     itemRepository: DeliveryItemRepository = new DeliveryItemRepository(),
-    salesOrderRepository: SalesOrderRepository = new SalesOrderRepository(),
     salesOrderItemRepository: SalesOrderItemRepository = new SalesOrderItemRepository(),
-    productRepository: ProductRepository = new ProductRepository(),
-    variantRepository: ProductVariantRepository = new ProductVariantRepository(),
-    stockMovementService: StockMovementService = new StockMovementService(),
   ) {
     this.deliveryRepository = deliveryRepository;
     this.itemRepository = itemRepository;
-    this.salesOrderRepository = salesOrderRepository;
     this.salesOrderItemRepository = salesOrderItemRepository;
-    this.productRepository = productRepository;
-    this.variantRepository = variantRepository;
-    this.stockMovementService = stockMovementService;
   }
 
   mapToApiResponse(item: DeliveryItem | null): DeliveryItemApiResponse | null {
@@ -139,7 +123,6 @@ export class DeliveryItemService {
   async addItemToDelivery(
     deliveryId: number,
     input: CreateDeliveryItemInput,
-    createdByUserId: number,
   ): Promise<DeliveryItemApiResponse> {
     const validationResult = createDeliveryItemSchema.safeParse(input);
     if (!validationResult.success) {
@@ -151,8 +134,6 @@ export class DeliveryItemService {
     const validatedInput = validationResult.data;
 
     return appDataSource.transaction(async (transactionalEntityManager) => {
-      // const stockMovementService = new StockMovementService(transactionalEntityManager); // TODO
-
       const delivery = await this.getDeliveryAndCheckStatus(
         deliveryId,
         [DeliveryStatus.PENDING, DeliveryStatus.IN_PREPARATION],
@@ -162,7 +143,7 @@ export class DeliveryItemService {
         throw new ServerError('Sales Order relation not loaded on delivery.');
       }
 
-      const { salesOrderItem, product, productVariant } = await this.validateDeliveryItemInput(
+      const { product, productVariant } = await this.validateDeliveryItemInput(
         validatedInput,
         delivery.salesOrder,
         delivery.items || [],
@@ -187,9 +168,8 @@ export class DeliveryItemService {
           deliveryId: deliveryId,
           salesOrderItemId: validatedInput.salesOrderItemId,
           productId: product.id,
-          productVariantId: productVariant?.id || null,
+          productVariantId: productVariant?.id ?? null,
           quantityShipped: validatedInput.quantityShipped,
-          // createdByUserId, // if DeliveryItem has audit
         },
         transactionalEntityManager,
       );
@@ -240,7 +220,6 @@ export class DeliveryItemService {
     deliveryId: number,
     itemId: number,
     input: UpdateDeliveryItemInput,
-    updatedByUserId: number,
   ): Promise<DeliveryItemApiResponse> {
     const validationResult = updateDeliveryItemSchema.safeParse(input);
     if (!validationResult.success) {
@@ -287,7 +266,6 @@ export class DeliveryItemService {
         );
         item.quantityShipped = validatedInput.quantityShipped;
       }
-      // item.updatedByUserId = updatedByUserId; // If audit on DeliveryItem
 
       if (!item.isValid()) {
         throw new BadRequestError(
@@ -308,11 +286,7 @@ export class DeliveryItemService {
     });
   }
 
-  async removeDeliveryItem(
-    deliveryId: number,
-    itemId: number,
-    deletedByUserId: number,
-  ): Promise<void> {
+  async removeDeliveryItem(deliveryId: number, itemId: number): Promise<void> {
     await appDataSource.transaction(async (transactionalEntityManager) => {
       await this.getDeliveryAndCheckStatus(
         deliveryId,
@@ -334,9 +308,8 @@ export class DeliveryItemService {
   }
 
   static getInstance(): DeliveryItemService {
-    if (!instance) {
-      instance = new DeliveryItemService();
-    }
+    instance ??= new DeliveryItemService();
+
     return instance;
   }
 }

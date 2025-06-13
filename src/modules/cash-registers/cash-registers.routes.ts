@@ -88,7 +88,6 @@ export default class CashRegisterRouter extends BaseRouter {
   @searchable(['name'])
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
 
     await this.pipe(res, req, next, () =>
       this.service.findAll({
@@ -96,7 +95,6 @@ export default class CashRegisterRouter extends BaseRouter {
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm: searchTerm,
       }),
     );
   }
@@ -174,10 +172,8 @@ export default class CashRegisterRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async createCash(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateCashRegisterInput = req.body;
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
-    await this.pipe(res, req, next, () => this.service.create(input, userId), 201);
+    await this.pipe(res, req, next, () => this.service.create(input), 201);
   }
 
   /**
@@ -226,10 +222,8 @@ export default class CashRegisterRouter extends BaseRouter {
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
     const input: UpdateCashRegisterInput = req.body;
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
-    await this.pipe(res, req, next, () => this.service.update(id, input, userId));
+    await this.pipe(res, req, next, () => this.service.update(id, input));
   }
 
   /**
@@ -267,15 +261,12 @@ export default class CashRegisterRouter extends BaseRouter {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
-    const userId = req.user?.id;
-    // if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.delete(id, userId);
+        await this.service.delete(id);
       },
       204,
     );

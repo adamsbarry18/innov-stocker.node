@@ -29,8 +29,10 @@ import {
   type CreatePaymentInput,
   type PaymentApiResponse,
   PaymentDirection,
-  createPaymentSchema,
+  type CreateRefundPaymentInput,
 } from '../models/payment.entity';
+import { CustomerReturn } from '@/modules/customer-returns/models/customer-return.entity';
+
 import {
   CustomerInvoice,
   CustomerInvoiceStatus,
@@ -54,6 +56,7 @@ import { User } from '@/modules/users';
 import { CashRegisterTransactionService } from '@/modules/cash-register-transactions/services/cash-register-transaction.service';
 import { CustomerInvoiceService } from '@/modules/customer-invoices/services/customer-invoice.service';
 import { SupplierInvoiceService } from '@/modules/supplier-invoices/services/supplier-invoice.service';
+import { createPaymentSchema } from '../models/payment.entity';
 interface ValidationContext {
   transactionalEntityManager?: EntityManager;
 }
@@ -248,6 +251,73 @@ export class PaymentService {
   }
 
   /**
+   * Creates a refund payment for a customer return.
+   * This method is specifically for refunds originating from customer returns.
+   * @param input - The refund payment input data.
+   * @param manager - The entity manager for transactional operations.
+   * @returns The created payment API response.
+   */
+  async createRefundPayment(
+    input: CreateRefundPaymentInput,
+    manager: EntityManager,
+  ): Promise<PaymentApiResponse> {
+    if (input.relatedReturnId === null || input.relatedReturnId === undefined) {
+      throw new BadRequestError('Related Return ID is required for refund payment.');
+    }
+
+    await this.validateCustomer(input.customerId, manager);
+    const customerReturn = await manager
+      .getRepository(CustomerReturn)
+      .findOneBy({ id: input.relatedReturnId, deletedAt: IsNull() });
+    if (!customerReturn) {
+      throw new BadRequestError(`Customer Return with ID ${input.relatedReturnId} not found.`);
+    }
+
+    const defaultCurrencyId = input.currencyId ?? 1;
+    const defaultPaymentMethodId = input.paymentMethodId ?? 1;
+    const defaultBankAccountId = input.bankAccountId ?? 1;
+    const defaultCashRegisterSessionId = input.cashRegisterSessionId ?? null;
+
+    const paymentInput: CreatePaymentInput = {
+      paymentDate: new Date(),
+      amount: input.amount,
+      currencyId: defaultCurrencyId,
+      paymentMethodId: defaultPaymentMethodId,
+      direction: PaymentDirection.OUTBOUND,
+      customerId: input.customerId,
+      relatedReturnId: input.relatedReturnId,
+      bankAccountId: defaultBankAccountId,
+      cashRegisterSessionId: defaultCashRegisterSessionId,
+      notes: input.notes ?? `Refund for Customer Return ID: ${input.relatedReturnId}`,
+    };
+
+    try {
+      await this.validatePaymentInput(paymentInput, { transactionalEntityManager: manager });
+
+      const recordedByUserId = customerReturn.updatedByUserId ?? 1;
+
+      const paymentEntity = manager.getRepository(Payment).create({
+        ...paymentInput,
+        recordedByUserId: recordedByUserId,
+      });
+      const savedPayment = await manager.getRepository(Payment).save(paymentEntity);
+
+      await this.updateFinancialAccountBalances(savedPayment, manager);
+
+      logger.info(
+        `Refund payment created for Customer Return ID ${input.relatedReturnId}. Payment ID: ${savedPayment.id}`,
+      );
+      return this.mapToApiResponse(savedPayment) as PaymentApiResponse;
+    } catch (error: any) {
+      logger.error(
+        `[createRefundPayment] Error creating refund payment for return ${input.relatedReturnId}: ${error.message ?? JSON.stringify(error)}`,
+        { error },
+      );
+      throw error;
+    }
+  }
+
+  /**
    * Validates the input data for creating a payment.
    * @param input - The input data for the payment.
    * @param context - The validation context, including the transactional entity manager.
@@ -384,7 +454,13 @@ export class PaymentService {
    * @param customerId - The ID of the customer.
    * @param manager - The entity manager for transactional operations.
    */
-  private async validateCustomer(customerId: number, manager?: EntityManager): Promise<void> {
+  private async validateCustomer(
+    customerId: number | null | undefined,
+    manager?: EntityManager,
+  ): Promise<void> {
+    if (customerId === null || customerId === undefined) {
+      return;
+    }
     let customer;
     if (manager) {
       const repo = manager.getRepository(Customer);

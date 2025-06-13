@@ -1,9 +1,7 @@
 import { Entity, Column, Unique } from 'typeorm';
 import { z } from 'zod';
-import { Model } from '@/common/models/Model'; // Ajustez le chemin
+import { Model } from '@/common/models/Model';
 
-// Enum pour les types de méthodes de paiement, aligné avec le SQL VARCHAR/ENUM
-// Le SQL utilise VARCHAR, donc nous validons contre ces chaînes.
 export enum PaymentMethodType {
   CASH = 'cash',
   BANK_TRANSFER = 'bank_transfer',
@@ -12,7 +10,6 @@ export enum PaymentMethodType {
   OTHER = 'other',
 }
 
-// Zod Schema for validation
 const paymentMethodSchemaValidation = z.object({
   name: z.string().min(1, { message: 'Payment method name is required.' }).max(100),
   type: z.nativeEnum(PaymentMethodType, {
@@ -21,13 +18,10 @@ const paymentMethodSchemaValidation = z.object({
   isActive: z.boolean().optional().default(true),
 });
 
-// Type for creating a payment method
 export type CreatePaymentMethodInput = z.infer<typeof paymentMethodSchemaValidation>;
 
-// Type for updating a payment method (all fields optional)
 export type UpdatePaymentMethodInput = Partial<CreatePaymentMethodInput>;
 
-// Type for API response (DTO)
 export type PaymentMethodApiResponse = {
   id: number;
   name: string;
@@ -40,15 +34,14 @@ export type PaymentMethodApiResponse = {
 export const paymentMethodValidationInputErrors: string[] = [];
 
 @Entity({ name: 'payment_methods' })
-@Unique(['name']) // Name must be unique
+@Unique(['name'])
 export class PaymentMethod extends Model {
   @Column({ type: 'varchar', length: 100 })
   name!: string;
 
   @Column({
-    type: 'varchar', // Ou 'enum' si votre SQL utilise ENUM et TypeORM est configuré pour
-    length: 20, // La longueur doit correspondre à la plus longue valeur de l'enum type
-    // enum: PaymentMethodType, // Optionnel si type est VARCHAR, mais bon pour la clarté
+    type: 'varchar',
+    length: 20,
   })
   type!: PaymentMethodType;
 

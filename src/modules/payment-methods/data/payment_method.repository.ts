@@ -57,7 +57,7 @@ export class PaymentMethodRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<PaymentMethod> = {
         where,
-        order: options.order || { name: 'ASC' },
+        order: options.order ?? { name: 'ASC' },
         skip: options.skip,
         take: options.take,
       };
@@ -118,8 +118,6 @@ export class PaymentMethodRepository {
 
   async softDelete(id: number): Promise<UpdateResult> {
     try {
-      // TODO: Dépendance - Check if payment method is in use (e.g., in payments table) before deletion
-      // This check should be in the service layer.
       return await this.repository.softDelete(id);
     } catch (error) {
       logger.error(

@@ -1,5 +1,4 @@
 import { PaymentMethodRepository } from '../data/payment_method.repository';
-// TODO: Importer PaymentRepository pour la vérification des dépendances
 // import { PaymentRepository } from '../../payments/data/payment.repository';
 import {
   type CreatePaymentMethodInput,
@@ -16,21 +15,31 @@ let instance: PaymentMethodService | null = null;
 
 export class PaymentMethodService {
   private readonly methodRepository: PaymentMethodRepository;
-  // TODO: private readonly paymentRepository: PaymentRepository;
+  // private readonly paymentRepository: PaymentRepository;
 
   constructor(
     methodRepository: PaymentMethodRepository = new PaymentMethodRepository(),
-    // paymentRepository: PaymentRepository = new PaymentRepository()
+    //  paymentRepository: PaymentRepository = new PaymentRepository(),
   ) {
     this.methodRepository = methodRepository;
-    // TODO: this.paymentRepository = paymentRepository;
+    // this.paymentRepository = paymentRepository;
   }
 
+  /**
+   * Maps a PaymentMethod entity to a PaymentMethodApiResponse.
+   * @param method - The PaymentMethod entity to map.
+   * @returns The mapped PaymentMethodApiResponse or null if the input is null.
+   */
   mapToApiResponse(method: PaymentMethod | null): PaymentMethodApiResponse | null {
     if (!method) return null;
     return method.toApi();
   }
 
+  /**
+   * Finds a payment method by its ID.
+   * @param id - The ID of the payment method to find.
+   * @returns A Promise that resolves to the PaymentMethodApiResponse.
+   */
   async findById(id: number): Promise<PaymentMethodApiResponse> {
     try {
       const method = await this.methodRepository.findById(id);
@@ -50,6 +59,11 @@ export class PaymentMethodService {
     }
   }
 
+  /**
+   * Finds all payment methods based on provided options.
+   * @param options - An object containing limit, offset, filters, and sort options.
+   * @returns A Promise that resolves to an object containing an array of PaymentMethodApiResponse and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
@@ -61,7 +75,7 @@ export class PaymentMethodService {
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { name: 'ASC' },
+        order: options?.sort ?? { name: 'ASC' },
       });
       const apiMethods = methods
         .map((m) => this.mapToApiResponse(m))
@@ -76,10 +90,12 @@ export class PaymentMethodService {
     }
   }
 
-  async create(
-    input: CreatePaymentMethodInput,
-    createdByUserId?: number,
-  ): Promise<PaymentMethodApiResponse> {
+  /**
+   * Creates a new payment method.
+   * @param input - The input data for creating the payment method.
+   * @returns A Promise that resolves to the created PaymentMethodApiResponse.
+   */
+  async create(input: CreatePaymentMethodInput): Promise<PaymentMethodApiResponse> {
     const existingMethod = await this.methodRepository.findByName(input.name);
     if (existingMethod) {
       throw new BadRequestError(`Payment method with name '${input.name}' already exists.`);
@@ -87,7 +103,6 @@ export class PaymentMethodService {
 
     const methodEntity = this.methodRepository.create({
       ...input,
-      // createdByUserId: createdByUserId, // Si audit
     });
 
     if (!methodEntity.isValid()) {
@@ -115,11 +130,13 @@ export class PaymentMethodService {
     }
   }
 
-  async update(
-    id: number,
-    input: UpdatePaymentMethodInput,
-    updatedByUserId?: number,
-  ): Promise<PaymentMethodApiResponse> {
+  /**
+   * Updates an existing payment method.
+   * @param id - The ID of the payment method to update.
+   * @param input - The input data for updating the payment method.
+   * @returns A Promise that resolves to the updated PaymentMethodApiResponse.
+   */
+  async update(id: number, input: UpdatePaymentMethodInput): Promise<PaymentMethodApiResponse> {
     try {
       const method = await this.methodRepository.findById(id);
       if (!method) throw new NotFoundError(`Payment method with id ${id} not found.`);
@@ -142,7 +159,6 @@ export class PaymentMethodService {
       }
 
       const updatePayload: Partial<PaymentMethod> = { ...input };
-      // updatePayload.updatedByUserId = updatedByUserId; // Si audit
 
       if (Object.keys(updatePayload).length === 0) {
         return this.mapToApiResponse(method) as PaymentMethodApiResponse;
@@ -172,7 +188,12 @@ export class PaymentMethodService {
     }
   }
 
-  async delete(id: number, deletedByUserId?: number): Promise<void> {
+  /**
+   * Deletes a payment method by its ID.
+   * @param id - The ID of the payment method to delete.
+   * @returns A Promise that resolves when the payment method is successfully deleted.
+   */
+  async delete(id: number): Promise<void> {
     try {
       const method = await this.methodRepository.findById(id);
       if (!method) throw new NotFoundError(`Payment method with id ${id} not found.`);
@@ -182,7 +203,6 @@ export class PaymentMethodService {
       // if (isUsed > 0) {
       //   throw new BadRequestError(`Payment method '${method.name}' is in use and cannot be deleted.`);
       // }
-      // Utilisation du placeholder du repository pour l'instant
       const isPaymentMethodInUse = await this.methodRepository.isPaymentMethodInUse(id);
       if (isPaymentMethodInUse) {
         throw new BadRequestError(
@@ -201,10 +221,13 @@ export class PaymentMethodService {
     }
   }
 
+  /**
+   * Returns a singleton instance of PaymentMethodService.
+   * @returns The singleton instance of PaymentMethodService.
+   */
   static getInstance(): PaymentMethodService {
-    if (!instance) {
-      instance = new PaymentMethodService();
-    }
+    instance ??= new PaymentMethodService();
+
     return instance;
   }
 }

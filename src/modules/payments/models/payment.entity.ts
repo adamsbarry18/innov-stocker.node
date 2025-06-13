@@ -53,18 +53,19 @@ export const createPaymentSchema = z
 
     customerInvoiceId: z.number().int().positive().nullable().optional(),
     supplierInvoiceId: z.number().int().positive().nullable().optional(),
-    salesOrderId: z.number().int().positive().nullable().optional(), // For pre-payments/deposits
-    purchaseOrderId: z.number().int().positive().nullable().optional(), // For pre-payments/deposits
+    salesOrderId: z.number().int().positive().nullable().optional(),
+    purchaseOrderId: z.number().int().positive().nullable().optional(),
+    relatedReturnId: z.number().int().positive().nullable().optional(),
 
     bankAccountId: z.number().int().positive().nullable().optional(),
-    cashRegisterSessionId: z.number().int().positive().nullable().optional(), // If payment through POS
+    cashRegisterSessionId: z.number().int().positive().nullable().optional(),
 
     referenceNumber: z.string().max(255).nullable().optional(),
     notes: z.string().max(1000).nullable().optional(),
   })
-  .refine((data) => data.bankAccountId || data.cashRegisterSessionId, {
+  .refine((data) => data.bankAccountId ?? data.cashRegisterSessionId, {
     message: 'Payment must be associated with either a bank account or a cash register session.',
-    path: ['bankAccountId'], // Or a general path
+    path: ['bankAccountId'],
   })
   .refine((data) => !(data.bankAccountId && data.cashRegisterSessionId), {
     message: 'Payment cannot be associated with both a bank account and a cash register session.',
@@ -73,10 +74,10 @@ export const createPaymentSchema = z
   .refine(
     (data) => {
       if (data.direction === PaymentDirection.INBOUND) {
-        return data.customerId || data.customerInvoiceId || data.salesOrderId;
+        return data.customerId ?? data.customerInvoiceId ?? data.salesOrderId;
       }
       if (data.direction === PaymentDirection.OUTBOUND) {
-        return data.supplierId || data.supplierInvoiceId || data.purchaseOrderId;
+        return data.supplierId ?? data.supplierInvoiceId ?? data.purchaseOrderId;
       }
       return false;
     },
@@ -87,6 +88,17 @@ export const createPaymentSchema = z
   );
 
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;
+
+export type CreateRefundPaymentInput = Pick<
+  CreatePaymentInput,
+  'customerId' | 'amount' | 'relatedReturnId'
+> &
+  Partial<
+    Pick<
+      CreatePaymentInput,
+      'currencyId' | 'paymentMethodId' | 'bankAccountId' | 'cashRegisterSessionId' | 'notes'
+    >
+  >;
 
 export type PaymentApiResponse = {
   id: number;
@@ -109,6 +121,7 @@ export type PaymentApiResponse = {
   salesOrder?: SalesOrderApiResponse | null;
   purchaseOrderId: number | null;
   purchaseOrder?: PurchaseOrderApiResponse | null;
+  relatedReturnId: number | null;
   bankAccountId: number | null;
   bankAccount?: BankAccountApiResponse | null;
   cashRegisterSessionId: number | null;
@@ -161,27 +174,30 @@ export class Payment extends Model {
 
   @Column({ type: 'int', name: 'customer_invoice_id', nullable: true })
   customerInvoiceId: number | null = null;
-  @ManyToOne(() => CustomerInvoice, { eager: false, onDelete: 'SET NULL', nullable: true }) // Eager false
+  @ManyToOne(() => CustomerInvoice, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'customer_invoice_id' })
   customerInvoice?: CustomerInvoice | null;
 
   @Column({ type: 'int', name: 'supplier_invoice_id', nullable: true })
   supplierInvoiceId: number | null = null;
-  @ManyToOne(() => SupplierInvoice, { eager: false, onDelete: 'SET NULL', nullable: true }) // Eager false
+  @ManyToOne(() => SupplierInvoice, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'supplier_invoice_id' })
   supplierInvoice?: SupplierInvoice | null;
 
   @Column({ type: 'int', name: 'sales_order_id', nullable: true })
   salesOrderId: number | null = null;
-  @ManyToOne(() => SalesOrder, { eager: false, onDelete: 'SET NULL', nullable: true }) // Eager false
+  @ManyToOne(() => SalesOrder, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'sales_order_id' })
   salesOrder?: SalesOrder | null;
 
   @Column({ type: 'int', name: 'purchase_order_id', nullable: true })
   purchaseOrderId: number | null = null;
-  @ManyToOne(() => PurchaseOrder, { eager: false, onDelete: 'SET NULL', nullable: true }) // Eager false
+  @ManyToOne(() => PurchaseOrder, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'purchase_order_id' })
   purchaseOrder?: PurchaseOrder | null;
+
+  @Column({ type: 'int', name: 'related_return_id', nullable: true })
+  relatedReturnId: number | null = null;
 
   @Column({ type: 'int', name: 'bank_account_id', nullable: true })
   bankAccountId: number | null = null;
@@ -206,8 +222,6 @@ export class Payment extends Model {
   @ManyToOne(() => User, { eager: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'recorded_by_user_id' })
   recordedByUser!: User;
-
-  // deletedAt is inherited from Model for soft delete
 
   toApi(): PaymentApiResponse {
     const base = super.toApi();
@@ -245,6 +259,7 @@ export class Payment extends Model {
       salesOrder: this.salesOrder ? this.salesOrder.toApi() : null,
       purchaseOrderId: this.purchaseOrderId,
       purchaseOrder: this.purchaseOrder ? this.purchaseOrder.toApi() : null,
+      relatedReturnId: this.relatedReturnId,
       bankAccountId: this.bankAccountId,
       bankAccount: this.bankAccount ? this.bankAccount.toApi() : null,
       cashRegisterSessionId: this.cashRegisterSessionId,
@@ -258,7 +273,6 @@ export class Payment extends Model {
     };
   }
 
-  // isValid() can be basic, Zod schema in service for DTO is more comprehensive
   isValidBasic(): boolean {
     if (this.amount <= 0) return false;
     if (!this.bankAccountId && !this.cashRegisterSessionId) return false;
