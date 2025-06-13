@@ -93,7 +93,6 @@ export default class QuoteRouter extends BaseRouter {
   async listQuoteItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const quoteId = parseInt(req.params.quoteId, 10);
     if (isNaN(quoteId)) return next(new BadRequestError('Invalid Quote ID.'));
-    // TODO: Authorization: Check if user can view items of this quote
     await this.pipe(res, req, next, () => this.quoteItemService.getQuoteItems(quoteId));
   }
 
@@ -132,7 +131,6 @@ export default class QuoteRouter extends BaseRouter {
     const itemId = parseInt(req.params.itemId, 10);
     if (isNaN(quoteId) || isNaN(itemId))
       return next(new BadRequestError('Invalid Quote or Item ID.'));
-    // TODO: Authorization
     await this.pipe(res, req, next, () => this.quoteItemService.getQuoteItemById(quoteId, itemId));
   }
 
@@ -185,7 +183,6 @@ export default class QuoteRouter extends BaseRouter {
     const input: UpdateQuoteItemInput = req.body;
     const userId = req.user?.id;
     if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-    // TODO: Authorization
 
     await this.pipe(res, req, next, () =>
       this.quoteItemService.updateQuoteItem(quoteId, itemId, input, userId),

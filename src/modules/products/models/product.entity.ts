@@ -23,7 +23,6 @@ export enum ProductStatus {
   OBSOLETE = 'obsolete',
 }
 
-// Zod Schema for validation
 const productSchemaValidation = z.object({
   sku: z.string().min(1, { message: 'SKU is required.' }).max(100),
   name: z.string().min(1, { message: 'Product name is required.' }).max(255),
@@ -47,10 +46,6 @@ const productSchemaValidation = z.object({
   notes: z.string().nullable().optional(),
 });
 
-// DTOs for Product CRUD
-// For CreateProductInput, sub-entities like variants, images, suppliers can be part of a more complex DTO
-// or handled via separate endpoint calls after the main product is created.
-// For simplicity here, we'll assume sub-entities are managed via their own endpoints.
 export type CreateProductInput = {
   sku: string;
   name: string;
@@ -76,7 +71,6 @@ export type CreateProductInput = {
 
 export type UpdateProductInput = Partial<CreateProductInput>;
 
-// Simplified DTOs for embedded relations
 type EmbeddedProductCategoryApiResponse = {
   id: number;
   name: string;
@@ -108,8 +102,8 @@ export type ProductApiResponse = {
   notes: string | null;
   images?: ProductImageApiResponse[];
   variants?: ProductVariantApiResponse[];
-  productSuppliers?: ProductSupplierApiResponse[]; // Suppliers for this specific product (not variants)
-  components?: any[]; // Simplified for now, replace with CompositeProductItemApiResponse
+  productSuppliers?: ProductSupplierApiResponse[];
+  components?: any[];
   createdByUserId: number | null;
   createdByUser?: UserApiResponse | null;
   updatedByUserId: number | null;
@@ -199,7 +193,7 @@ export class Product extends Model {
   defaultVatRatePercentage: number | null = null;
 
   @Column({
-    type: 'varchar', // As per SQL schema
+    type: 'varchar',
     length: 20,
     default: ProductStatus.ACTIVE,
   })
@@ -214,18 +208,17 @@ export class Product extends Model {
   @Column({ type: 'int', nullable: true, name: 'created_by_user_id' })
   createdByUserId: number | null = null;
 
-  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true, eager: false }) // Eager false for User
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true, eager: false })
   @JoinColumn({ name: 'created_by_user_id' })
   createdByUser?: User | null;
 
   @Column({ type: 'int', nullable: true, name: 'updated_by_user_id' })
   updatedByUserId: number | null = null;
 
-  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true, eager: false }) // Eager false for User
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true, eager: false })
   @JoinColumn({ name: 'updated_by_user_id' })
   updatedByUser?: User | null;
 
-  // Relations to sub-entities
   @OneToMany(() => ProductImage, (image) => image.product, {
     cascade: ['insert', 'update'],
     eager: false,
@@ -238,14 +231,12 @@ export class Product extends Model {
   })
   variants?: ProductVariant[];
 
-  // For composite products: items that make up this product
   @OneToMany(() => CompositeProductItem, (item) => item.compositeProduct, {
     cascade: ['insert', 'update'],
     eager: false,
   })
-  components?: CompositeProductItem[]; // if this product IS a composite
+  components?: CompositeProductItem[];
 
-  // For standard products: if this product IS a component of other composite products
   @OneToMany(() => CompositeProductItem, (item) => item.componentProduct, {
     cascade: false,
     eager: false,
@@ -303,8 +294,7 @@ export class Product extends Model {
       response.images = this.images?.map((img) => img.toApi());
       response.variants = this.variants?.map((v) => v.toApi());
       response.productSuppliers = this.productSuppliers?.map((ps) => ps.toApi());
-      response.components = this.components?.map((c) => c.toApi()); // Assuming CompositeProductItem has toApi
-      // createdByUser and updatedByUser could be populated here if eager loaded or explicitly loaded
+      response.components = this.components?.map((c) => c.toApi());
     }
     return response;
   }

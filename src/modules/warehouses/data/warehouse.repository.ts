@@ -27,15 +27,14 @@ export class WarehouseRepository {
   }
 
   private getDefaultRelations(): string[] {
-    return ['address', 'manager' /* 'createdByUser', 'updatedByUser' */];
+    return ['address', 'manager'];
   }
 
   async findById(id: number, options?: { relations?: string[] }): Promise<Warehouse | null> {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -78,10 +77,10 @@ export class WarehouseRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<Warehouse> = {
         where,
-        order: options.order || { name: 'ASC' },
+        order: options.order ?? { name: 'ASC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options.relations ? this.getDefaultRelations() : options.relations,
       };
       const [warehouses, count] = await this.repository.findAndCount(findOptions);
       return { warehouses, count };
@@ -144,7 +143,6 @@ export class WarehouseRepository {
 
   async softDelete(id: number): Promise<UpdateResult> {
     try {
-      // Dependency checks (e.g., stock_levels, purchase_orders) should be in the service layer.
       return await this.repository.softDelete(id);
     } catch (error) {
       logger.error(

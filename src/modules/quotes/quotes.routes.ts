@@ -178,8 +178,8 @@ export default class QuoteRouter extends BaseRouter {
   async getQuoteById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
-    await this.pipe(res, req, next, () => this.service.findById(id, userId));
+
+    await this.pipe(res, req, next, () => this.service.findById(id));
   }
 
   /**
@@ -359,8 +359,8 @@ export default class QuoteRouter extends BaseRouter {
   async convertQuoteToOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
-    await this.pipe(res, req, next, () => this.service.convertQuoteToOrder(id, userId), 201);
+
+    await this.pipe(res, req, next, () => this.service.convertQuoteToOrder(id), 201);
   }
 
   /**
@@ -396,15 +396,12 @@ export default class QuoteRouter extends BaseRouter {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.deleteQuote(id, userId);
+        await this.service.deleteQuote(id);
       },
       204,
     );

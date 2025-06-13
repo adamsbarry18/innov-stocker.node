@@ -17,9 +17,6 @@ interface FindAllReceptionsOptions {
   where?: FindOptionsWhere<PurchaseReception> | FindOptionsWhere<PurchaseReception>[];
   order?: FindManyOptions<PurchaseReception>['order'];
   relations?: string[];
-  searchTerm?: string;
-  receptionDateFrom?: string;
-  receptionDateTo?: string;
 }
 
 export class PurchaseReceptionRepository {
@@ -54,10 +51,7 @@ export class PurchaseReceptionRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindOne()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindOne() : options?.relations,
       });
     } catch (error) {
       throw new ServerError(`Error finding purchase reception with id ${id}.  ${error}`);
@@ -97,74 +91,13 @@ export class PurchaseReceptionRepository {
     options: FindAllReceptionsOptions = {},
   ): Promise<{ receptions: PurchaseReception[]; count: number }> {
     try {
-      const queryBuilder = this.repository.createQueryBuilder('purchaseReception');
-      queryBuilder.where('purchaseReception.deletedAt IS NULL');
-
-      if (options.where) {
-        if (Array.isArray(options.where)) {
-          options.where.forEach((condition) => {
-            queryBuilder.andWhere(condition);
-          });
-        } else {
-          queryBuilder.andWhere(options.where);
-        }
-      }
-
-      if (options.receptionDateFrom && options.receptionDateTo) {
-        const fromDate = new Date(options.receptionDateFrom);
-        const toDate = new Date(options.receptionDateTo);
-        toDate.setHours(23, 59, 59, 999);
-
-        queryBuilder.andWhere('purchaseReception.receptionDate BETWEEN :fromDate AND :toDate', {
-          fromDate: fromDate.toISOString(),
-          toDate: toDate.toISOString(),
-        });
-      } else if (options.receptionDateFrom) {
-        const fromDate = new Date(options.receptionDateFrom);
-        queryBuilder.andWhere('purchaseReception.receptionDate >= :fromDate', {
-          fromDate: fromDate.toISOString(),
-        });
-      } else if (options.receptionDateTo) {
-        const toDate = new Date(options.receptionDateTo);
-        toDate.setHours(23, 59, 59, 999);
-        queryBuilder.andWhere('purchaseReception.receptionDate <= :toDate', {
-          toDate: toDate.toISOString(),
-        });
-      }
-
-      if (options.searchTerm) {
-        const searchPattern = `%${options.searchTerm}%`;
-        queryBuilder.andWhere(
-          '(purchaseReception.receptionNumber ILIKE :searchPattern OR ' +
-            'supplier.name ILIKE :searchPattern OR ' +
-            'purchaseOrder.orderNumber ILIKE :searchPattern)',
-          { searchPattern },
-        );
-      }
-
-      const relations =
-        options.relations === undefined ? this.getDefaultRelationsForFindAll() : options.relations;
-      relations.forEach((relation) => {
-        queryBuilder.leftJoinAndSelect(`purchaseReception.${relation}`, relation);
+      const where = { ...options.where, deletedAt: IsNull() };
+      const [receptions, count] = await this.repository.findAndCount({
+        where,
+        order: options.order ?? { createdAt: 'DESC' },
+        skip: options.skip,
+        take: options.take,
       });
-
-      if (options.order) {
-        for (const [key, value] of Object.entries(options.order)) {
-          queryBuilder.addOrderBy(`purchaseReception.${key}`, value as 'ASC' | 'DESC');
-        }
-      } else {
-        queryBuilder.addOrderBy('purchaseReception.receptionDate', 'DESC');
-        queryBuilder.addOrderBy('purchaseReception.createdAt', 'DESC');
-      }
-
-      if (options.skip !== undefined) {
-        queryBuilder.skip(options.skip);
-      }
-      if (options.take !== undefined) {
-        queryBuilder.take(options.take);
-      }
-
-      const [receptions, count] = await queryBuilder.getManyAndCount();
       return { receptions, count };
     } catch (error) {
       throw new ServerError(`Error finding all purchase receptions.${error}`);
@@ -178,10 +111,7 @@ export class PurchaseReceptionRepository {
     try {
       return await this.repository.find({
         where: { purchaseOrderId, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindAll() : options?.relations,
         order: { receptionDate: 'ASC' },
       });
     } catch (error) {

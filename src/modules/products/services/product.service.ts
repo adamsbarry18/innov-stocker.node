@@ -13,12 +13,7 @@ import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/htt
 import logger from '@/lib/logger';
 import { ProductRepository } from '../data/product.repository';
 import { ProductImageRepository } from '@/modules/product-images/data/product-image.repository';
-import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { ProductCategoryRepository } from '@/modules/product-categories/data/product-category.repository';
-import { ProductSupplierRepository } from '@/modules/product-suppliers/data/product-supplier.repository';
-import { SupplierRepository } from '@/modules/suppliers/data/supplier.repository';
-import { CurrencyRepository } from '@/modules/currencies/data/currency.repository';
-import { UserRepository } from '@/modules/users';
 import {
   ProductImage,
   productImageValidationInputErrors,
@@ -34,51 +29,37 @@ import {
   type ProductSupplier,
   type ProductSupplierApiResponse,
 } from '@/modules/product-suppliers/models/product-supplier.entity';
-import { CompositeProductItemRepository } from '../composite-product-items/data/composite-product-item.repository';
-import { CompositeProductItem } from '../composite-product-items/models/composite-product-item.entity';
-
-// TODO: Dépendance - Importer StockMovementRepository quand il existera
-// import { StockMovementRepository } from '../../stock-movements/data/stock-movement.repository';
-// import { type StockMovementApiResponse } from '../../stock-movements/models/stock-movement.entity';
+import { type CompositeProductItem } from '../composite-product-items/models/composite-product-item.entity';
 
 let instance: ProductService | null = null;
 
 export class ProductService {
   private readonly productRepository: ProductRepository;
   private readonly imageRepository: ProductImageRepository;
-  private readonly variantRepository: ProductVariantRepository;
-  private readonly compositeItemRepository: CompositeProductItemRepository;
-  private readonly productSupplierRepository: ProductSupplierRepository;
   private readonly categoryRepository: ProductCategoryRepository;
-  private readonly supplierRepository: SupplierRepository;
-  private readonly currencyRepository: CurrencyRepository;
-  private readonly userRepository: UserRepository;
-  // TODO: Dépendance - private readonly stockMovementRepository: StockMovementRepository;
 
+  /**
+   * Creates an instance of ProductService.
+   * @param productRepository - The product repository.
+   * @param imageRepository - The product image repository.
+   * @param categoryRepository - The product category repository.
+   */
   constructor(
     productRepository: ProductRepository = new ProductRepository(),
     imageRepository: ProductImageRepository = new ProductImageRepository(),
-    variantRepository: ProductVariantRepository = new ProductVariantRepository(),
-    compositeItemRepository: CompositeProductItemRepository = new CompositeProductItemRepository(),
-    productSupplierRepository: ProductSupplierRepository = new ProductSupplierRepository(),
     categoryRepository: ProductCategoryRepository = new ProductCategoryRepository(),
-    supplierRepository: SupplierRepository = new SupplierRepository(),
-    currencyRepository: CurrencyRepository = new CurrencyRepository(),
-    userRepository: UserRepository = new UserRepository(),
-    // stockMovementRepository: StockMovementRepository = new StockMovementRepository(),
   ) {
     this.productRepository = productRepository;
     this.imageRepository = imageRepository;
-    this.variantRepository = variantRepository;
-    this.compositeItemRepository = compositeItemRepository;
-    this.productSupplierRepository = productSupplierRepository;
     this.categoryRepository = categoryRepository;
-    this.supplierRepository = supplierRepository;
-    this.currencyRepository = currencyRepository;
-    this.userRepository = userRepository;
-    // TODO: this.stockMovementRepository = stockMovementRepository;
   }
 
+  /**
+   * Maps a Product entity to a ProductApiResponse.
+   * @param product - The product entity.
+   * @param options - Options for including relations.
+   * @returns The API response for the product, or null if the product is null.
+   */
   mapProductToApiResponse(
     product: Product | null,
     options?: { includeRelations?: boolean },
@@ -86,10 +67,23 @@ export class ProductService {
     if (!product) return null;
     return product.toApi(options);
   }
+
+  /**
+   * Maps a ProductImage entity to a ProductImageApiResponse.
+   * @param image - The product image entity.
+   * @returns The API response for the product image, or null if the image is null.
+   */
   mapImageToApiResponse(image: ProductImage | null): ProductImageApiResponse | null {
     if (!image) return null;
     return image.toApi();
   }
+
+  /**
+   * Maps a ProductVariant entity to a ProductVariantApiResponse.
+   * @param variant - The product variant entity.
+   * @param options - Options for including product suppliers.
+   * @returns The API response for the product variant, or null if the variant is null.
+   */
   mapVariantToApiResponse(
     variant: ProductVariant | null,
     options?: { includeProductSuppliers?: boolean },
@@ -97,18 +91,33 @@ export class ProductService {
     if (!variant) return null;
     return variant.toApi(options);
   }
+
+  /**
+   * Maps a ProductSupplier entity to a ProductSupplierApiResponse.
+   * @param ps - The product supplier entity.
+   * @returns The API response for the product supplier, or null if the product supplier is null.
+   */
   mapProductSupplierToApiResponse(ps: ProductSupplier | null): ProductSupplierApiResponse | null {
     if (!ps) return null;
     return ps.toApi();
   }
+
+  /**
+   * Maps a CompositeProductItem entity to its API response.
+   * @param item - The composite product item entity.
+   * @returns The API response for the composite product item, or null if the item is null.
+   */
   mapCompositeItemToApiResponse(item: CompositeProductItem | null): any {
-    // Remplacez any par le type DTO si défini
     if (!item) return null;
     return item.toApi();
   }
 
-  // --- Product Core Methods ---
-
+  /**
+   * Creates a new product.
+   * @param input - The input data for creating the product.
+   * @param createdByUserId - The ID of the user who created the product.
+   * @returns The API response for the created product.
+   */
   async createProduct(
     input: CreateProductInput,
     createdByUserId: number,
@@ -161,6 +170,12 @@ export class ProductService {
     }
   }
 
+  /**
+   * Finds a product by its ID.
+   * @param productId - The ID of the product to find.
+   * @param includeFullRelations - Whether to include full relations in the response.
+   * @returns The API response for the found product.
+   */
   async findProductById(
     productId: number,
     includeFullRelations: boolean = true,
@@ -187,21 +202,24 @@ export class ProductService {
     }
   }
 
+  /**
+   * Finds all products based on the provided options.
+   * @param options - Options for filtering, pagination, and sorting.
+   * @returns An object containing the list of products and the total count.
+   */
   async findAllProducts(options?: {
     limit?: number;
     offset?: number;
     filters?: FindOptionsWhere<Product> | FindOptionsWhere<Product>[];
     sort?: FindManyOptions<Product>['order'];
-    searchTerm?: string;
   }): Promise<{ products: ProductApiResponse[]; total: number }> {
     try {
       const { products, count } = await this.productRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { name: 'ASC' },
-        searchTerm: options?.searchTerm,
-        relations: this.productRepository['getDefaultRelationsForFindAll'](), // Lighter relations for list
+        order: options?.sort ?? { name: 'ASC' },
+        relations: this.productRepository['getDefaultRelationsForFindAll'](),
       });
       const apiProducts = products
         .map((p) => this.mapProductToApiResponse(p, { includeRelations: false }))
@@ -216,6 +234,13 @@ export class ProductService {
     }
   }
 
+  /**
+   * Updates an existing product.
+   * @param productId - The ID of the product to update.
+   * @param input - The input data for updating the product.
+   * @param updatedByUserId - The ID of the user who updated the product.
+   * @returns The API response for the updated product.
+   */
   async updateProduct(
     productId: number,
     input: UpdateProductInput,
@@ -289,7 +314,11 @@ export class ProductService {
     }
   }
 
-  async deleteProduct(productId: number, deletedByUserId: number): Promise<void> {
+  /**
+   * Deletes a product by its ID.
+   * @param productId - The ID of the product to delete.
+   */
+  async deleteProduct(productId: number): Promise<void> {
     const product = await this.productRepository.findById(productId);
     if (!product) throw new NotFoundError(`Product with id ${productId} not found.`);
 
@@ -299,13 +328,8 @@ export class ProductService {
     //   throw new BadRequestError(`Product '${product.name}' is in use (e.g., in orders, stock) and cannot be deleted.`);
     // }
 
-    // Soft delete cascades to images, variants, productSuppliers, components if DB constraints or TypeORM relations are set up for it.
-    // Or handle manually here within a transaction.
-    // For now, assuming direct soft delete is sufficient for the product entity itself.
     try {
       await this.productRepository.softDelete(productId);
-      // Also set updatedByUserId if Model doesn't do it on softDelete
-      // await this.productRepository.update(productId, { updatedByUserId: deletedByUserId });
     } catch (error) {
       logger.error(
         { message: `Error deleting product ${productId}`, error },
@@ -315,18 +339,21 @@ export class ProductService {
     }
   }
 
-  // --- ProductImage Methods ---
+  /**
+   * Adds an image to a product.
+   * @param productId - The ID of the product to add the image to.
+   * @param input - The input data for creating the product image.
+   * @returns The API response for the created product image.
+   */
   async addProductImage(
     productId: number,
     input: CreateProductImageInput,
-    userId: number,
   ): Promise<ProductImageApiResponse> {
     const product = await this.productRepository.findById(productId);
     if (!product) throw new NotFoundError(`Product with ID ${productId} not found.`);
 
     if (input.isPrimary) {
-      // Unset other primary images for this product
-      await this.imageRepository.unsetPrimaryForOtherImages(productId, -1); // -1 as no current image id yet
+      await this.imageRepository.unsetPrimaryForOtherImages(productId, -1);
     }
 
     const imageEntity = this.imageRepository.create({ ...input, productId });
@@ -339,6 +366,11 @@ export class ProductService {
     return this.mapImageToApiResponse(savedImage) as ProductImageApiResponse;
   }
 
+  /**
+   * Retrieves all images for a specific product.
+   * @param productId - The ID of the product.
+   * @returns An array of API responses for the product images.
+   */
   async getProductImages(productId: number): Promise<ProductImageApiResponse[]> {
     const product = await this.productRepository.findById(productId);
     if (!product) throw new NotFoundError(`Product with ID ${productId} not found.`);
@@ -348,11 +380,17 @@ export class ProductService {
       .filter(Boolean) as ProductImageApiResponse[];
   }
 
+  /**
+   * Updates an existing product image.
+   * @param productId - The ID of the product the image belongs to.
+   * @param imageId - The ID of the image to update.
+   * @param input - The input data for updating the product image.
+   * @returns The API response for the updated product image.
+   */
   async updateProductImage(
     productId: number,
     imageId: number,
     input: UpdateProductImageInput,
-    userId: number,
   ): Promise<ProductImageApiResponse> {
     const image = await this.imageRepository.findById(imageId);
     if (!image || image.productId !== productId) {
@@ -367,7 +405,12 @@ export class ProductService {
     return this.mapImageToApiResponse(updatedImage) as ProductImageApiResponse;
   }
 
-  async deleteProductImage(productId: number, imageId: number, userId: number): Promise<void> {
+  /**
+   * Deletes a product image.
+   * @param productId - The ID of the product the image belongs to.
+   * @param imageId - The ID of the image to delete.
+   */
+  async deleteProductImage(productId: number, imageId: number): Promise<void> {
     const image = await this.imageRepository.findById(imageId);
     if (!image || image.productId !== productId) {
       throw new NotFoundError(`Image with ID ${imageId} not found for product ${productId}.`);
@@ -380,10 +423,15 @@ export class ProductService {
     await this.imageRepository.softDelete(imageId);
   }
 
+  /**
+   * Sets a specific product image as the primary image for a product.
+   * @param productId - The ID of the product.
+   * @param imageId - The ID of the image to set as primary.
+   * @returns The API response for the updated primary product image.
+   */
   async setPrimaryProductImage(
     productId: number,
     imageId: number,
-    userId: number,
   ): Promise<ProductImageApiResponse> {
     const product = await this.productRepository.findById(productId);
     if (!product) throw new NotFoundError(`Product with ID ${productId} not found.`);
@@ -395,12 +443,10 @@ export class ProductService {
 
     await appDataSource.transaction(async (transactionalEntityManager) => {
       const imageRepoTx = transactionalEntityManager.getRepository(ProductImage);
-      // Unset current primary image for the product
       await imageRepoTx.update(
         { productId: productId, isPrimary: true, deletedAt: IsNull(), id: Not(imageId) },
         { isPrimary: false },
       );
-      // Set the new primary image
       await imageRepoTx.update(imageId, { isPrimary: true });
     });
 
@@ -408,17 +454,12 @@ export class ProductService {
     return this.mapImageToApiResponse(updatedImage) as ProductImageApiResponse;
   }
 
-  // --- ProductVariant Methods ---
-  // (Similar CRUD: addProductVariant, getProductVariants, updateProductVariant, deleteProductVariant)
-  // ... Implémentation pour les variantes ici ...
-
-  // --- ProductSupplier Methods ---
-  // ... Implémentation pour les fournisseurs de produits ici ...
-
-  // --- CompositeProductItem Methods ---
-  // ... Implémentation pour la composition des produits ici ...
-
-  // --- Stock Information Methods (Stubs) ---
+  /**
+   * Retrieves stock movements for a specific product.
+   * @param productId - The ID of the product.
+   * @param options - Optional parameters.
+   * @returns An array of stock movements.
+   */
   async getProductStockMovements(productId: number, options?: any): Promise<any[]> {
     if (!(await this.productRepository.findById(productId))) {
       throw new NotFoundError(`Product with id ${productId} not found.`);
@@ -426,6 +467,13 @@ export class ProductService {
     return [];
   }
 
+  /**
+   * Retrieves the current stock for a specific product.
+   * @param productId - The ID of the product.
+   * @param warehouseId - Optional warehouse ID to filter stock.
+   * @param shopId - Optional shop ID to filter stock.
+   * @returns An object containing product stock information.
+   */
   async getProductCurrentStock(
     productId: number,
     warehouseId?: number,
@@ -437,10 +485,13 @@ export class ProductService {
     return { productId, warehouseId, shopId, quantity: 0, lastUpdated: new Date().toISOString() };
   }
 
+  /**
+   * Returns a singleton instance of the ProductService.
+   * @returns The singleton instance of ProductService.
+   */
   static getInstance(): ProductService {
-    if (!instance) {
-      instance = new ProductService();
-    }
+    instance ??= new ProductService();
+
     return instance;
   }
 }

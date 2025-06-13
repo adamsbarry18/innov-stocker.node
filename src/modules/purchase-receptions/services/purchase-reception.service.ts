@@ -177,9 +177,13 @@ export class PurchaseReceptionService {
     offset?: number;
     filters?: FindOptionsWhere<PurchaseReception> | FindOptionsWhere<PurchaseReception>[];
     sort?: FindManyOptions<PurchaseReception>['order'];
-    searchTerm?: string;
   }): Promise<{ receptions: PurchaseReceptionApiResponse[]; total: number }> {
-    const { receptions, count } = await this.receptionRepository.findAll(options);
+    const { receptions, count } = await this.receptionRepository.findAll({
+      where: options?.filters,
+      skip: options?.offset,
+      take: options?.limit,
+      order: options?.sort,
+    });
     const apiReceptions = receptions
       .map((r) => this.mapToApiResponse(r))
       .filter(Boolean) as PurchaseReceptionApiResponse[];
@@ -567,7 +571,7 @@ export class PurchaseReceptionService {
       Partial<CreatePurchaseReceptionItemInput> & { id?: number; _delete?: boolean }
     >,
     existingItemMap: Map<number, PurchaseReceptionItem>,
-    itemRepoTx: Repository<PurchaseReceptionItem>, // Corrected type
+    itemRepoTx: Repository<PurchaseReceptionItem>,
     manager: EntityManager,
   ): Promise<void> {
     const itemsToCreate: PurchaseReceptionItem[] = [];

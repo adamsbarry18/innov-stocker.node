@@ -38,14 +38,12 @@ import {
   type CreateSalesOrderItemInput,
   SalesOrderItem,
 } from '../sales-order-items/models/sales-order-item.entity';
+import { StockMovementService } from '@/modules/stock-movements/services/stock-movement.service';
+import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
 
-// TODO: Dépendance - Importer StockMovementService (ou équivalent) pour la réservation/vérification de stock
-// import { StockService } from '../../stock/services/stock.service';
-// TODO: Dépendance - Importer DeliveryService/InvoiceService pour les vérifications avant annulation/suppression
+let instance: SalesOrderService | null = null;
 
 export class SalesOrderService {
-  private static instance: SalesOrderService | null = null;
-
   constructor(
     private readonly orderRepository: SalesOrderRepository = new SalesOrderRepository(),
     private readonly itemRepository: SalesOrderItemRepository = new SalesOrderItemRepository(),
@@ -58,9 +56,8 @@ export class SalesOrderService {
     private readonly productRepository: ProductRepository = new ProductRepository(),
     private readonly variantRepository: ProductVariantRepository = new ProductVariantRepository(),
     private readonly userRepository: UserRepository = new UserRepository(),
+    private readonly stockMovementService: StockMovementService = StockMovementService.getInstance(),
   ) {}
-
-  // ===== PUBLIC METHODS =====
 
   /**
    * Creates a new sales order.
@@ -166,16 +163,21 @@ export class SalesOrderService {
     status: SalesOrderStatus,
     updatedByUserId: number,
   ): Promise<SalesOrderApiResponse> {
-    const order = await this.orderRepository.findById(id, { relations: ['items'] });
-    if (!order) {
-      throw new NotFoundError(`Sales order with id ${id} not found.`);
-    }
+    return appDataSource.transaction(async (manager) => {
+      const order = await this.orderRepository.findById(id, {
+        relations: ['items'],
+        transactionalEntityManager: manager,
+      });
+      if (!order) {
+        throw new NotFoundError(`Sales order with id ${id} not found.`);
+      }
 
-    this.validateStatusTransition(order.status, status);
-    this.handleStatusSpecificActions(order, status);
+      this.validateStatusTransition(order.status, status);
+      await this.handleStatusSpecificActions(order, status, updatedByUserId, manager);
 
-    await this.orderRepository.update(id, { status, updatedByUserId });
-    return this.findSalesOrderById(id);
+      await manager.getRepository(SalesOrder).update(id, { status, updatedByUserId });
+      return this.getOrderResponse(id, manager);
+    });
   }
 
   /**
@@ -217,8 +219,6 @@ export class SalesOrderService {
 
     return salesOrder;
   }
-
-  // ===== PRIVATE HELPER METHODS =====
 
   /**
    * Validates the input data for creating or updating a sales order.
@@ -385,7 +385,7 @@ export class SalesOrderService {
     if (itemInput._delete && isUpdate) return;
 
     const productId =
-      itemInput.productId ||
+      itemInput.productId ??
       (isUpdate && itemInput.id
         ? (await this.itemRepository.findById(itemInput.id))?.productId
         : null);
@@ -461,7 +461,7 @@ export class SalesOrderService {
       ...input,
       orderNumber: this.generateOrderNumber(),
       orderDate: dayjs(input.orderDate).toDate(),
-      status: input.status || SalesOrderStatus.DRAFT,
+      status: input.status ?? SalesOrderStatus.DRAFT,
       createdByUserId,
       updatedByUserId: createdByUserId,
       items: [],
@@ -520,7 +520,7 @@ export class SalesOrderService {
       return itemRepo.create({
         ...itemInput,
         salesOrderId: orderId,
-        description: itemInput.description || variantName || product?.name,
+        description: itemInput.description ?? variantName ?? product?.name,
         vatRatePercentage: itemInput.vatRatePercentage ?? product?.defaultVatRatePercentage,
       });
     });
@@ -627,7 +627,7 @@ export class SalesOrderService {
     const itemsToDelete = itemInputs
       .filter((item) => item._delete && item.id)
       .map((item) => item.id)
-      .filter((id): id is number => id !== undefined); // Filter out undefined
+      .filter((id): id is number => id !== undefined);
 
     if (itemsToDelete.length > 0) {
       await itemRepo.delete(itemsToDelete);
@@ -650,7 +650,6 @@ export class SalesOrderService {
       await itemRepo.save(itemsToSave);
     }
 
-    // Refresh items
     order.items = await itemRepo.find({
       where: { salesOrderId: order.id, deletedAt: IsNull() },
     });
@@ -720,10 +719,31 @@ export class SalesOrderService {
    * @param order The sales order.
    * @param newStatus The new status of the order.
    */
-  private handleStatusSpecificActions(order: SalesOrder, newStatus: SalesOrderStatus): void {
-    // Stock reservation logic (TODO: implement when stock service is available)
+  private async handleStatusSpecificActions(
+    order: SalesOrder,
+    newStatus: SalesOrderStatus,
+    updatedByUserId: number,
+    manager: EntityManager,
+  ): Promise<void> {
+    const locationId = order.dispatchWarehouseId ?? order.dispatchShopId;
+
+    if (!locationId) {
+      logger.warn(`Order ${order.id} has no dispatch location, cannot perform stock movements.`);
+      return;
+    }
+
     if ([SalesOrderStatus.APPROVED, SalesOrderStatus.IN_PREPARATION].includes(newStatus)) {
-      logger.info(`TODO: Reserve stock for order ${order.id} moving to ${newStatus}`);
+      logger.info(`Reserving stock for order ${order.id} moving to ${newStatus}`);
+      for (const item of order.items) {
+        await this._createStockMovementForOrderItem(
+          item,
+          locationId,
+          updatedByUserId,
+          StockMovementType.SALE_DELIVERY,
+          `Stock reserved for Sales Order ${order.orderNumber} (Item: ${item.id})`,
+          manager,
+        );
+      }
     }
 
     if (
@@ -734,8 +754,52 @@ export class SalesOrderService {
         SalesOrderStatus.PAYMENT_RECEIVED,
       ].includes(order.status)
     ) {
-      logger.info(`TODO: Un-reserve stock for cancelled order ${order.id}`);
+      logger.info(`Un-reserving stock for cancelled order ${order.id}`);
+      for (const item of order.items) {
+        await this._createStockMovementForOrderItem(
+          item,
+          locationId,
+          updatedByUserId,
+          StockMovementType.CUSTOMER_RETURN,
+          `Stock un-reserved for cancelled Sales Order ${order.orderNumber} (Item: ${item.id})`,
+          manager,
+        );
+      }
     }
+  }
+
+  /**
+   * Creates a stock movement for a given sales order item.
+   * @param item The sales order item.
+   * @param locationId The ID of the warehouse or shop.
+   * @param userId The ID of the user performing the movement.
+   * @param movementType The type of stock movement.
+   * @param notes Additional notes for the movement.
+   * @param manager The EntityManager for the transaction.
+   */
+  private async _createStockMovementForOrderItem(
+    item: SalesOrderItem,
+    locationId: number,
+    userId: number,
+    movementType: StockMovementType,
+    notes: string,
+    manager: EntityManager,
+  ): Promise<void> {
+    await this.stockMovementService.createMovement(
+      {
+        productId: item.productId,
+        productVariantId: item.productVariantId ?? undefined,
+        quantity: item.quantity,
+        movementType,
+        warehouseId: locationId,
+        shopId: locationId,
+        userId,
+        referenceDocumentType: 'sales_order_item',
+        referenceDocumentId: item.id,
+        notes,
+      },
+      manager,
+    );
   }
 
   /**
@@ -792,20 +856,20 @@ export class SalesOrderService {
       currencyId: quote.currencyId,
       shippingFeesHt: 0,
       shippingAddressId:
-        quote.shippingAddressId ||
-        quote.customer.defaultShippingAddressId ||
+        quote.shippingAddressId ??
+        quote.customer.defaultShippingAddressId ??
         quote.billingAddressId,
-      billingAddressId: quote.billingAddressId || quote.customer.billingAddressId,
+      billingAddressId: quote.billingAddressId ?? quote.customer.billingAddressId,
       dispatchWarehouseId: null,
       dispatchShopId: null,
-      notes: `Converted from Quote ${quote.quoteNumber}. ${quote.notes || ''}`.trim(),
+      notes: `Converted from Quote ${quote.quoteNumber}. ${quote.notes ?? ''}`.trim(),
       items: quote.items.map((item: any) => ({
         productId: item.productId,
         productVariantId: item.productVariantId,
-        description: item.description || item.productVariant?.nameVariant || item.product?.name,
+        description: item.description ?? item.productVariant?.nameVariant ?? item.product?.name,
         quantity: Number(item.quantity),
         unitPriceHt: Number(item.unitPriceHt),
-        discountPercentage: Number(item.discountPercentage || 0),
+        discountPercentage: Number(item.discountPercentage ?? 0),
         vatRatePercentage:
           item.vatRatePercentage !== null
             ? Number(item.vatRatePercentage)
@@ -878,9 +942,8 @@ export class SalesOrderService {
    * @returns The SalesOrderService instance.
    */
   static getInstance(): SalesOrderService {
-    if (!SalesOrderService.instance) {
-      SalesOrderService.instance = new SalesOrderService();
-    }
-    return SalesOrderService.instance;
+    instance ??= new SalesOrderService();
+
+    return instance;
   }
 }

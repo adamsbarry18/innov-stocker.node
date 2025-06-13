@@ -257,15 +257,13 @@ export default class SupplierRouter extends BaseRouter {
     if (isNaN(supplierId)) {
       return next(new BadRequestError('Invalid supplier ID format.'));
     }
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.supplierService.delete(supplierId, userId);
+        await this.supplierService.delete(supplierId);
       },
       204,
     );

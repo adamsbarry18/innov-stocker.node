@@ -16,7 +16,6 @@ export class SupplierInvoicePurchaseOrderLink {
   @PrimaryColumn({ type: 'int', name: 'purchase_order_id' })
   purchaseOrderId!: number;
 
-  // TODO: Dépendance - S'assurer que PurchaseOrder est bien implémenté
   @ManyToOne(() => PurchaseOrder, (po) => po.supplierInvoiceLinks, { onDelete: 'CASCADE' }) // Suppose que PO aura une relation inverse
   @JoinColumn({ name: 'purchase_order_id' })
   purchaseOrder!: PurchaseOrder;

@@ -29,10 +29,6 @@ import { ProductVariantRepository } from '@/modules/product-variants/data/produc
 import { PurchaseOrderItemRepository } from '../purchase-order-items/data/purchase-order-item.repository';
 import { PurchaseOrderItem } from '../purchase-order-items/models/purchase-order-item.entity';
 
-// TODO: Dépendance - Importer PurchaseReceptionRepository, SupplierInvoiceRepository pour les vérifications
-// import { PurchaseReceptionRepository } from '../../purchase-receptions/data/purchase_reception.repository';
-// import { SupplierInvoiceRepository } from '../../supplier-invoices/data/supplier-invoice.repository';
-
 let instance: PurchaseOrderService | null = null;
 
 export class PurchaseOrderService {
@@ -46,9 +42,20 @@ export class PurchaseOrderService {
   private readonly productRepository: ProductRepository;
   private readonly variantRepository: ProductVariantRepository;
   private readonly userRepository: UserRepository;
-  // TODO: Dépendance - private readonly receptionRepository: PurchaseReceptionRepository;
-  // TODO: Dépendance - private readonly supplierInvoiceRepository: SupplierInvoiceRepository;
 
+  /**
+   * Creates an instance of PurchaseOrderService.
+   * @param orderRepository - The purchase order repository.
+   * @param itemRepository - The purchase order item repository.
+   * @param supplierRepository - The supplier repository.
+   * @param currencyRepository - The currency repository.
+   * @param addressRepository - The address repository.
+   * @param warehouseRepository - The warehouse repository.
+   * @param shopRepository - The shop repository.
+   * @param productRepository - The product repository.
+   * @param variantRepository - The product variant repository.
+   * @param userRepository - The user repository.
+   */
   constructor(
     orderRepository: PurchaseOrderRepository = new PurchaseOrderRepository(),
     itemRepository: PurchaseOrderItemRepository = new PurchaseOrderItemRepository(),
@@ -60,8 +67,6 @@ export class PurchaseOrderService {
     productRepository: ProductRepository = new ProductRepository(),
     variantRepository: ProductVariantRepository = new ProductVariantRepository(),
     userRepository: UserRepository = new UserRepository(),
-    // receptionRepository: PurchaseReceptionRepository = new PurchaseReceptionRepository(),
-    // supplierInvoiceRepository: SupplierInvoiceRepository = new SupplierInvoiceRepository(),
   ) {
     this.orderRepository = orderRepository;
     this.itemRepository = itemRepository;
@@ -73,15 +78,22 @@ export class PurchaseOrderService {
     this.productRepository = productRepository;
     this.variantRepository = variantRepository;
     this.userRepository = userRepository;
-    // TODO: this.receptionRepository = receptionRepository;
-    // TODO: this.supplierInvoiceRepository = supplierInvoiceRepository;
   }
 
+  /**
+   * Maps a PurchaseOrder entity to a PurchaseOrderApiResponse.
+   * @param order - The purchase order entity.
+   * @returns The API response for the purchase order, or null if the order is null.
+   */
   mapToApiResponse(order: PurchaseOrder | null): PurchaseOrderApiResponse | null {
     if (!order) return null;
     return order.toApi();
   }
 
+  /**
+   * Generates a unique purchase order number.
+   * @returns A unique purchase order number string.
+   */
   private async generateOrderNumber(): Promise<string> {
     const datePrefix = dayjs().format('YYYYMMDD');
     const prefix = `PO-${datePrefix}-`;
@@ -97,6 +109,12 @@ export class PurchaseOrderService {
     return `${prefix}${String(nextSeq).padStart(5, '0')}`;
   }
 
+  /**
+   * Validates the input for creating or updating a purchase order.
+   * @param input - The input data for the purchase order.
+   * @param isUpdate - True if this is an update operation, false otherwise.
+   * @param orderId - The ID of the order being updated (optional).
+   */
   private async validatePurchaseOrderInput(
     input: CreatePurchaseOrderInput | UpdatePurchaseOrderInput,
     isUpdate: boolean = false,
@@ -142,7 +160,7 @@ export class PurchaseOrderService {
         if ((itemInput as any)._delete) continue;
 
         const productId =
-          (itemInput as any).productId ||
+          (itemInput as any).productId ??
           (isUpdate && orderId
             ? (await this.itemRepository.findById((itemInput as any).id))?.productId
             : undefined);
@@ -175,6 +193,12 @@ export class PurchaseOrderService {
     }
   }
 
+  /**
+   * Creates a new purchase order.
+   * @param input - The input data for creating the purchase order.
+   * @param createdByUserId - The ID of the user who created the order.
+   * @returns The API response for the created purchase order.
+   */
   async createPurchaseOrder(
     input: CreatePurchaseOrderInput,
     createdByUserId: number,
@@ -197,13 +221,11 @@ export class PurchaseOrderService {
           expectedDeliveryDate: input.expectedDeliveryDate
             ? dayjs(input.expectedDeliveryDate).toDate()
             : null,
-          status: input.status || PurchaseOrderStatus.DRAFT,
+          status: input.status ?? PurchaseOrderStatus.DRAFT,
           createdByUserId: createdByUserId,
           updatedByUserId: createdByUserId,
           items: [],
         });
-
-        // Validate the main entity instance
         const tempOrderForValidation = this.orderRepository.create(orderEntity);
 
         if (!tempOrderForValidation.isValid()) {
@@ -211,8 +233,6 @@ export class PurchaseOrderService {
             `Purchase order data is invalid. Errors: ${purchaseOrderValidationInputErrors.join(', ')}`,
           );
         }
-
-        // First save the PO header to get an ID
         const savedOrderHeader = await orderRepoTx.save(orderEntity);
 
         const purchaseOrderItems: PurchaseOrderItem[] = [];
@@ -240,7 +260,7 @@ export class PurchaseOrderService {
             const itemEntity = itemRepoTx.create({
               ...itemInput,
               purchaseOrderId: savedOrderHeader.id,
-              description: itemInput.description || variantName || product.name,
+              description: itemInput.description ?? variantName ?? product.name,
               vatRatePercentage:
                 itemInput.vatRatePercentage !== undefined
                   ? itemInput.vatRatePercentage
@@ -286,14 +306,15 @@ export class PurchaseOrderService {
     }
   }
 
-  async findPurchaseOrderById(
-    id: number,
-    requestingUserId: number,
-  ): Promise<PurchaseOrderApiResponse> {
+  /**
+   * Finds a purchase order by its ID.
+   * @param id - The ID of the purchase order to find.
+   * @returns The API response for the found purchase order.
+   */
+  async findPurchaseOrderById(id: number): Promise<PurchaseOrderApiResponse> {
     try {
       const order = await this.orderRepository.findById(id);
       if (!order) throw new NotFoundError(`Purchase order with id ${id} not found.`);
-      // TODO: Authorization - Check if user can view this PO
 
       const apiResponse = this.mapToApiResponse(order);
       if (!apiResponse) throw new ServerError(`Failed to map purchase order ${id}.`);
@@ -308,20 +329,23 @@ export class PurchaseOrderService {
     }
   }
 
+  /**
+   * Finds all purchase orders based on the provided options.
+   * @param options - Options for filtering, pagination, and sorting.
+   * @returns An object containing the list of purchase orders and the total count.
+   */
   async findAllPurchaseOrders(options?: {
     limit?: number;
     offset?: number;
     filters?: FindOptionsWhere<PurchaseOrder> | FindOptionsWhere<PurchaseOrder>[];
     sort?: FindManyOptions<PurchaseOrder>['order'];
-    searchTerm?: string;
   }): Promise<{ orders: PurchaseOrderApiResponse[]; total: number }> {
     try {
       const { orders, count } = await this.orderRepository.findAll({
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { orderDate: 'DESC', createdAt: 'DESC' },
-        searchTerm: options?.searchTerm,
+        order: options?.sort ?? { orderDate: 'DESC', createdAt: 'DESC' },
         relations: this.orderRepository['getDefaultRelationsForFindAll'](),
       });
       const apiOrders = orders
@@ -337,6 +361,13 @@ export class PurchaseOrderService {
     }
   }
 
+  /**
+   * Updates an existing purchase order.
+   * @param id - The ID of the purchase order to update.
+   * @param input - The input data for updating the purchase order.
+   * @param updatedByUserId - The ID of the user who updated the order.
+   * @returns The API response for the updated purchase order.
+   */
   async updatePurchaseOrder(
     id: number,
     input: UpdatePurchaseOrderInput,
@@ -376,8 +407,6 @@ export class PurchaseOrderService {
       }
 
       await this.validatePurchaseOrderInput(input, true, id);
-
-      // Update header fields
       const headerUpdatePayload: Partial<PurchaseOrder> = { updatedByUserId };
       if (input.orderDate) headerUpdatePayload.orderDate = dayjs(input.orderDate).toDate();
       if (input.hasOwnProperty('expectedDeliveryDate'))
@@ -443,7 +472,7 @@ export class PurchaseOrderService {
             ...itemInput,
             purchaseOrderId: id,
             description:
-              itemInput.description ||
+              itemInput.description ??
               (itemInput.productVariantId
                 ? (await this.variantRepository.findById(itemInput.productVariantId))?.nameVariant
                 : product?.name),
@@ -454,7 +483,6 @@ export class PurchaseOrderService {
           };
 
           if (itemInput.id) {
-            // Update existing item
             const existingItem = existingItemsMap.get(itemInput.id);
             if (!existingItem)
               throw new NotFoundError(
@@ -473,7 +501,6 @@ export class PurchaseOrderService {
             }
             await itemRepoTx.save(updatedItemEntity);
           } else if (!(itemInput as any)._delete) {
-            // Add new item
             if (!itemInput.productId)
               throw new BadRequestError('productId is required for new items.');
             const newItemEntity = itemRepoTx.create(itemData as Partial<PurchaseOrderItem>);
@@ -552,7 +579,7 @@ export class PurchaseOrderService {
     return apiResponse;
   }
 
-  async deletePurchaseOrder(id: number, deletedByUserId: number): Promise<void> {
+  async deletePurchaseOrder(id: number): Promise<void> {
     try {
       const order = await this.orderRepository.findById(id);
       if (!order) throw new NotFoundError(`Purchase order with id ${id} not found.`);
@@ -572,12 +599,7 @@ export class PurchaseOrderService {
       //   throw new BadRequestError(`Purchase order '${order.orderNumber}' has associated receptions or invoices and cannot be deleted.`);
       // }
 
-      // Soft delete of PurchaseOrder should cascade to PurchaseOrderItems if TypeORM relation is set with cascade and softDelete.
-      // If not, items would need to be manually soft-deleted or hard-deleted here within a transaction.
-      // Our PurchaseOrderItem does not extend Model with softDelete, so they are hard-deleted by cascade if set.
-      // If cascade remove is set on PO.items, this will hard delete items.
       await this.orderRepository.softDelete(id);
-      // await this.orderRepository.update(id, { updatedByUserId: deletedByUserId }); // Audit
     } catch (error) {
       logger.error(
         { message: `Error deleting purchase order ${id}`, error },
@@ -589,9 +611,7 @@ export class PurchaseOrderService {
   }
 
   static getInstance(): PurchaseOrderService {
-    if (!instance) {
-      instance = new PurchaseOrderService();
-    }
+    instance ??= new PurchaseOrderService();
     return instance;
   }
 }

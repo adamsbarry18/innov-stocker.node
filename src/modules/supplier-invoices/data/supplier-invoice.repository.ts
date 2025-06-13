@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
@@ -20,7 +19,6 @@ interface FindAllSupplierInvoicesOptions {
   where?: FindOptionsWhere<SupplierInvoice> | FindOptionsWhere<SupplierInvoice>[];
   order?: FindManyOptions<SupplierInvoice>['order'];
   relations?: string[];
-  searchTerm?: string;
 }
 
 export class SupplierInvoiceRepository {
@@ -59,10 +57,7 @@ export class SupplierInvoiceRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindOne()
-            : options.relations,
+        relations: options?.relations ? this.getDefaultRelationsForFindOne() : options?.relations,
       });
     } catch (error) {
       logger.error(
@@ -106,36 +101,14 @@ export class SupplierInvoiceRepository {
     options: FindAllSupplierInvoicesOptions = {},
   ): Promise<{ invoices: SupplierInvoice[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<SupplierInvoice> | FindOptionsWhere<SupplierInvoice>[] =
-        options.where
-          ? Array.isArray(options.where)
-            ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-            : { ...options.where, deletedAt: IsNull() }
-          : { deletedAt: IsNull() };
-
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<SupplierInvoice> = {
-          invoiceNumber: searchPattern,
-          deletedAt: IsNull(),
-        };
-        // TODO: Add search on supplier name (requires join or complex QueryBuilder)
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.map((wc) => ({ ...wc, ...searchSpecific }));
-        } else {
-          whereConditions = { ...whereConditions, ...searchSpecific };
-        }
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<SupplierInvoice> = {
-        where: whereConditions,
-        order: options.order || { invoiceDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { invoiceDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ? this.getDefaultRelationsForFindAll() : options.relations,
       };
       const [invoices, count] = await this.repository.findAndCount(findOptions);
       return { invoices, count };
@@ -197,7 +170,7 @@ export class SupplierInvoiceRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(SupplierInvoice)
         : this.repository;
-      const { items, purchaseOrderLinks, ...headerDto } = dto; // Items and links managed via service logic
+      const { items, purchaseOrderLinks, ...headerDto } = dto;
       return await repo.update({ id, deletedAt: IsNull() }, headerDto);
     } catch (error: any) {
       if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
@@ -224,7 +197,6 @@ export class SupplierInvoiceRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(SupplierInvoice)
         : this.repository;
-      // TODO: Service layer should check if payments applied before allowing soft delete / cancel.
       return await repo.softDelete(id);
     } catch (error) {
       logger.error(
@@ -243,7 +215,7 @@ export class SupplierInvoiceRepository {
       .where('payment.supplierInvoiceId = :invoiceId', { invoiceId })
       .andWhere("payment.direction = 'outbound'")
       .getRawOne();
-    return Number(result?.totalPaid || 0);
+    return Number(result?.totalPaid ?? 0);
     return 0;
   }
 }

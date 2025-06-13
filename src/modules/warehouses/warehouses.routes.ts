@@ -76,7 +76,6 @@ export default class WarehouseRouter extends BaseRouter {
   @searchable(['name', 'code'])
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
 
     await this.pipe(res, req, next, () =>
       this.service.findAll({
@@ -84,7 +83,6 @@ export default class WarehouseRouter extends BaseRouter {
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm: searchTerm,
       }),
     );
   }
@@ -262,17 +260,12 @@ export default class WarehouseRouter extends BaseRouter {
       return next(new BadRequestError('Invalid ID format.'));
     }
 
-    const userId = req.user?.id;
-    if (!userId) {
-      return next(new UnauthorizedError('User ID not found for audit.'));
-    }
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.delete(id, userId);
+        await this.service.delete(id);
       },
       204,
     );

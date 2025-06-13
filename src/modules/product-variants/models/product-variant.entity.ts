@@ -15,7 +15,7 @@ const productVariantSchemaValidation = z.object({
   nameVariant: z.string().min(1, 'Variant name is required.').max(255),
   attributes: z.record(z.string(), z.any(), {
     invalid_type_error: 'Attributes must be an object.',
-  }), // JSON object
+  }),
   purchasePrice: z.number().min(0).nullable().optional(),
   sellingPriceHt: z.number().min(0).nullable().optional(),
   barcodeQrCodeVariant: z.string().max(255).nullable().optional(),
@@ -26,7 +26,6 @@ const productVariantSchemaValidation = z.object({
 });
 
 export type CreateProductVariantInput = {
-  // productId will come from path
   skuVariant: string;
   nameVariant: string;
   attributes: Record<string, any>;
@@ -36,7 +35,7 @@ export type CreateProductVariantInput = {
   minStockLevelVariant?: number;
   maxStockLevelVariant?: number | null;
   weightVariant?: number | null;
-  imageId?: number | null; // ID of an existing ProductImage
+  imageId?: number | null;
 };
 
 export type UpdateProductVariantInput = Partial<CreateProductVariantInput>;
@@ -54,19 +53,19 @@ export type ProductVariantApiResponse = {
   maxStockLevelVariant: number | null;
   weightVariant: number | null;
   imageId: number | null;
-  image?: ProductImageApiResponse | null; // Populated image details
+  image?: ProductImageApiResponse | null;
   createdByUserId: number | null;
   updatedByUserId: number | null;
   createdAt: string | null;
   updatedAt: string | null;
-  productSuppliers?: any[]; // Add this if you want to include suppliers in the API response
+  productSuppliers?: any[];
 };
 
 export const productVariantValidationInputErrors: string[] = [];
 
 @Entity({ name: 'product_variants' })
 @Unique('uq_variant_sku', ['skuVariant'])
-@Unique('uq_variant_barcode', ['barcodeQrCodeVariant']) // If barcode is unique per variant
+@Unique('uq_variant_barcode', ['barcodeQrCodeVariant'])
 @Index(['productId'])
 export class ProductVariant extends Model {
   @Column({ type: 'int', name: 'product_id' })

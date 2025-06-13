@@ -148,17 +148,6 @@ export class StockMovementService {
         `Stock movement ID ${savedMovement.id} (Type: ${savedMovement.movementType}, Qty: ${savedMovement.quantity}) created.`,
       );
 
-      // TODO: Dépendance - Mettre à jour une table de niveaux de stock agrégés (StockLevel)
-      // Ou, si le stock est calculé à la volée, cette étape n'est pas nécessaire ici.
-      // await this.stockLevelRepository.updateStockLevel(
-      //   savedMovement.productId,
-      //   savedMovement.productVariantId,
-      //   savedMovement.warehouseId,
-      //   savedMovement.shopId,
-      //   savedMovement.quantity,
-      //   transactionalEntityManager
-      // );
-
       return savedMovement;
     } catch (error) {
       logger.error({ message: `Error creating stock movement`, error, input: validatedInput });

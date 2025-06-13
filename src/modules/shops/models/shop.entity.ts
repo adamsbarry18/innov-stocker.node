@@ -8,7 +8,6 @@ import {
 } from '../../addresses/models/address.entity';
 import { User, UserApiResponse } from '@/modules/users/models/users.entity';
 
-// Zod Schema for validation
 const shopSchemaValidation = z.object({
   name: z.string().min(1, { message: 'Shop name is required.' }).max(255),
   code: z.string().max(50).nullable().optional(),
@@ -17,20 +16,17 @@ const shopSchemaValidation = z.object({
   openingHoursNotes: z.string().nullable().optional(),
 });
 
-// Type for creating a shop
 export type CreateShopInput = {
   name: string;
   code?: string | null;
-  addressId: number; // ID of an existing address
-  newAddress?: BaseCreateAddressInput; // Optional: For creating address on the fly
+  addressId: number;
+  newAddress?: BaseCreateAddressInput;
   managerId?: number | null;
   openingHoursNotes?: string | null;
 };
 
-// Type for updating a shop
 export type UpdateShopInput = Partial<Omit<CreateShopInput, 'newAddress'>>;
 
-// Type for API response (DTO)
 export type ShopApiResponse = {
   id: number;
   name: string;
@@ -50,7 +46,7 @@ export const shopValidationInputErrors: string[] = [];
 
 @Entity({ name: 'shops' })
 @Unique('uq_shop_name', ['name'])
-@Unique('uq_shop_code', ['code']) // Assuming code should also be unique if provided
+@Unique('uq_shop_code', ['code'])
 @Index(['managerId'])
 export class Shop extends Model {
   @Column({ type: 'varchar', length: 255 })

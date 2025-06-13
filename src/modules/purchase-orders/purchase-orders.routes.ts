@@ -97,7 +97,6 @@ export default class PurchaseOrderRouter extends BaseRouter {
   @searchable(['orderNumber', 'supplier.name', 'notes'])
   async getAllPurchaseOrders(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
 
     await this.pipe(res, req, next, () =>
       this.service.findAllPurchaseOrders({
@@ -105,7 +104,6 @@ export default class PurchaseOrderRouter extends BaseRouter {
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm: searchTerm,
       }),
     );
   }
@@ -144,8 +142,8 @@ export default class PurchaseOrderRouter extends BaseRouter {
   async getPurchaseOrderById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
-    await this.pipe(res, req, next, () => this.service.findPurchaseOrderById(id, userId));
+
+    await this.pipe(res, req, next, () => this.service.findPurchaseOrderById(id));
   }
 
   /**
@@ -439,15 +437,12 @@ export default class PurchaseOrderRouter extends BaseRouter {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.deletePurchaseOrder(id, userId);
+        await this.service.deletePurchaseOrder(id);
       },
       204,
     );

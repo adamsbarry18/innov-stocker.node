@@ -84,14 +84,12 @@ export default class ProductRouter extends BaseRouter {
   @searchable(['name', 'sku', 'description'])
   async getAllProducts(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { filters, sort } = buildTypeORMCriteria(req);
-    const searchTerm = req.searchQuery;
     await this.pipe(res, req, next, () =>
       this.service.findAllProducts({
         limit: req.pagination?.limit,
         offset: req.pagination?.offset,
         filters,
         sort,
-        searchTerm,
       }),
     );
   }
@@ -248,14 +246,13 @@ export default class ProductRouter extends BaseRouter {
   async deleteProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
+
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.deleteProduct(id, userId);
+        await this.service.deleteProduct(id);
       },
       204,
     );
@@ -301,14 +298,8 @@ export default class ProductRouter extends BaseRouter {
     const productId = parseInt(req.params.productId, 10);
     if (isNaN(productId)) return next(new BadRequestError('Invalid Product ID.'));
     const input: CreateProductImageInput = req.body;
-    const userId = req.user!.id;
-    await this.pipe(
-      res,
-      req,
-      next,
-      () => this.service.addProductImage(productId, input, userId),
-      201,
-    );
+
+    await this.pipe(res, req, next, () => this.service.addProductImage(productId, input), 201);
   }
 
   /**
@@ -382,9 +373,9 @@ export default class ProductRouter extends BaseRouter {
     const imageId = parseInt(req.params.imageId, 10);
     if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
     const input: UpdateProductImageInput = req.body;
-    const userId = Number(req.user?.id);
+
     await this.pipe(res, req, next, () =>
-      this.service.updateProductImage(productId, imageId, input, userId),
+      this.service.updateProductImage(productId, imageId, input),
     );
   }
 
@@ -420,10 +411,8 @@ export default class ProductRouter extends BaseRouter {
     const productId = parseInt(req.params.productId, 10);
     const imageId = parseInt(req.params.imageId, 10);
     if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
-    const userId = Number(req.user?.id);
-    await this.pipe(res, req, next, () =>
-      this.service.setPrimaryProductImage(productId, imageId, userId),
-    );
+
+    await this.pipe(res, req, next, () => this.service.setPrimaryProductImage(productId, imageId));
   }
 
   /**
@@ -456,13 +445,13 @@ export default class ProductRouter extends BaseRouter {
     const productId = parseInt(req.params.productId, 10);
     const imageId = parseInt(req.params.imageId, 10);
     if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
-    const userId = Number(req.user?.id);
+
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.service.deleteProductImage(productId, imageId, userId);
+        await this.service.deleteProductImage(productId, imageId);
       },
       204,
     );
