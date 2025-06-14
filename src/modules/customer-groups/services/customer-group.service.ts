@@ -1,20 +1,15 @@
 import logger from '@/lib/logger';
-import { CustomerGroupRepository } from '../data/customer-group.repository';
-import {
-  type CreateCustomerGroupInput,
-  type UpdateCustomerGroupInput,
-  type CustomerGroupApiResponse,
-  type CustomerGroup,
-  customerGroupValidationInputErrors,
+import { CustomerGroupRepository, CustomerGroup } from '../index';
+import type {
+  CreateCustomerGroupInput,
+  UpdateCustomerGroupInput,
+  CustomerGroupApiResponse,
 } from '../models/customer-group.entity';
+import { customerGroupValidationInputErrors } from '../models/customer-group.entity';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
-import { CustomerRepository } from '@/modules/customers/data/customer.repository';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { CustomerRepository } from '@/modules/customers';
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 let instance: CustomerGroupService | null = null;
 

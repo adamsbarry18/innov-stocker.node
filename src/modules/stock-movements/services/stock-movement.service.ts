@@ -9,11 +9,11 @@ import {
   type StockMovementApiResponse,
   StockMovementType,
   createStockMovementSchema,
-} from '../models/stock-movement.entity';
+} from '../index';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';
-import { StockMovementRepository } from '../data/stock-movement.repository';
+import { StockMovementRepository } from '../index';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
 import {

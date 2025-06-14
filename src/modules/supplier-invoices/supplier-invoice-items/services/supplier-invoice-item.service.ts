@@ -8,7 +8,7 @@ import {
   createSupplierInvoiceItemSchema,
   updateSupplierInvoiceItemSchema,
   supplierInvoiceItemValidationInputErrors,
-} from '../models/supplier-invoice-item.entity';
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -18,7 +18,7 @@ import {
 import logger from '@/lib/logger';
 import { type EntityManager } from 'typeorm';
 import { SupplierInvoiceRepository } from '@/modules/supplier-invoices/data/supplier-invoice.repository';
-import { SupplierInvoiceItemRepository } from '../data/supplier-invoice-item.repository';
+import { SupplierInvoiceItemRepository } from '../index';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import {
   SupplierInvoice,

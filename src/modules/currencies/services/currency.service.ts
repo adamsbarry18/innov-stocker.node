@@ -1,21 +1,16 @@
-import { CompanyRepository } from '@/modules/compagnies/data/company.repository';
-import { CurrencyRepository } from '../data/currency.repository';
+import { CompanyRepository } from '@/modules/compagnies';
+import { CurrencyRepository, Currency } from '../index';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
-import {
-  type CurrencyApiResponse,
-  type Currency,
-  type CreateCurrencyInput,
-  currencyValidationInputErrors,
-  type UpdateCurrencyInput,
+import type {
+  CurrencyApiResponse,
+  CreateCurrencyInput,
+  UpdateCurrencyInput,
 } from '../models/currency.entity';
+import { currencyValidationInputErrors } from '../models/currency.entity';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type CompanyApiResponse } from '@/modules/compagnies/models/company.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 let instance: CurrencyService | null = null;
 

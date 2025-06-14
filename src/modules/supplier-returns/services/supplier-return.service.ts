@@ -10,7 +10,7 @@ import { type FindManyOptions, type FindOptionsWhere, IsNull, type EntityManager
 import { appDataSource } from '@/database/data-source';
 import dayjs from 'dayjs';
 
-import { SupplierReturnRepository } from '../data/supplier-return.repository';
+import { SupplierReturnRepository } from '../index';
 import { SupplierReturnItemRepository } from '../supplier-return-items/data/supplier-return-item.repository';
 import { SupplierRepository } from '@/modules/suppliers/data/supplier.repository';
 import { ProductRepository } from '@/modules/products/data/product.repository';
@@ -28,7 +28,7 @@ import {
   type SupplierReturnApiResponse,
   type ShipSupplierReturnInput,
   type CompleteSupplierReturnInput,
-} from '../models/supplier-return.entity';
+} from '../index';
 import {
   SupplierReturnItem,
   supplierReturnItemValidationInputErrors,

@@ -7,45 +7,33 @@ import {
 } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, IsNull, type EntityManager } from 'typeorm';
-import { CustomerInvoiceRepository } from '../data/customer-invoice.repository';
-import { CustomerRepository } from '@/modules/customers/data/customer.repository';
-import { CurrencyRepository } from '@/modules/currencies/data/currency.repository';
-import { AddressRepository } from '@/modules/addresses/data/address.repository';
-import { ProductRepository } from '@/modules/products/data/product.repository';
-import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
-import { UserRepository } from '@/modules/users';
-import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
-import { SalesOrderItemRepository } from '@/modules/sales-orders/sales-order-items/data/sales-order-item.repository';
-import { DeliveryItemRepository } from '@/modules/deliveries/delivery-items/data/delivery-item.repository';
 import {
   CustomerInvoice,
+  CustomerInvoiceSalesOrderLink,
+  CustomerInvoiceRepository,
   CustomerInvoiceStatus,
+  CreateCustomerInvoiceInput,
+  UpdateCustomerInvoiceInput,
+  CustomerInvoiceApiResponse,
   customerInvoiceValidationInputErrors,
-  type CreateCustomerInvoiceInput,
-  type CustomerInvoiceApiResponse,
-  type UpdateCustomerInvoiceInput,
-} from '../models/customer-invoice.entity';
-import { appDataSource } from '@/database/data-source';
-import { Customer } from '@/modules/customers/models/customer.entity';
-import { Currency } from '@/modules/currencies/models/currency.entity';
-import { Address } from '@/modules/addresses/models/address.entity';
-import { Product } from '@/modules/products/models/product.entity';
-import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
-import { SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
-import { DeliveryItem } from '@/modules/deliveries/delivery-items/models/delivery-item.entity';
-import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
-import dayjs from 'dayjs';
-import {
+  CreateCustomerInvoiceItemInput,
   CustomerInvoiceItem,
   customerInvoiceItemValidationInputErrors,
-  type CreateCustomerInvoiceItemInput,
-} from '../customer-invoice-items/models/customer-invoice-item.entity';
-import { CustomerInvoiceSalesOrderLink } from '../models/customer-invoice-sales-order-link.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+} from '../index';
+
+import { CustomerRepository, Customer } from '@/modules/customers/index';
+import { AddressRepository, Address } from '@/modules/addresses';
+import { ProductRepository, Product } from '@/modules/products';
+import { ProductVariantRepository, ProductVariant } from '@/modules/product-variants';
+import { UserRepository } from '@/modules/users';
+import { SalesOrderRepository, SalesOrder } from '@/modules/sales-orders';
+import { SalesOrderItemRepository, SalesOrderItem } from '@/modules/sales-orders/sales-order-items';
+import { DeliveryItemRepository, DeliveryItem } from '@/modules/deliveries/delivery-items';
+import { CurrencyRepository, Currency } from '@/modules/currencies';
+
+import dayjs from 'dayjs';
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
+import { appDataSource } from '@/database/data-source';
 
 interface ValidationContext {
   isUpdate: boolean;

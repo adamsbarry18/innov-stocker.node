@@ -1,17 +1,22 @@
 import { appDataSource } from '@/database/data-source';
-import { SupplierRepository } from '../../suppliers/data/supplier.repository';
-import { WarehouseRepository } from '../../warehouses/data/warehouse.repository';
-import { ShopRepository } from '../../shops/data/shop.repository';
-import { ProductRepository } from '../../products/data/product.repository';
-import { StockMovementService } from '../../stock-movements/services/stock-movement.service';
+import { SupplierRepository } from '@/modules/suppliers';
+import { WarehouseRepository } from '@/modules/warehouses';
+import { ShopRepository } from '@/modules/shops';
+import { ProductRepository } from '@/modules/products';
+import { StockMovementService, StockMovementType } from '@/modules/stock-movements';
 import { v4 as uuidv4 } from 'uuid';
 import {
   PurchaseReception,
+  PurchaseReceptionStatus,
   type CreatePurchaseReceptionInput,
   type UpdatePurchaseReceptionInput,
   type PurchaseReceptionApiResponse,
-  PurchaseReceptionStatus,
-} from '../models/purchase-reception.entity';
+  PurchaseReceptionItem,
+  type CreatePurchaseReceptionItemInput,
+  PurchaseReceptionItemRepository,
+  purchaseReceptionValidationInputErrors,
+  PurchaseReceptionRepository,
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -19,12 +24,7 @@ import {
   ForbiddenError,
 } from '@/common/errors/httpErrors';
 import dayjs from 'dayjs';
-import { PurchaseReceptionRepository } from '../data/purchase-reception.repository';
-import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
-import {
-  PurchaseOrder,
-  PurchaseOrderStatus,
-} from '@/modules/purchase-orders/models/purchase-order.entity';
+import { ProductVariantRepository } from '@/modules/product-variants';
 import {
   type FindManyOptions,
   type FindOptionsWhere,
@@ -32,20 +32,13 @@ import {
   type Repository,
 } from 'typeorm';
 import logger from '@/lib/logger';
-import { PurchaseReceptionItemRepository } from '../purchase-reception-items/data/purchase-reception-item.repository';
-import { PurchaseOrderItemRepository } from '@/modules/purchase-orders/purchase-order-items/data/purchase-order-item.repository';
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 import {
-  type CreatePurchaseReceptionItemInput,
-  PurchaseReceptionItem,
-} from '../purchase-reception-items/models/purchase-reception-item.entity';
-import { PurchaseOrderItem } from '@/modules/purchase-orders/purchase-order-items/models/purchase-order-item.entity';
-import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
-import { purchaseReceptionValidationInputErrors } from '../models/purchase-reception.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+  PurchaseOrder,
+  PurchaseOrderItem,
+  PurchaseOrderItemRepository,
+  PurchaseOrderStatus,
+} from '@/modules/purchase-orders';
 
 let instance: PurchaseReceptionService | null = null;
 

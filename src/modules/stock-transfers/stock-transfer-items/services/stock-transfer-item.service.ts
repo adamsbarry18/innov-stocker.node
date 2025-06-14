@@ -6,7 +6,7 @@ import {
   createStockTransferItemSchema,
   updateStockTransferItemSchema,
   stockTransferItemValidationInputErrors,
-} from '../models/stock-transfer-item.entity';
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -16,7 +16,7 @@ import {
 import logger from '@/lib/logger';
 import { type EntityManager, IsNull } from 'typeorm';
 import { StockTransferRepository } from '../../data/stock-transfer.repository';
-import { StockTransferItemRepository } from '../data/stock-transfer-item.repository';
+import { StockTransferItemRepository } from '../index';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { StockTransfer, StockTransferStatus } from '../../models/stock-transfer.entity';

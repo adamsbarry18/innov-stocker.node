@@ -1,6 +1,6 @@
 import { appDataSource } from '@/database/data-source';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
-import { QuoteRepository } from '../data/quote.repository';
+import { QuoteRepository } from '../index';
 import { CustomerRepository } from '../../customers/data/customer.repository';
 import { CurrencyRepository } from '../../currencies/data/currency.repository';
 import { AddressRepository } from '../../addresses/data/address.repository';
@@ -24,8 +24,7 @@ import {
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
-import { QuoteItemRepository } from '../quote-items/data/quote-item.repository';
-import { QuoteItem, quoteItemValidationInputErrors } from '../quote-items/models/quote-item.entity';
+import { QuoteItemRepository, QuoteItem, quoteItemValidationInputErrors } from '../quote-items';
 import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
 import {
   ActionType,

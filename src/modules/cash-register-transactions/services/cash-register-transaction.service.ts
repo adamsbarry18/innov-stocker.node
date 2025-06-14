@@ -7,7 +7,8 @@ import {
   type CashRegisterTransactionApiResponse,
   CashRegisterTransactionType,
   createCashRegisterTransactionSchema,
-} from '../models/cash-register-transaction.entity';
+  CashRegisterTransactionRepository,
+} from '@/modules/cash-register-transactions';
 import {
   NotFoundError,
   BadRequestError,
@@ -16,24 +17,18 @@ import {
 } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
-import { CashRegisterTransactionRepository } from '../data/cash-register-transaction.repository';
-import { CashRegisterSessionRepository } from '@/modules/cash-register-sessions/data/cash-register-session.repository';
-import { PaymentMethodRepository } from '@/modules/payment-methods/data/payment_method.repository';
-import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
-import { User, UserRepository } from '@/modules/users';
-import { CashRegisterRepository } from '@/modules/cash-registers/data/cash-register.repository';
+
 import {
+  CashRegisterSessionRepository,
   CashRegisterSession,
   CashRegisterSessionStatus,
-} from '@/modules/cash-register-sessions/models/cash-register-session.entity';
-import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
-import { PaymentMethod } from '@/modules/payment-methods/models/payment-method.entity';
-import { type Payment, PaymentDirection } from '@/modules/payments/models/payment.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+} from '@/modules/cash-register-sessions';
+import { PaymentMethodRepository, PaymentMethod } from '@/modules/payment-methods';
+import { SalesOrderRepository, SalesOrder } from '@/modules/sales-orders';
+import { User, UserRepository } from '@/modules/users';
+import { CashRegisterRepository } from '@/modules/cash-registers';
+import { type Payment, PaymentDirection } from '@/modules/payments';
+import { ActionType, EntityType, UserActivityLogService } from '@/modules/user-activity-logs';
 
 interface ValidationContext {
   transactionalEntityManager?: EntityManager;

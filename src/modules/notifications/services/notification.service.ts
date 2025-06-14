@@ -1,11 +1,11 @@
-import { NotificationRepository } from '../data/notification.repository';
+import { NotificationRepository } from '../index';
 import { UserRepository } from '../../users/data/users.repository';
 import {
   type Notification,
   type CreateNotificationInput,
   type NotificationApiResponse,
   createNotificationSchema,
-} from '../models/notification.entity';
+} from '../index';
 import {
   NotFoundError,
   ServerError,

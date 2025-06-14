@@ -1,4 +1,4 @@
-import { ShopRepository } from '../data/shop.repository';
+import { ShopRepository } from '../index';
 import { AddressRepository } from '../../addresses/data/address.repository';
 import { UserRepository } from '../../users/data/users.repository';
 import {
@@ -7,7 +7,7 @@ import {
   type ShopApiResponse,
   Shop,
   shopValidationInputErrors,
-} from '../models/shop.entity';
+} from '../index';
 import { Address } from '../../addresses/models/address.entity';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';

@@ -1,19 +1,15 @@
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
-import { AddressRepository } from '../data/address.repository';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import logger from '@/lib/logger';
 import {
+  AddressRepository,
   type AddressApiResponse,
   type Address,
   type CreateAddressInput,
   addressValidationInputErrors,
   type UpdateAddressInput,
-} from '../models/address.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+} from '@/modules/addresses';
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 let instance: AddressService | null = null;
 
