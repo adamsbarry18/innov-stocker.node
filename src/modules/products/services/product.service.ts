@@ -30,6 +30,11 @@ import {
   type ProductSupplierApiResponse,
 } from '@/modules/product-suppliers/models/product-supplier.entity';
 import { type CompositeProductItem } from '../composite-product-items/models/composite-product-item.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: ProductService | null = null;
 
@@ -159,6 +164,14 @@ export class ProductService {
         includeRelations: true,
       });
       if (!apiResponse) throw new ServerError('Failed to map created product.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        savedProduct.id.toString(),
+        { productName: savedProduct.name, productSku: savedProduct.sku },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error(
@@ -303,6 +316,14 @@ export class ProductService {
 
       const apiResponse = this.mapProductToApiResponse(updatedProduct, { includeRelations: true });
       if (!apiResponse) throw new ServerError(`Failed to map updated product ${productId}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        productId.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error(
@@ -330,6 +351,12 @@ export class ProductService {
 
     try {
       await this.productRepository.softDelete(productId);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PRODUCT_MANAGEMENT,
+        productId.toString(),
+      );
     } catch (error) {
       logger.error(
         { message: `Error deleting product ${productId}`, error },
@@ -363,6 +390,14 @@ export class ProductService {
       );
     }
     const savedImage = await this.imageRepository.save(imageEntity);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.CREATE,
+      EntityType.PRODUCT_MANAGEMENT,
+      savedImage.id.toString(),
+      { productId: productId, imageUrl: savedImage.imageUrl, isPrimary: savedImage.isPrimary },
+    );
+
     return this.mapImageToApiResponse(savedImage) as ProductImageApiResponse;
   }
 
@@ -402,6 +437,14 @@ export class ProductService {
 
     await this.imageRepository.update(imageId, input);
     const updatedImage = await this.imageRepository.findById(imageId);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.UPDATE,
+      EntityType.PRODUCT_MANAGEMENT,
+      imageId.toString(),
+      { productId: productId, updatedFields: Object.keys(input) },
+    );
+
     return this.mapImageToApiResponse(updatedImage) as ProductImageApiResponse;
   }
 
@@ -421,6 +464,13 @@ export class ProductService {
       );
     }
     await this.imageRepository.softDelete(imageId);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.DELETE,
+      EntityType.PRODUCT_MANAGEMENT,
+      imageId.toString(),
+      { productId: productId },
+    );
   }
 
   /**
@@ -451,6 +501,14 @@ export class ProductService {
     });
 
     const updatedImage = await this.imageRepository.findById(imageId);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.UPDATE,
+      EntityType.PRODUCT_MANAGEMENT,
+      imageId.toString(),
+      { productId: productId, action: 'set_primary_image' },
+    );
+
     return this.mapImageToApiResponse(updatedImage) as ProductImageApiResponse;
   }
 

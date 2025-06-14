@@ -13,6 +13,11 @@ import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/htt
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: WarehouseService | null = null;
 
@@ -174,6 +179,14 @@ export class WarehouseService {
       const apiResponse = this.mapToApiResponse(populatedWarehouse);
       if (!apiResponse)
         throw new ServerError(`Failed to map newly created warehouse ${savedWarehouse.id}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PHYSICAL_LOCATION,
+        savedWarehouse.id.toString(),
+        { warehouseName: savedWarehouse.name, warehouseCode: savedWarehouse.code },
+      );
+
       return apiResponse;
     });
   }
@@ -267,6 +280,14 @@ export class WarehouseService {
 
       const apiResponse = this.mapToApiResponse(updatedWarehouse);
       if (!apiResponse) throw new ServerError(`Failed to map updated warehouse ${id}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PHYSICAL_LOCATION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     });
   }
@@ -289,6 +310,12 @@ export class WarehouseService {
       }*/
 
       await this.warehouseRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PHYSICAL_LOCATION,
+        id.toString(),
+      );
     } catch (error) {
       logger.error({ message: `Error deleting warehouse ${id}`, error }, 'WarehouseService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

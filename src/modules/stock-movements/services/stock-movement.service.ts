@@ -15,6 +15,11 @@ import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';
 import { StockMovementRepository } from '../data/stock-movement.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: StockMovementService | null = null;
 
@@ -148,6 +153,19 @@ export class StockMovementService {
         `Stock movement ID ${savedMovement.id} (Type: ${savedMovement.movementType}, Qty: ${savedMovement.quantity}) created.`,
       );
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.INVENTORY_AND_FLOW,
+        savedMovement.id.toString(),
+        {
+          movementType: savedMovement.movementType,
+          productId: savedMovement.productId,
+          quantity: savedMovement.quantity,
+          warehouseId: savedMovement.warehouseId,
+          shopId: savedMovement.shopId,
+        },
+      );
+
       return savedMovement;
     } catch (error) {
       logger.error({ message: `Error creating stock movement`, error, input: validatedInput });
@@ -180,6 +198,21 @@ export class StockMovementService {
     const apiResponse = this.mapToApiResponse(populatedMovement);
     if (!apiResponse)
       throw new ServerError(`Failed to map created manual stock adjustment ${movement.id}.`);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.CREATE,
+      EntityType.INVENTORY_AND_FLOW,
+      movement.id.toString(),
+      {
+        movementType: movement.movementType,
+        productId: movement.productId,
+        quantity: movement.quantity,
+        warehouseId: movement.warehouseId,
+        shopId: movement.shopId,
+        notes: movement.notes,
+      },
+    );
+
     return apiResponse;
   }
 

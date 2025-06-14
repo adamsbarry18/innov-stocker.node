@@ -2,7 +2,6 @@ import { SupplierRepository } from '../data/supplier.repository';
 
 import { AddressRepository } from '../../addresses/data/address.repository';
 import { CurrencyRepository } from '../../currencies/data/currency.repository';
-import { PurchaseOrderRepository } from '../../purchase-orders/data/purchase-order.repository';
 
 import {
   type CreateSupplierInput,
@@ -14,6 +13,11 @@ import {
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: SupplierService | null = null;
 
@@ -21,7 +25,6 @@ export class SupplierService {
   private readonly supplierRepository: SupplierRepository;
   private readonly addressRepository: AddressRepository;
   private readonly currencyRepository: CurrencyRepository;
-  private readonly purchaseOrderRepository: PurchaseOrderRepository;
 
   /**
    * Constructs a new SupplierService instance.
@@ -34,12 +37,10 @@ export class SupplierService {
     supplierRepository: SupplierRepository = new SupplierRepository(),
     addressRepository: AddressRepository = new AddressRepository(),
     currencyRepository: CurrencyRepository = new CurrencyRepository(),
-    purchaseOrderRepository: PurchaseOrderRepository = new PurchaseOrderRepository(),
   ) {
     this.supplierRepository = supplierRepository;
     this.addressRepository = addressRepository;
     this.currencyRepository = currencyRepository;
-    this.purchaseOrderRepository = purchaseOrderRepository;
   }
 
   /**
@@ -156,6 +157,14 @@ export class SupplierService {
           `Failed to map newly created supplier ${savedSupplier.id} to API response.`,
         );
       }
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.EXTERNAL_PARTY,
+        savedSupplier.id.toString(),
+        { supplierName: savedSupplier.name, supplierEmail: savedSupplier.email },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({ message: `Error creating supplier`, error, input }, 'SupplierService.create');
@@ -230,6 +239,14 @@ export class SupplierService {
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated supplier ${id} to API response.`);
       }
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.EXTERNAL_PARTY,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error(
@@ -259,6 +276,12 @@ export class SupplierService {
       // }
 
       await this.supplierRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.EXTERNAL_PARTY,
+        id.toString(),
+      );
     } catch (error) {
       logger.error({ message: `Error deleting supplier ${id}`, error }, 'SupplierService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -272,7 +295,6 @@ export class SupplierService {
    */
   static getInstance(): SupplierService {
     instance ??= new SupplierService();
-
     return instance;
   }
 }

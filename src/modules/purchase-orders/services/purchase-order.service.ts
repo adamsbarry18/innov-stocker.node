@@ -28,6 +28,11 @@ import { PurchaseOrderRepository } from '../data/purchase-order.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { PurchaseOrderItemRepository } from '../purchase-order-items/data/purchase-order-item.repository';
 import { PurchaseOrderItem } from '../purchase-order-items/models/purchase-order-item.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: PurchaseOrderService | null = null;
 
@@ -288,6 +293,14 @@ export class PurchaseOrderService {
         const apiResponse = this.mapToApiResponse(populatedOrder);
         if (!apiResponse)
           throw new ServerError(`Failed to map created purchase order ${savedOrderHeader.id}.`);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.CREATE,
+          EntityType.PROCUREMENT_PROCESS,
+          savedOrderHeader.id.toString(),
+          { orderNumber: savedOrderHeader.orderNumber },
+        );
+
         return apiResponse;
       });
     } catch (error) {
@@ -527,6 +540,14 @@ export class PurchaseOrderService {
       });
       const apiResponse = this.mapToApiResponse(populatedOrder);
       if (!apiResponse) throw new ServerError(`Failed to map updated purchase order ${id}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PROCUREMENT_PROCESS,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     });
   }
@@ -576,6 +597,14 @@ export class PurchaseOrderService {
     const updatedOrder = await this.orderRepository.findById(id);
     const apiResponse = this.mapToApiResponse(updatedOrder);
     if (!apiResponse) throw new ServerError(`Failed to map PO ${id} after status update.`);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.UPDATE,
+      EntityType.PROCUREMENT_PROCESS,
+      id.toString(),
+      { newStatus: status },
+    );
+
     return apiResponse;
   }
 
@@ -600,6 +629,12 @@ export class PurchaseOrderService {
       // }
 
       await this.orderRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PROCUREMENT_PROCESS,
+        id.toString(),
+      );
     } catch (error) {
       logger.error(
         { message: `Error deleting purchase order ${id}`, error },

@@ -12,6 +12,11 @@ import {
 } from '../models/customer-shipping-addresses.entity';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { Customer } from '../models/customer.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 export class CustomerShippingAddressService {
   private readonly customerRepository: CustomerRepository;
@@ -94,6 +99,13 @@ export class CustomerShippingAddressService {
 
       const savedShippingAddress = await shippingAddressRepo.save(newShippingAddressEntity);
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.EXTERNAL_PARTY,
+        savedShippingAddress.id.toString(),
+        { addressLabel: savedShippingAddress.addressLabel, customerId: customerId },
+      );
+
       if (savedShippingAddress.isDefault) {
         if (savedShippingAddress.id) {
           await this.customerShippingAddressRepository.unsetOtherDefaults(
@@ -175,6 +187,13 @@ export class CustomerShippingAddressService {
 
       await shippingAddressRepo.save(shippingAddress);
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.EXTERNAL_PARTY,
+        customerShippingAddressId.toString(),
+        { updatedFields: Object.keys(input), customerId: customerId },
+      );
+
       if (shippingAddress.isDefault) {
         if (shippingAddress.id) {
           await this.customerShippingAddressRepository.unsetOtherDefaults(
@@ -247,6 +266,13 @@ export class CustomerShippingAddressService {
       const addressIdOfDeleted = shippingAddress.addressId;
 
       await shippingAddressRepo.softDelete(customerShippingAddressId);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.EXTERNAL_PARTY,
+        customerShippingAddressId.toString(),
+        { customerId: customerId },
+      );
 
       if (wasDefault && customer.defaultShippingAddressId === addressIdOfDeleted) {
         customer.defaultShippingAddressId = null;

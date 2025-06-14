@@ -13,21 +13,18 @@ import { appDataSource } from '@/database/data-source';
 
 import { type PasswordStatus, SecurityLevel, User } from '../models/users.entity';
 
-// Options for user search queries
 interface FindUserOptions {
   where: FindOptionsWhere<User>;
   select?: (keyof User)[];
   withDeleted?: boolean;
 }
 
-// Options for listing users
 interface FindAllUsersOptions {
   skip?: number;
   take?: number;
   where?: FindOptionsWhere<User>;
   order?: FindManyOptions<User>['order'];
 }
-// Selectable fields for queries including the password hash
 const USER_WITH_PASSWORD_FIELDS: (keyof User)[] = [
   'id',
   'uid',
@@ -50,7 +47,6 @@ const USER_WITH_PASSWORD_FIELDS: (keyof User)[] = [
   'googleId',
 ];
 
-// Repository for handling user-related database operations
 export class UserRepository {
   private readonly repository: Repository<User>;
 
@@ -144,7 +140,7 @@ export class UserRepository {
     const where = { ...options.where, deletedAt: IsNull() };
     const [users, count] = await this.repository.findAndCount({
       where,
-      order: options.order || { createdAt: 'DESC' },
+      order: options.order ?? { createdAt: 'DESC' },
       skip: options.skip,
       take: options.take,
     });
@@ -212,7 +208,6 @@ export class UserRepository {
           ? { id: criteria, deletedAt: IsNull() }
           : { ...criteria, deletedAt: IsNull() };
 
-      // Security: prevent updating sensitive fields directly via this method
       const safeDto = { ...dto };
       delete safeDto.email;
       delete safeDto.uid;

@@ -9,7 +9,7 @@ import {
   filterable,
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
-import { BadRequestError, UnauthorizedError } from '../../common/errors/httpErrors';
+import { BadRequestError } from '../../common/errors/httpErrors';
 import { ProductCategoryService } from './services/product-category.service';
 import {
   CreateProductCategoryInput,
@@ -76,12 +76,11 @@ export default class ProductCategoryRouter extends BaseRouter {
    *         $ref: '#/components/responses/UnauthorizedError'
    */
   @Get('/product-categories')
-  @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
-  @paginate() // May not apply well if tree=true, service needs to handle
+  @authorize({ level: SecurityLevel.USER })
+  @paginate()
   @sortable(['id', 'name', 'createdAt'])
   @filterable(['name', 'parentCategoryId'])
   async getAllCategories(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const treeView = req.query.tree === 'true';
     const parentIdQuery = req.query.parentId;
     let parentId: number | null | undefined = undefined;
 
@@ -96,11 +95,10 @@ export default class ProductCategoryRouter extends BaseRouter {
 
     await this.pipe(res, req, next, () =>
       this.categoryService.findAll({
-        limit: treeView ? undefined : req.pagination?.limit,
-        offset: treeView ? undefined : req.pagination?.offset,
+        limit: req.pagination?.limit,
+        offset: req.pagination?.offset,
         filters,
         sort,
-        tree: treeView,
         parentId: parentId,
       }),
     );
@@ -186,10 +184,7 @@ export default class ProductCategoryRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
   async createCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
     const categoryInput: CreateProductCategoryInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
-    await this.pipe(res, req, next, () => this.categoryService.create(categoryInput, userId), 201);
+    await this.pipe(res, req, next, () => this.categoryService.create(categoryInput), 201);
   }
 
   /**
@@ -238,12 +233,7 @@ export default class ProductCategoryRouter extends BaseRouter {
       return next(new BadRequestError('Invalid category ID format.'));
     }
     const updateData: UpdateProductCategoryInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
-    await this.pipe(res, req, next, () =>
-      this.categoryService.update(categoryId, updateData, userId),
-    );
+    await this.pipe(res, req, next, () => this.categoryService.update(categoryId, updateData));
   }
 
   /**
@@ -282,15 +272,12 @@ export default class ProductCategoryRouter extends BaseRouter {
     if (isNaN(categoryId)) {
       return next(new BadRequestError('Invalid category ID format.'));
     }
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.categoryService.delete(categoryId, userId);
+        await this.categoryService.delete(categoryId);
       },
       204,
     );

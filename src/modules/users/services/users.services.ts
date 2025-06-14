@@ -544,17 +544,6 @@ export class UsersService {
   }
 
   /**
-   * Returns a singleton instance of UsersService.
-   * @returns The UsersService instance.
-   */
-  static getInstance(): UsersService {
-    if (!instance) {
-      instance = new UsersService(new UserRepository());
-    }
-    return instance;
-  }
-
-  /**
    * Finds an existing user by Google ID or email, or creates a new user if not found.
    * Associates the Google profile with the user account.
    * @param profile The Google profile object from passport-google-oauth20.
@@ -630,9 +619,6 @@ export class UsersService {
       uid: randomUUID(),
       passwordUpdatedAt: new Date(),
     });
-
-    // La validation Zod dans user.entity.ts gère maintenant password optional/nullable.
-    // La logique de placeholder temporaire pour le mot de passe n'est plus nécessaire.
     if (!newUser.isValid()) {
       logger.error(
         {
@@ -665,5 +651,14 @@ export class UsersService {
       logger.error(error, `Error saving new user from Google profile for email ${email}`);
       throw new ServerError('Could not create or link user account with Google profile.');
     }
+  }
+
+  /**
+   * Returns a singleton instance of UsersService.
+   * @returns The UsersService instance.
+   */
+  static getInstance(): UsersService {
+    instance ??= new UsersService(new UserRepository());
+    return instance;
   }
 }

@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { Entity, Column, BeforeInsert, BeforeUpdate, Unique } from 'typeorm';
 import { z } from 'zod';
 
-import { Model } from '../../../common/models/Model';
+import { Model } from '@/common/models/Model';
 
 export enum SecurityLevel {
   EXTERNAL = 1,
@@ -13,7 +13,7 @@ export enum SecurityLevel {
   NOBODY = 999,
 }
 
-export enum ActionType {
+export enum UserActionType {
   CREATE = 'create',
   READ = 'read',
   UPDATE = 'write',
@@ -23,9 +23,8 @@ export enum ActionType {
 
 export type AuthorisationRule =
   | { level: SecurityLevel; feature?: never; action?: never }
-  | { level?: never; feature: string; action: ActionType | string };
+  | { level?: never; feature: string; action: UserActionType | string };
 
-// CreateUserInput type and schema
 export type CreateUserInput = {
   email: string;
   password: string;
@@ -46,7 +45,6 @@ export type UpdateUserInput = Omit<Partial<CreateUserInput>, 'email'>;
 
 export const validationInputErrors: string[] = [];
 
-// UserApiResponse type (DTO)
 export type UserApiResponse = {
   id: number;
   uid: string | null;
@@ -67,12 +65,10 @@ export type UserApiResponse = {
   googleId?: string | null;
 };
 
-// Interne type for decode overrides
 export type DecodedOverrides = Map<number, number>;
 
 const BCRYPT_SALT_ROUNDS = 10;
 
-// Définition de l'enum déplacée ici
 export enum PasswordStatus {
   ACTIVE = 'ACTIVE',
   VALIDATING = 'VALIDATING',
@@ -216,15 +212,14 @@ export class User extends Model {
       password: z
         .string({ required_error: 'Password is required.' })
         .min(1, { message: 'Password cannot be empty.' })
-        .optional() // Make password optional in Zod schema as well for OAuth users
-        .nullable(), // Allow null
+        .optional()
+        .nullable(),
       isActive: z.boolean().optional(),
     });
 
     const result = userValidationSchema.safeParse(this);
 
     if (!result.success) {
-      // Pour chaque erreur, on récupère le path (champ concerné) et le message
       validationInputErrors.length = 0;
       validationInputErrors.push(
         ...result.error.issues.map((issue) => {

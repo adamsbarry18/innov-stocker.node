@@ -1,5 +1,3 @@
-// Assuming ProductRepository exists for checking usage, if not, this check needs adjustment.
-// import { ProductRepository } from '../../products/data/product.repository';
 import logger from '@/lib/logger';
 import { ProductCategoryRepository } from '../data/product-category.repository';
 import {
@@ -12,19 +10,18 @@ import {
 
 import { type FindManyOptions, type FindOptionsWhere, IsNull } from 'typeorm';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: ProductCategoryService | null = null;
 
 export class ProductCategoryService {
   private readonly categoryRepository: ProductCategoryRepository;
-  // private readonly productRepository: ProductRepository; // For checking if category is in use
-
-  constructor(
-    categoryRepository: ProductCategoryRepository = new ProductCategoryRepository(),
-    // productRepository: ProductRepository = new ProductRepository()
-  ) {
+  constructor(categoryRepository: ProductCategoryRepository = new ProductCategoryRepository()) {
     this.categoryRepository = categoryRepository;
-    // this.productRepository = productRepository;
   }
 
   mapToApiResponse(
@@ -58,43 +55,16 @@ export class ProductCategoryService {
     offset?: number;
     filters?: FindOptionsWhere<ProductCategory>;
     sort?: FindManyOptions<ProductCategory>['order'];
-    tree?: boolean; // To fetch as a tree
-    parentId?: number | null; // To fetch children of a specific parent or root categories
+    parentId?: number | null;
   }): Promise<
     { categories: ProductCategoryApiResponse[]; total?: number } | ProductCategoryApiResponse[]
   > {
     try {
-      if (options?.tree) {
-        const categoryTrees = await this.categoryRepository.findTrees({ relations: ['children'] });
-        // Filter root nodes if parentId is explicitly null or not provided in conjunction with tree=true for root
-        let rootCategories = categoryTrees;
-        if (options.parentId === null) {
-          // Explicitly request root categories for the tree
-          rootCategories = categoryTrees.filter(
-            (c) => c.parentCategoryId === null && c.deletedAt === null,
-          );
-        } else if (options.parentId !== undefined && options.parentId !== null) {
-          // This case for tree=true and parentId might be complex; findTrees usually returns all trees from roots.
-          // It might be better to fetch a specific subtree starting from parentId if TypeORM supports it well,
-          // or fetch all and then filter, or fetch the parent and its children recursively.
-          // For now, if tree=true and parentId is given, it's a bit ambiguous. Let's assume tree=true implies all trees.
-          // If client wants children of parentId as a tree, they should fetch parent by ID with children.
-        }
-        return rootCategories
-          .map((cat) => this.mapToApiResponse(cat, true))
-          .filter(Boolean) as ProductCategoryApiResponse[];
-      }
-
-      const effectiveFilters = options?.filters ? { ...options.filters } : {};
-      if (options?.parentId !== undefined) {
-        effectiveFilters.parentCategoryId = options.parentId === null ? IsNull() : options.parentId;
-      }
-
       const { categories, count } = await this.categoryRepository.findAll({
-        where: effectiveFilters,
+        where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { name: 'ASC' }, // Default sort by name
+        order: options?.sort ?? { name: 'ASC' },
       });
       const apiCategories = categories
         .map((cat) => this.mapToApiResponse(cat, false))
@@ -106,24 +76,17 @@ export class ProductCategoryService {
     }
   }
 
-  async create(
-    input: CreateProductCategoryInput,
-    createdByUserId?: number,
-  ): Promise<ProductCategoryApiResponse> {
+  async create(input: CreateProductCategoryInput): Promise<ProductCategoryApiResponse> {
     const { name, parentCategoryId } = input;
-
-    // Check for uniqueness (name per parent)
     const existingCategory = await this.categoryRepository.findByNameAndParent(
       name,
-      parentCategoryId || null,
+      parentCategoryId ?? null,
     );
     if (existingCategory) {
       throw new BadRequestError(
         `A category named '${name}' already exists under the specified parent.`,
       );
     }
-
-    // Validate parentCategoryId if provided
     if (parentCategoryId) {
       const parentExists = await this.categoryRepository.findById(parentCategoryId);
       if (!parentExists) {
@@ -133,7 +96,6 @@ export class ProductCategoryService {
 
     const categoryEntity = this.categoryRepository.create({
       ...input,
-      // createdByUserId: createdByUserId // If audit on ProductCategory
     });
 
     if (!categoryEntity.isValid()) {
@@ -150,6 +112,14 @@ export class ProductCategoryService {
           `Failed to map newly created product category ${savedCategory.id} to API response.`,
         );
       }
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        savedCategory.id.toString(),
+        { categoryName: savedCategory.name, parentCategoryId: savedCategory.parentCategoryId },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error(`Error creating product category: ${error}`);
@@ -160,11 +130,7 @@ export class ProductCategoryService {
     }
   }
 
-  async update(
-    id: number,
-    input: UpdateProductCategoryInput,
-    updatedByUserId?: number,
-  ): Promise<ProductCategoryApiResponse> {
+  async update(id: number, input: UpdateProductCategoryInput): Promise<ProductCategoryApiResponse> {
     try {
       const category = await this.categoryRepository.findById(id);
       if (!category) throw new NotFoundError(`Product category with id ${id} not found.`);
@@ -195,14 +161,12 @@ export class ProductCategoryService {
         }
       }
 
-      // Validate parentCategoryId if provided and changed
       if (parentCategoryId !== undefined && parentCategoryId !== category.parentCategoryId) {
         if (parentCategoryId !== null) {
           const parentExists = await this.categoryRepository.findById(parentCategoryId);
           if (!parentExists) {
             throw new BadRequestError(`New parent category with ID ${parentCategoryId} not found.`);
           }
-          // Prevent setting parent to itself or one of its descendants
           if (await this.isDescendant(parentCategoryId, id)) {
             throw new BadRequestError(
               "Cannot set a category's parent to itself or one of its descendants.",
@@ -211,9 +175,7 @@ export class ProductCategoryService {
         }
       }
 
-      // Apply updates to a temporary instance for validation
       const tempCategoryData = { ...category, ...input };
-      // Ensure parentCategoryId is correctly null if passed as such
       if (input.parentCategoryId === null) tempCategoryData.parentCategoryId = null;
 
       const tempCategory = this.categoryRepository.create(tempCategoryData);
@@ -224,7 +186,6 @@ export class ProductCategoryService {
       }
 
       const updatePayload: Partial<ProductCategory> = { ...input };
-      // updatePayload.updatedByUserId = updatedByUserId; // If audit
 
       const result = await this.categoryRepository.update(id, updatePayload);
       if (result.affected === 0) {
@@ -241,6 +202,14 @@ export class ProductCategoryService {
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated category ${id} to API response.`);
       }
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error(`Error updating product category ${id}: ${error}`);
@@ -255,7 +224,7 @@ export class ProductCategoryService {
     }
   }
 
-  async delete(id: number, deletedByUserId?: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     try {
       const category = await this.categoryRepository.findById(id);
       if (!category) throw new NotFoundError(`Product category with id ${id} not found.`);
@@ -268,6 +237,12 @@ export class ProductCategoryService {
       }
 
       await this.categoryRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PRODUCT_MANAGEMENT,
+        id.toString(),
+      );
     } catch (error) {
       logger.error(`Error deleting product category ${id}: ${error}`);
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -287,7 +262,6 @@ export class ProductCategoryService {
       }
       const currentCategory = await this.categoryRepository.findById(currentId);
       if (!currentCategory) {
-        // Should not happen if IDs are valid
         return false;
       }
       currentId = currentCategory.parentCategoryId;
@@ -296,9 +270,7 @@ export class ProductCategoryService {
   }
 
   static getInstance(): ProductCategoryService {
-    if (!instance) {
-      instance = new ProductCategoryService();
-    }
+    instance ??= new ProductCategoryService();
     return instance;
   }
 }

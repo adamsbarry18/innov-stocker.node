@@ -26,6 +26,11 @@ import dayjs from 'dayjs';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { QuoteItemRepository } from '../quote-items/data/quote-item.repository';
 import { QuoteItem, quoteItemValidationInputErrors } from '../quote-items/models/quote-item.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: QuoteService | null = null;
 
@@ -277,6 +282,14 @@ export class QuoteService {
         );
         throw new ServerError(`Failed to map created quote ${savedQuote.id}.`);
       }
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        savedQuote.id.toString(),
+        { quoteNumber: savedQuote.quoteNumber },
+      );
+
       return apiResponse;
     });
   }
@@ -453,6 +466,14 @@ export class QuoteService {
       });
       const apiResponse = this.mapToApiResponse(populatedQuote);
       if (!apiResponse) throw new ServerError(`Failed to map updated quote ${id}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     });
   }
@@ -482,6 +503,12 @@ export class QuoteService {
       // }
 
       await this.quoteRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        id.toString(),
+      );
     } catch (error) {
       logger.error({ message: `Error deleting quote ${id}`, error }, 'QuoteService.deleteQuote');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -529,6 +556,14 @@ export class QuoteService {
       });
       const apiResponse = this.mapToApiResponse(populatedQuote);
       if (!apiResponse) throw new ServerError(`Failed to map quote ${id} after status update.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        id.toString(),
+        { newStatus: status },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error(

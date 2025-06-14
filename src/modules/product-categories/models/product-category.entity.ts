@@ -2,7 +2,6 @@ import { Model } from '@/common/models/Model';
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Unique, Index } from 'typeorm';
 import { z } from 'zod';
 
-// Zod Schema for validation
 const productCategorySchemaValidation = z.object({
   name: z.string().min(1, { message: 'Category name is required.' }).max(255),
   description: z.string().nullable().optional(),
@@ -82,13 +81,13 @@ export class ProductCategory extends Model {
         response.children = this.children
           .map((child) => {
             if (child instanceof ProductCategory) {
-              return child.toApi(true); // Recursive call for children of children
+              return child.toApi(true);
             }
             return null;
           })
           .filter(Boolean) as ProductCategoryApiResponse[];
       } else {
-        response.children = []; // Always include the children array if requested, even if empty
+        response.children = [];
       }
     }
     return response;

@@ -191,11 +191,9 @@ export default class CashRegisterTransactionRouter extends BaseRouter {
   async getTransactionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transactionId = parseInt(req.params.id, 10);
     if (isNaN(transactionId)) {
-      // Use isNaN for robust check
       return next(new BadRequestError('Invalid ID format.'));
     }
-    const userId = req.user!.id;
-    await this.pipe(res, req, next, () => this.service.findTransactionById(transactionId, userId));
+    await this.pipe(res, req, next, () => this.service.findTransactionById(transactionId));
   }
 
   // No PUT or DELETE for cash register transactions as they are typically immutable.

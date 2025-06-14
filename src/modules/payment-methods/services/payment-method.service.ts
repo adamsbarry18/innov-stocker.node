@@ -1,5 +1,4 @@
 import { PaymentMethodRepository } from '../data/payment_method.repository';
-// import { PaymentRepository } from '../../payments/data/payment.repository';
 import {
   type CreatePaymentMethodInput,
   type UpdatePaymentMethodInput,
@@ -10,19 +9,18 @@ import {
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: PaymentMethodService | null = null;
 
 export class PaymentMethodService {
   private readonly methodRepository: PaymentMethodRepository;
-  // private readonly paymentRepository: PaymentRepository;
-
-  constructor(
-    methodRepository: PaymentMethodRepository = new PaymentMethodRepository(),
-    //  paymentRepository: PaymentRepository = new PaymentRepository(),
-  ) {
+  constructor(methodRepository: PaymentMethodRepository = new PaymentMethodRepository()) {
     this.methodRepository = methodRepository;
-    // this.paymentRepository = paymentRepository;
   }
 
   /**
@@ -119,6 +117,14 @@ export class PaymentMethodService {
         throw new ServerError(
           `Failed to map newly created payment method ${savedMethod.id} to API response.`,
         );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.SYSTEM_CONFIGURATION,
+        savedMethod.id.toString(),
+        { name: savedMethod.name },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error(
@@ -177,6 +183,14 @@ export class PaymentMethodService {
       const apiResponse = this.mapToApiResponse(updatedMethod);
       if (!apiResponse)
         throw new ServerError(`Failed to map updated method ${id} to API response.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SYSTEM_CONFIGURATION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error(
@@ -211,6 +225,13 @@ export class PaymentMethodService {
       }
 
       await this.methodRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.SYSTEM_CONFIGURATION,
+        id.toString(),
+        { name: method.name },
+      );
     } catch (error) {
       logger.error(
         { message: `Error deleting payment method ${id}`, error },

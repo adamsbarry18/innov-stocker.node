@@ -28,7 +28,12 @@ import {
 } from '@/modules/cash-register-sessions/models/cash-register-session.entity';
 import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
 import { PaymentMethod } from '@/modules/payment-methods/models/payment-method.entity';
-import { Payment, PaymentDirection } from '@/modules/payments/models/payment.entity';
+import { type Payment, PaymentDirection } from '@/modules/payments/models/payment.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 interface ValidationContext {
   transactionalEntityManager?: EntityManager;
@@ -365,6 +370,18 @@ export class CashRegisterTransactionService {
         );
 
         const response = await this.getPopulatedTransactionResponse(savedTransaction.id, manager);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.CREATE,
+          EntityType.FINANCIAL_TRANSACTION,
+          savedTransaction.id.toString(),
+          {
+            type: savedTransaction.type,
+            amount: savedTransaction.amount,
+            sessionId: savedTransaction.cashRegisterSessionId,
+          },
+        );
+
         return response;
       } catch (error: any) {
         logger.error(
@@ -382,10 +399,7 @@ export class CashRegisterTransactionService {
    * @param requestingUserId - The ID of the user requesting the transaction.
    * @returns The cash register transaction API response.
    */
-  async findTransactionById(
-    id: number,
-    requestingUserId: number,
-  ): Promise<CashRegisterTransactionApiResponse> {
+  async findTransactionById(id: number): Promise<CashRegisterTransactionApiResponse> {
     try {
       const transaction = await this.transactionRepository.findById(id, {
         relations: this.transactionRepository['getDefaultRelations'](),
@@ -426,7 +440,7 @@ export class CashRegisterTransactionService {
         where: options?.filters,
         skip: options?.offset,
         take: options?.limit,
-        order: options?.sort || { transactionTimestamp: 'DESC', createdAt: 'DESC' },
+        order: options?.sort ?? { transactionTimestamp: 'DESC', createdAt: 'DESC' },
         relations: this.transactionRepository['getDefaultRelations'](),
       });
       const apiTransactions = transactions
@@ -435,7 +449,7 @@ export class CashRegisterTransactionService {
       return { transactions: apiTransactions, total: count };
     } catch (error: any) {
       logger.error(
-        `[findAllTransactions] Error finding all transactions: ${error.message || JSON.stringify(error)}`,
+        `[findAllTransactions] Error finding all transactions: ${error.message ?? JSON.stringify(error)}`,
         { error, options },
       );
       throw new ServerError('Error finding all transactions.');
@@ -443,9 +457,8 @@ export class CashRegisterTransactionService {
   }
 
   static getInstance(): CashRegisterTransactionService {
-    if (!instance) {
-      instance = new CashRegisterTransactionService();
-    }
+    instance ??= new CashRegisterTransactionService();
+
     return instance;
   }
 }

@@ -9,6 +9,11 @@ import {
   addressValidationInputErrors,
   type UpdateAddressInput,
 } from '../models/address.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: AddressService | null = null;
 
@@ -78,6 +83,13 @@ export class AddressService {
     try {
       const savedAddress = await this.addressRepository.save(addressEntity);
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.SYSTEM_CONFIGURATION,
+        savedAddress.id.toString(),
+        { addressId: savedAddress.id, street: savedAddress.streetLine1, city: savedAddress.city },
+      );
+
       const apiResponse = this.mapToApiResponse(savedAddress);
       if (!apiResponse) {
         throw new ServerError(
@@ -117,6 +129,13 @@ export class AddressService {
       const updatedAddress = await this.addressRepository.findById(id);
       if (!updatedAddress) throw new ServerError('Failed to re-fetch address after update.');
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SYSTEM_CONFIGURATION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       const apiResponse = this.mapToApiResponse(updatedAddress);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated address ${id} to API response.`);
@@ -141,8 +160,12 @@ export class AddressService {
       // if (isUsed) throw new BadRequestError('Address is in use and cannot be deleted.');
 
       await this.addressRepository.softDelete(id);
-      // Optionnellement, logguer qui a fait la suppression
-      // await this.auditLogService.logAction(deletedByUserId, 'delete', 'address', id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.SYSTEM_CONFIGURATION,
+        id.toString(),
+      );
     } catch (error) {
       logger.error(`Error deleting address ${id}: ${error}`);
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
@@ -151,9 +174,7 @@ export class AddressService {
   }
 
   static getInstance(): AddressService {
-    if (!instance) {
-      instance = new AddressService();
-    }
+    instance ??= new AddressService();
     return instance;
   }
 }

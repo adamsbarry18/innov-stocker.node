@@ -16,20 +16,19 @@ const productSupplierSchemaValidation = z
     currencyId: z.number().int().positive({ message: 'Currency ID is required.' }),
     isDefaultSupplier: z.boolean().optional().default(false),
   })
-  .refine((data) => data.productId || data.productVariantId, {
+  .refine((data) => data.productId ?? data.productVariantId, {
     message: 'Either productId or productVariantId must be provided.',
-    path: ['productId'], // or a more general path
+    path: ['productId'],
   });
 
 export type CreateProductSupplierInput = {
-  // productId or productVariantId will come from context or path
   supplierId: number;
   supplierProductCode?: string | null;
   purchasePrice: number;
   currencyId: number;
   isDefaultSupplier?: boolean;
 };
-// Specific inputs for associating with product or variant
+
 export type CreateProductSupplierForProductInput = CreateProductSupplierInput & {
   productId: number;
   productVariantId?: never;
@@ -39,9 +38,7 @@ export type CreateProductSupplierForVariantInput = CreateProductSupplierInput & 
   productId?: never;
 };
 
-export type UpdateProductSupplierInput = Partial<Omit<CreateProductSupplierInput, 'supplierId'>>; // Cannot change supplier for an existing link, delete and recreate
-
-// Simplified Supplier DTO for embedding
+export type UpdateProductSupplierInput = Partial<Omit<CreateProductSupplierInput, 'supplierId'>>;
 type EmbeddedSupplierApiResponse = {
   id: number;
   name: string;
@@ -83,14 +80,14 @@ export class ProductSupplier extends Model {
   @ManyToOne(() => ProductVariant, (variant) => variant.productSuppliers, {
     onDelete: 'CASCADE',
     nullable: true,
-  }) // Assuming ProductVariant will have productSuppliers relation
+  })
   @JoinColumn({ name: 'product_variant_id' })
   productVariant?: ProductVariant | null;
 
   @Column({ type: 'int', name: 'supplier_id' })
   supplierId!: number;
 
-  @ManyToOne(() => Supplier, { eager: true, onDelete: 'CASCADE' }) // Cascade delete if supplier is deleted
+  @ManyToOne(() => Supplier, { eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'supplier_id' })
   supplier!: Supplier;
 

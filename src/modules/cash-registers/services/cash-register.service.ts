@@ -11,6 +11,11 @@ import {
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: CashRegisterService | null = null;
 
@@ -141,6 +146,14 @@ export class CashRegisterService {
 
     try {
       const savedRegister = await this.registerRepository.save(registerEntity);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.FINANCIAL_TRANSACTION,
+        savedRegister.id.toString(),
+        { name: savedRegister.name, currencyId: savedRegister.currencyId },
+      );
+
       const populatedRegister = await this.registerRepository.findById(savedRegister.id);
       const apiResponse = this.mapToApiResponse(populatedRegister);
       if (!apiResponse)
@@ -211,6 +224,13 @@ export class CashRegisterService {
       const updatedRegister = await this.registerRepository.findById(id);
       if (!updatedRegister) throw new ServerError('Failed to re-fetch cash register after update.');
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.FINANCIAL_TRANSACTION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       const apiResponse = this.mapToApiResponse(updatedRegister);
       if (!apiResponse) throw new ServerError(`Failed to map updated cash register ${id}.`);
       return apiResponse;
@@ -247,6 +267,12 @@ export class CashRegisterService {
       }
 
       await this.registerRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.FINANCIAL_TRANSACTION,
+        id.toString(),
+      );
     } catch (error) {
       logger.error(
         { message: `Error deleting cash register ${id}`, error },

@@ -43,6 +43,11 @@ import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop } from '@/modules/shops/models/shop.entity';
 import { PurchaseReceptionItem } from '@/modules/purchase-receptions/purchase-reception-items/models/purchase-reception-item.entity';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 interface ValidationContext {
   isUpdate: boolean;
@@ -88,6 +93,14 @@ export class SupplierReturnService {
         await this.createReturnItems(input.items, returnHeader.id, manager);
 
         const response = await this.getPopulatedReturnResponse(returnHeader.id, manager);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.CREATE,
+          EntityType.PROCUREMENT_PROCESS,
+          returnHeader.id.toString(),
+          { returnNumber: returnHeader.returnNumber, supplierId: returnHeader.supplierId },
+        );
+
         return response;
       } catch (error: any) {
         logger.error(
@@ -183,6 +196,13 @@ export class SupplierReturnService {
         await this.updateReturnItems(id, sanitizedInput.items, manager);
       }
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PROCUREMENT_PROCESS,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return this.getPopulatedReturnResponse(id, manager);
     });
   }
@@ -220,6 +240,14 @@ export class SupplierReturnService {
       logger.info(
         `Supplier Return ID ${returnId} approved by user ${approvedByUserId} ${supplierRmaNumber ? `with RMA ${supplierRmaNumber}` : ''}.`,
       );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.APPROVE,
+        EntityType.PROCUREMENT_PROCESS,
+        returnId.toString(),
+        { supplierRmaNumber: supplierRmaNumber, notes: notes },
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -270,6 +298,21 @@ export class SupplierReturnService {
       );
 
       logger.info(`Items shipped for Supplier Return ID ${returnId}. Status: ${newStatus}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.SHIP,
+        EntityType.PROCUREMENT_PROCESS,
+        returnId.toString(),
+        {
+          newStatus: newStatus,
+          shipDate: input.shipDate,
+          shippedItems: input.items.map((item) => ({
+            id: item.id,
+            quantityShipped: item.quantityShipped,
+          })),
+        },
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -307,6 +350,14 @@ export class SupplierReturnService {
       );
 
       logger.info(`Supplier Return ID ${returnId} completed by user ${completedByUserId}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.COMPLETE,
+        EntityType.PROCUREMENT_PROCESS,
+        returnId.toString(),
+        { resolutionNotes: input.resolutionNotes },
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -340,6 +391,13 @@ export class SupplierReturnService {
       );
 
       logger.info(`Supplier Return ID ${returnId} cancelled by user ${cancelledByUserId}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CANCEL,
+        EntityType.PROCUREMENT_PROCESS,
+        returnId.toString(),
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -358,9 +416,15 @@ export class SupplierReturnService {
 
       await this.returnRepository.softDelete(id);
       logger.info(`Supplier return '${supplierReturn.returnNumber}' (ID: ${id}) soft-deleted.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PROCUREMENT_PROCESS,
+        id.toString(),
+      );
     } catch (error: any) {
       logger.error(
-        `[deleteSupplierReturn] Error deleting supplier return: ${error.message || JSON.stringify(error)}`,
+        `[deleteSupplierReturn] Error deleting supplier return: ${error.message ?? JSON.stringify(error)}`,
         { id },
       );
       if (
