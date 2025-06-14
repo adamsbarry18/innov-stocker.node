@@ -10,6 +10,11 @@ import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/htt
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { BankAccountRepository } from '../data/bank-account.repository';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: BankAccountService | null = null;
 
@@ -107,6 +112,13 @@ export class BankAccountService {
     try {
       const savedAccount = await this.bankAccountRepository.save(accountEntity);
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.SYSTEM_CONFIGURATION,
+        savedAccount.id.toString(),
+        { accountName: savedAccount.accountName, currencyId: savedAccount.currencyId },
+      );
+
       const populatedAccount = await this.bankAccountRepository.findById(savedAccount.id);
       const apiResponse = this.mapToApiResponse(populatedAccount);
       if (!apiResponse)
@@ -184,6 +196,13 @@ export class BankAccountService {
       const updatedAccount = await this.bankAccountRepository.findById(id);
       if (!updatedAccount) throw new ServerError('Failed to re-fetch bank account after update.');
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SYSTEM_CONFIGURATION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       const apiResponse = this.mapToApiResponse(updatedAccount);
       if (!apiResponse) throw new ServerError(`Failed to map updated bank account ${id}.`);
       return apiResponse;
@@ -215,6 +234,12 @@ export class BankAccountService {
       }
 
       await this.bankAccountRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.SYSTEM_CONFIGURATION,
+        id.toString(),
+      );
     } catch (error) {
       logger.error(
         { message: `Error deleting bank account ${id}`, error },

@@ -11,6 +11,11 @@ import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/htt
 import logger from '@/lib/logger';
 import { IsNull } from 'typeorm';
 import { ProductRepository } from '@/modules/products/data/product.repository';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: ProductImageService | null = null;
 
@@ -34,18 +39,15 @@ export class ProductImageService {
   async addProductImage(
     productId: number,
     input: CreateProductImageInput,
-    createdByUserId: number, // For audit, if ProductImage entity had createdByUserId
   ): Promise<ProductImageApiResponse> {
     const product = await this.productRepository.findById(productId);
     if (!product) {
       throw new NotFoundError(`Product with ID ${productId} not found.`);
     }
 
-    // If this image is set as primary, unset any other primary image for this product
     if (input.isPrimary === true) {
-      await this.imageRepository.unsetPrimaryForOtherImages(productId, -1); // -1 as new image has no ID yet
+      await this.imageRepository.unsetPrimaryForOtherImages(productId, -1);
     } else {
-      // If no primary image exists for the product and this is the first image, set it as primary
       const primaryImage = await this.imageRepository.findPrimaryByProductId(productId);
       if (!primaryImage) {
         input.isPrimary = true;
@@ -55,7 +57,6 @@ export class ProductImageService {
     const imageEntity = this.imageRepository.create({
       ...input,
       productId,
-      // createdByUserId: createdByUserId, // If ProductImage entity has this field
     });
 
     if (!imageEntity.isValid()) {
@@ -69,6 +70,14 @@ export class ProductImageService {
 
       const apiResponse = this.mapToApiResponse(savedImage);
       if (!apiResponse) throw new ServerError('Failed to map created product image.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        savedImage.id.toString(),
+        { productId: productId, imageUrl: savedImage.imageUrl, isPrimary: savedImage.isPrimary },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({ message: `Error adding image to product ${productId}`, error, input });
@@ -77,7 +86,7 @@ export class ProductImageService {
   }
 
   async getProductImages(productId: number): Promise<ProductImageApiResponse[]> {
-    const product = await this.productRepository.findById(productId); // Ensure product exists
+    const product = await this.productRepository.findById(productId);
     if (!product) {
       throw new NotFoundError(`Product with ID ${productId} not found.`);
     }
@@ -101,18 +110,15 @@ export class ProductImageService {
     productId: number,
     imageId: number,
     input: UpdateProductImageInput,
-    updatedByUserId: number, // For audit
   ): Promise<ProductImageApiResponse> {
     const image = await this.imageRepository.findById(imageId);
     if (!image || image.productId !== productId) {
       throw new NotFoundError(`Image with ID ${imageId} not found for product ${productId}.`);
     }
 
-    // Handle primary status change
     if (input.isPrimary === true && !image.isPrimary) {
       await this.imageRepository.unsetPrimaryForOtherImages(productId, imageId);
     } else if (input.isPrimary === false && image.isPrimary) {
-      // Prevent unsetting the primary image if it's the only one
       const otherImages = await this.imageRepository.findByProductId(productId);
       if (otherImages.filter((img) => img.id !== imageId && !img.deletedAt).length === 0) {
         throw new BadRequestError(
@@ -130,12 +136,10 @@ export class ProductImageService {
     }
 
     const updatePayload: Partial<ProductImage> = { ...input };
-    // updatePayload.updatedByUserId = updatedByUserId; // If audit field exists
 
     try {
       const result = await this.imageRepository.update(imageId, updatePayload);
       if (result.affected === 0) {
-        // This might happen if the image was deleted between find and update
         const stillExists = await this.imageRepository.findById(imageId);
         if (!stillExists || stillExists.productId !== productId)
           throw new NotFoundError(
@@ -148,6 +152,14 @@ export class ProductImageService {
 
       const apiResponse = this.mapToApiResponse(updatedImage);
       if (!apiResponse) throw new ServerError('Failed to map updated product image.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        imageId.toString(),
+        { productId: productId, updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({
@@ -160,11 +172,7 @@ export class ProductImageService {
     }
   }
 
-  async deleteProductImage(
-    productId: number,
-    imageId: number,
-    deletedByUserId: number,
-  ): Promise<void> {
+  async deleteProductImage(productId: number, imageId: number): Promise<void> {
     const image = await this.imageRepository.findById(imageId);
     if (!image || image.productId !== productId) {
       throw new NotFoundError(`Image with ID ${imageId} not found for product ${productId}.`);
@@ -178,6 +186,13 @@ export class ProductImageService {
 
     try {
       await this.imageRepository.softDelete(imageId);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PRODUCT_MANAGEMENT,
+        imageId.toString(),
+        { productId: productId },
+      );
     } catch (error) {
       logger.error({ message: `Error deleting image ${imageId} for product ${productId}`, error });
       throw new ServerError('Error deleting product image.');
@@ -187,7 +202,6 @@ export class ProductImageService {
   async setPrimaryProductImage(
     productId: number,
     imageId: number,
-    userId: number,
   ): Promise<ProductImageApiResponse> {
     const product = await this.productRepository.findById(productId);
     if (!product) throw new NotFoundError(`Product with ID ${productId} not found.`);
@@ -211,13 +225,19 @@ export class ProductImageService {
     });
 
     const updatedImage = await this.imageRepository.findById(imageId);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.UPDATE,
+      EntityType.PRODUCT_MANAGEMENT,
+      imageId.toString(),
+      { productId: productId, action: 'set_primary_image' },
+    );
+
     return this.mapToApiResponse(updatedImage) as ProductImageApiResponse;
   }
 
   static getInstance(): ProductImageService {
-    if (!instance) {
-      instance = new ProductImageService();
-    }
+    instance ??= new ProductImageService();
     return instance;
   }
 }

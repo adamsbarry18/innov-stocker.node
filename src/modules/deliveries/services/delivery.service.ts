@@ -30,6 +30,11 @@ import { DeliveryItemRepository } from '../delivery-items/data/delivery-item.rep
 import { DeliveryItem } from '../delivery-items/models/delivery-item.entity';
 import { SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: DeliveryService | null = null;
 
@@ -72,6 +77,13 @@ export class DeliveryService {
         deliveryData,
         input.items,
         salesOrder,
+      );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        savedDelivery.id.toString(),
+        { deliveryNumber: savedDelivery.deliveryNumber },
       );
 
       return this.getDeliveryResponse(savedDelivery.id, manager);
@@ -146,6 +158,14 @@ export class DeliveryService {
         updatedByUserId,
         salesOrder,
       );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return this.getDeliveryResponse(updatedDelivery.id, manager);
     });
   }
@@ -180,6 +200,13 @@ export class DeliveryService {
         manager,
       );
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.SHIP,
+        EntityType.INVENTORY_AND_FLOW,
+        deliveryId.toString(),
+        { deliveryNumber: delivery.deliveryNumber, actualShipDate: delivery.deliveryDate },
+      );
+
       return this.getDeliveryResponse(deliveryId, manager);
     });
   }
@@ -202,6 +229,14 @@ export class DeliveryService {
       delivery.updatedByUserId = deliveredByUserId;
 
       await this.deliveryRepository.save(delivery, manager);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.COMPLETE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        deliveryId.toString(),
+        { deliveryNumber: delivery.deliveryNumber },
+      );
+
       return this.getDeliveryResponse(deliveryId, manager);
     });
   }
@@ -231,6 +266,13 @@ export class DeliveryService {
 
       try {
         await this.deliveryRepository.softDelete(id, manager);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.DELETE,
+          EntityType.SALES_AND_DISTRIBUTION,
+          id.toString(),
+          { deliveryNumber: delivery.deliveryNumber },
+        );
       } catch (error) {
         logger.error({ message: `Error deleting delivery ${id}`, error });
         throw new ServerError(`Error deleting delivery ${id}.`);

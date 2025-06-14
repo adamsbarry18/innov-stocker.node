@@ -16,6 +16,11 @@ import { appDataSource } from '@/database/data-source';
 import { CustomerGroupRepository } from '@/modules/customer-groups/data/customer-group.repository';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { CustomerShippingAddress } from '../models/customer-shipping-addresses.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: CustomerService | null = null;
 
@@ -228,6 +233,14 @@ export class CustomerService {
           `Failed to map newly created customer ${savedCustomer.id} to API response.`,
         );
       }
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.EXTERNAL_PARTY,
+        savedCustomer.id.toString(),
+        { customerName: savedCustomer.getDisplayName() },
+      );
+
       return apiResponse;
     });
   }
@@ -323,6 +336,14 @@ export class CustomerService {
       const apiResponse = this.mapToApiResponse(updatedCustomer);
       if (!apiResponse)
         throw new ServerError(`Failed to map updated customer ${id} to API response.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.EXTERNAL_PARTY,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     });
   }
@@ -339,6 +360,12 @@ export class CustomerService {
       // }
 
       await this.customerRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.EXTERNAL_PARTY,
+        id.toString(),
+      );
     } catch (error) {
       logger.error({ message: `Error deleting customer ${id}`, error }, 'CustomerService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

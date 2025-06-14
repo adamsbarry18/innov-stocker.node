@@ -57,6 +57,11 @@ import { CashRegisterTransactionService } from '@/modules/cash-register-transact
 import { CustomerInvoiceService } from '@/modules/customer-invoices/services/customer-invoice.service';
 import { SupplierInvoiceService } from '@/modules/supplier-invoices/services/supplier-invoice.service';
 import { createPaymentSchema } from '../models/payment.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: PaymentService | null = null;
 
@@ -115,6 +120,17 @@ export class PaymentService {
         );
 
         await this.updateFinancialAccountBalances(savedPayment, transactionalEntityManager);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.CREATE,
+          EntityType.FINANCIAL_TRANSACTION,
+          savedPayment.id.toString(),
+          {
+            amount: savedPayment.amount,
+            direction: savedPayment.direction,
+            paymentMethod: savedPayment.paymentMethod?.name,
+          },
+        );
 
         return this.mapToApiResponse(savedPayment) as PaymentApiResponse;
       } catch (error: any) {
@@ -213,6 +229,17 @@ export class PaymentService {
         logger.info(
           `Payment ID ${id} (Amount: ${payment.amount}) soft-deleted/reversed by user ${deletedByUserId}.`,
         );
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.DELETE,
+          EntityType.FINANCIAL_TRANSACTION,
+          id.toString(),
+          {
+            amount: payment.amount,
+            direction: payment.direction,
+            paymentMethod: payment.paymentMethod?.name,
+          },
+        );
       } catch (error: any) {
         logger.error(
           `[deletePayment] Error deleting/reversing payment ${id}: ${error.message ?? JSON.stringify(error)}`,
@@ -287,6 +314,14 @@ export class PaymentService {
       logger.info(
         `Refund payment created for Customer Return ID ${input.relatedReturnId}. Payment ID: ${savedPayment.id}`,
       );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.FINANCIAL_TRANSACTION,
+        savedPayment.id.toString(),
+        { amount: savedPayment.amount, relatedReturnId: savedPayment.relatedReturnId },
+      );
+
       return this.mapToApiResponse(savedPayment) as PaymentApiResponse;
     } catch (error: any) {
       logger.error(

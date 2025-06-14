@@ -72,10 +72,9 @@ export class ProductSupplierRepository {
       const where: FindOptionsWhere<ProductSupplier> = { supplierId, deletedAt: IsNull() };
       if (productId) where.productId = productId;
       if (productVariantId) where.productVariantId = productVariantId;
-      else where.productVariantId = IsNull(); // Important if productId is not null
+      else where.productVariantId = IsNull();
 
       if (!productId && !productVariantId) {
-        // Should not happen if validated
         throw new BadRequestError(
           'Either productId or productVariantId must be provided to find a specific supplier link.',
         );
@@ -129,7 +128,7 @@ export class ProductSupplierRepository {
         error.message?.includes('uq_product_supplier_link')
       ) {
         const itemType = link.productVariantId ? 'variant' : 'product';
-        const itemId = link.productVariantId || link.productId;
+        const itemId = link.productVariantId ?? link.productId;
         throw new BadRequestError(
           `Supplier ID ${link.supplierId} is already linked to this ${itemType} (ID: ${itemId}).`,
         );
@@ -167,9 +166,8 @@ export class ProductSupplierRepository {
         whereCondition.productVariantId = IsNull();
       } else if (productVariantId) {
         whereCondition.productVariantId = productVariantId;
-        // whereCondition.productId = IsNull(); // Not strictly necessary if variantId is unique enough
       } else {
-        return; // Should not happen
+        return;
       }
       await this.repository.update(whereCondition, { isDefaultSupplier: false });
     } catch (error) {

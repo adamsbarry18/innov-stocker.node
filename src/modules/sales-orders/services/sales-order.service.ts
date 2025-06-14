@@ -40,6 +40,11 @@ import {
 } from '../sales-order-items/models/sales-order-item.entity';
 import { StockMovementService } from '@/modules/stock-movements/services/stock-movement.service';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: SalesOrderService | null = null;
 
@@ -84,6 +89,13 @@ export class SalesOrderService {
           createdByUserId,
         );
       }
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        savedOrder.id.toString(),
+        { orderNumber: savedOrder.orderNumber },
+      );
 
       return this.getOrderResponse(savedOrder.id, manager);
     });
@@ -147,6 +159,14 @@ export class SalesOrderService {
       await this.validateInput(input, true, id);
 
       const updatedOrder = await this.performUpdate(manager, existingOrder, input, updatedByUserId);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return this.getOrderResponse(updatedOrder.id, manager);
     });
   }
@@ -176,6 +196,14 @@ export class SalesOrderService {
       await this.handleStatusSpecificActions(order, status, updatedByUserId, manager);
 
       await manager.getRepository(SalesOrder).update(id, { status, updatedByUserId });
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        id.toString(),
+        { newStatus: status },
+      );
+
       return this.getOrderResponse(id, manager);
     });
   }
@@ -195,6 +223,12 @@ export class SalesOrderService {
     }
 
     await this.orderRepository.softDelete(id);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.DELETE,
+      EntityType.SALES_AND_DISTRIBUTION,
+      id.toString(),
+    );
   }
 
   /**
@@ -216,6 +250,13 @@ export class SalesOrderService {
       status: QuoteStatus.CONVERTED_TO_ORDER,
       updatedByUserId: createdByUserId,
     });
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.CREATE,
+      EntityType.SALES_AND_DISTRIBUTION,
+      salesOrder.id.toString(),
+      { convertedFromQuoteId: quoteId, salesOrderNumber: salesOrder.orderNumber },
+    );
 
     return salesOrder;
   }

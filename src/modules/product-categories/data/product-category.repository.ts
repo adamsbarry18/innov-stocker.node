@@ -66,7 +66,7 @@ export class ProductCategoryRepository {
       const where = { ...options.where, deletedAt: IsNull() };
       const findOptions: FindManyOptions<ProductCategory> = {
         where,
-        order: options.order || { name: 'ASC' },
+        order: options.order ?? { name: 'ASC' },
         skip: options.skip,
         take: options.take,
         relations: options.relations,
@@ -81,11 +81,8 @@ export class ProductCategoryRepository {
 
   async findTrees(options?: { relations?: string[] }): Promise<ProductCategory[]> {
     try {
-      // findTrees loads all root categories and their descendants.
-      // Relations specified are loaded for all entities in the tree.
       return await this.treeRepository.findTrees({
-        // Now correctly calls on TreeRepository instance
-        relations: options?.relations || ['children', 'parentCategory'], // Ensure children and parent context are loaded
+        relations: options?.relations ?? ['children', 'parentCategory'],
       });
     } catch (error) {
       logger.error(`Error fetching product category trees: ${error}`);
@@ -93,11 +90,9 @@ export class ProductCategoryRepository {
     }
   }
 
-  // Alternative if you need a tree starting from a specific parent
   async findDescendantsTreeOf(parentCategory: ProductCategory): Promise<ProductCategory> {
     try {
       return await this.treeRepository.findDescendantsTree(parentCategory, {
-        // Now correctly calls on TreeRepository instance
         relations: ['children', 'parentCategory'],
       });
     } catch (error) {
@@ -119,7 +114,6 @@ export class ProductCategoryRepository {
         error.message?.includes('UNIQUE constraint failed') ||
         error.message?.includes('name_unique_by_parent')
       ) {
-        // Make sure BadRequestError is imported or handled appropriately
         throw new BadRequestError(
           `Product category with name '${category.name}' already exists under the specified parent.`,
         );
@@ -138,7 +132,6 @@ export class ProductCategoryRepository {
         error.message?.includes('UNIQUE constraint failed') ||
         error.message?.includes('name_unique_by_parent')
       ) {
-        // Make sure BadRequestError is imported or handled appropriately
         throw new BadRequestError(
           `Cannot update: product category with name '${dto.name}' may already exist under the specified parent.`,
         );
@@ -150,7 +143,6 @@ export class ProductCategoryRepository {
 
   async softDelete(id: number): Promise<UpdateResult> {
     try {
-      // The check for usage by products should be done in the service layer before calling this.
       return await this.repository.softDelete(id);
     } catch (error) {
       logger.error(`Error soft-deleting product category with id ${id}: ${error}`);

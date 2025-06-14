@@ -1,8 +1,7 @@
-// src/modules/products/models/product_image.entity.ts
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { z } from 'zod';
 import { Model } from '../../../common/models/Model';
-import { Product } from '../../products/models/product.entity'; // Forward reference
+import { Product } from '../../products/models/product.entity';
 
 const productImageSchemaValidation = z.object({
   productId: z.number().int().positive(),
@@ -12,12 +11,10 @@ const productImageSchemaValidation = z.object({
 });
 
 export type CreateProductImageInput = {
-  // productId will come from path or context
-  imageUrl: string; // Usually URL after upload, or direct upload handled by service
+  imageUrl: string;
   altText?: string | null;
   isPrimary?: boolean;
 };
-// Update typically involves changing altText or isPrimary
 export type UpdateProductImageInput = Partial<Omit<CreateProductImageInput, 'imageUrl'>>;
 
 export type ProductImageApiResponse = {
@@ -66,7 +63,7 @@ export class ProductImage extends Model {
 
   isValid(): boolean {
     const result = productImageSchemaValidation.safeParse({
-      productId: this.productId, // Include productId in validation
+      productId: this.productId,
       imageUrl: this.imageUrl,
       altText: this.altText,
       isPrimary: this.isPrimary,

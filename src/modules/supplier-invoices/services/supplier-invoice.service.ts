@@ -39,6 +39,11 @@ import {
   type CreateSupplierInvoiceItemInput,
   SupplierInvoiceItem,
 } from '../supplier-invoice-items/models/supplier-invoice-item.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 interface ValidationContext {
   isUpdate: boolean;
@@ -102,6 +107,14 @@ export class SupplierInvoiceService {
       }
 
       const response = await this.getPopulatedInvoiceResponse(invoiceHeader.id, manager);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.FINANCIAL_TRANSACTION,
+        invoiceHeader.id.toString(),
+        { invoiceNumber: invoiceHeader.invoiceNumber, supplierId: invoiceHeader.supplierId },
+      );
+
       return response;
     });
   }
@@ -192,6 +205,13 @@ export class SupplierInvoiceService {
 
       await this.recalculateAndUpdateTotals(id, updatedByUserId, manager);
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.FINANCIAL_TRANSACTION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return this.getPopulatedInvoiceResponse(id, manager);
     });
   }
@@ -215,6 +235,13 @@ export class SupplierInvoiceService {
 
     await this.invoiceRepository.update(id, { status, updatedByUserId });
 
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.UPDATE,
+      EntityType.FINANCIAL_TRANSACTION,
+      id.toString(),
+      { newStatus: status },
+    );
+
     return this.getPopulatedInvoiceResponse(id);
   }
 
@@ -230,6 +257,12 @@ export class SupplierInvoiceService {
       await this.validateNoPendingPayments(id);
 
       await this.invoiceRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.FINANCIAL_TRANSACTION,
+        id.toString(),
+      );
     } catch (error: any) {
       logger.error(
         `[deleteSupplierInvoice] Erreur lors de la suppression de la facture fournisseur: ${JSON.stringify(error)}`,
@@ -1045,6 +1078,18 @@ export class SupplierInvoiceService {
     await this.invoiceRepository.save(invoice, manager);
     logger.info(
       `Payment status updated for Supplier Invoice ${invoice.invoiceNumber}. New status: ${invoice.status}, Amount paid: ${invoice.amountPaid}.`,
+    );
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.UPDATE,
+      EntityType.FINANCIAL_TRANSACTION,
+      invoiceId.toString(),
+      {
+        action: 'payment_status_update',
+        newStatus: invoice.status,
+        amountPaid: invoice.amountPaid,
+        paymentAmountApplied: paymentAmount,
+      },
     );
   }
 }

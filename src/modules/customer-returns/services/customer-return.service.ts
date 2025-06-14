@@ -45,6 +45,11 @@ import { CustomerInvoice } from '@/modules/customer-invoices/models/customer-inv
 import { Product } from '@/modules/products/models/product.entity';
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 interface ValidationContext {
   isUpdate: boolean;
@@ -92,6 +97,14 @@ export class CustomerReturnService {
         await this.createReturnItems(input.items, returnHeader.id, manager);
 
         const response = await this.getPopulatedReturnResponse(returnHeader.id, manager);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.CREATE,
+          EntityType.SALES_AND_DISTRIBUTION,
+          returnHeader.id.toString(),
+          { returnNumber: returnHeader.returnNumber, customerId: returnHeader.customerId },
+        );
+
         return response;
       } catch (error: any) {
         logger.error(
@@ -187,6 +200,13 @@ export class CustomerReturnService {
         await this.updateReturnItems(id, sanitizedInput.items, manager);
       }
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return this.getPopulatedReturnResponse(id, manager);
     });
   }
@@ -219,6 +239,14 @@ export class CustomerReturnService {
         manager,
       );
       logger.info(`Customer Return ID ${returnId} approved by user ${approvedByUserId}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.APPROVE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        returnId.toString(),
+        { notes: input.notes },
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -253,6 +281,14 @@ export class CustomerReturnService {
       logger.info(
         `Customer Return ID ${returnId} rejected by user ${rejectedByUserId}. Reason: ${reason}`,
       );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE, // Pas de ActionType.REJECT, donc UPDATE
+        EntityType.SALES_AND_DISTRIBUTION,
+        returnId.toString(),
+        { status: CustomerReturnStatus.REJECTED, reason: reason },
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -300,6 +336,20 @@ export class CustomerReturnService {
       );
 
       logger.info(`Items received for Customer Return ID ${returnId}. Status: ${newStatus}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.RECEIVE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        returnId.toString(),
+        {
+          newStatus: newStatus,
+          receivedItems: input.items.map((item) => ({
+            id: item.id,
+            quantityReceived: item.quantityReceived,
+          })),
+        },
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -336,6 +386,14 @@ export class CustomerReturnService {
       );
 
       logger.info(`Customer Return ID ${returnId} completed by user ${completedByUserId}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.COMPLETE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        returnId.toString(),
+        { resolutionNotes: input.resolutionNotes },
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -368,6 +426,13 @@ export class CustomerReturnService {
       );
 
       logger.info(`Customer Return ID ${returnId} cancelled by user ${cancelledByUserId}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CANCEL,
+        EntityType.SALES_AND_DISTRIBUTION,
+        returnId.toString(),
+      );
+
       return this.getPopulatedReturnResponse(returnId, manager);
     });
   }
@@ -386,6 +451,12 @@ export class CustomerReturnService {
 
       await this.returnRepository.softDelete(id);
       logger.info(`Customer return '${customerReturn.returnNumber}' (ID: ${id}) soft-deleted.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.SALES_AND_DISTRIBUTION,
+        id.toString(),
+      );
     } catch (error: any) {
       logger.error(
         `[deleteCustomerReturn] Error deleting customer return: ${JSON.stringify(error)}`,

@@ -10,6 +10,11 @@ import {
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import { CustomerRepository } from '@/modules/customers/data/customer.repository';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: CustomerGroupService | null = null;
 
@@ -127,6 +132,14 @@ export class CustomerGroupService {
 
     try {
       const savedGroup = await this.groupRepository.save(groupEntity);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.EXTERNAL_PARTY,
+        savedGroup.id.toString(),
+        { name: savedGroup.name },
+      );
+
       const apiResponse = this.mapToApiResponse(savedGroup);
       if (!apiResponse) {
         throw new ServerError(
@@ -188,6 +201,13 @@ export class CustomerGroupService {
       const updatedGroup = await this.groupRepository.findById(id);
       if (!updatedGroup) throw new ServerError('Failed to re-fetch customer group after update.');
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.EXTERNAL_PARTY,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       const apiResponse = this.mapToApiResponse(updatedGroup);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated group ${id} to API response.`);
@@ -221,6 +241,12 @@ export class CustomerGroupService {
       }
 
       await this.groupRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.EXTERNAL_PARTY,
+        id.toString(),
+      );
     } catch (error: unknown) {
       logger.error(
         { message: `Error deleting customer group ${id}`, error: (error as Error).message },

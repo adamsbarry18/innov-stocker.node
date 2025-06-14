@@ -20,7 +20,6 @@ import {
 } from '@/common/errors/httpErrors';
 import dayjs from 'dayjs';
 import { PurchaseReceptionRepository } from '../data/purchase-reception.repository';
-import { PurchaseOrderRepository } from '@/modules/purchase-orders/data/purchase-order.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import {
   PurchaseOrder,
@@ -42,13 +41,17 @@ import {
 import { PurchaseOrderItem } from '@/modules/purchase-orders/purchase-order-items/models/purchase-order-item.entity';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
 import { purchaseReceptionValidationInputErrors } from '../models/purchase-reception.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: PurchaseReceptionService | null = null;
 
 export class PurchaseReceptionService {
   private readonly receptionRepository: PurchaseReceptionRepository;
   private readonly receptionItemRepository: PurchaseReceptionItemRepository;
-  private readonly orderRepository: PurchaseOrderRepository;
   private readonly orderItemRepository: PurchaseOrderItemRepository;
   private readonly supplierRepository: SupplierRepository;
   private readonly warehouseRepository: WarehouseRepository;
@@ -60,7 +63,6 @@ export class PurchaseReceptionService {
   constructor(
     receptionRepository: PurchaseReceptionRepository = new PurchaseReceptionRepository(),
     receptionItemRepository: PurchaseReceptionItemRepository = new PurchaseReceptionItemRepository(),
-    orderRepository: PurchaseOrderRepository = new PurchaseOrderRepository(),
     orderItemRepository: PurchaseOrderItemRepository = new PurchaseOrderItemRepository(),
     supplierRepository: SupplierRepository = new SupplierRepository(),
     warehouseRepository: WarehouseRepository = new WarehouseRepository(),
@@ -71,7 +73,6 @@ export class PurchaseReceptionService {
   ) {
     this.receptionRepository = receptionRepository;
     this.receptionItemRepository = receptionItemRepository;
-    this.orderRepository = orderRepository;
     this.orderItemRepository = orderItemRepository;
     this.supplierRepository = supplierRepository;
     this.warehouseRepository = warehouseRepository;
@@ -110,6 +111,14 @@ export class PurchaseReceptionService {
         input.items,
         transactionalEntityManager,
       );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PROCUREMENT_PROCESS,
+        savedReception.id.toString(),
+        { receptionNumber: savedReception.receptionNumber },
+      );
+
       return this.getReceptionResponse(savedReception.id, transactionalEntityManager);
     });
   }
@@ -162,6 +171,13 @@ export class PurchaseReceptionService {
       reception.status = PurchaseReceptionStatus.COMPLETE;
       reception.updatedByUserId = validatedByUserId;
       await transactionalEntityManager.getRepository(PurchaseReception).save(reception);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.VALIDATE,
+        EntityType.PROCUREMENT_PROCESS,
+        receptionId.toString(),
+        { receptionNumber: reception.receptionNumber },
+      );
 
       return this.getReceptionResponse(receptionId, transactionalEntityManager);
     });
@@ -288,6 +304,14 @@ export class PurchaseReceptionService {
 
         const apiResponse = this.mapToApiResponse(populatedReception);
         if (!apiResponse) throw new ServerError(`Failed to map updated reception ${id}.`);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.UPDATE,
+          EntityType.PROCUREMENT_PROCESS,
+          id.toString(),
+          { updatedFields: Object.keys(input) },
+        );
+
         return apiResponse;
       });
     } catch (error: any) {
@@ -334,6 +358,12 @@ export class PurchaseReceptionService {
         // const itemRepoTx = transactionalEntityManager.getRepository(PurchaseReceptionItem);
         // await itemRepoTx.softDelete({ purchaseReceptionId: id });
         await receptionRepoTx.softDelete(id);
+
+        await UserActivityLogService.getInstance().insertEntry(
+          ActionType.DELETE,
+          EntityType.PROCUREMENT_PROCESS,
+          id.toString(),
+        );
       });
     } catch (error) {
       logger.error(`Error deleting purchase reception ${id}`, error);

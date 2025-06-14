@@ -53,14 +53,12 @@ export default class ProductRouter extends BaseRouter {
     if (isNaN(productId)) return next(new BadRequestError('Invalid Product ID.'));
 
     const input: Omit<CreateProductSupplierForProductInput, 'productId'> = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
 
     await this.pipe(
       res,
       req,
       next,
-      () => this.productSupplierService.addSupplierToProduct(productId, input, userId),
+      () => this.productSupplierService.addSupplierToProduct(productId, input),
       201,
     );
   }
@@ -150,14 +148,12 @@ export default class ProductRouter extends BaseRouter {
 
     const input: Omit<CreateProductSupplierForVariantInput, 'productVariantId' | 'productId'> =
       req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
 
     await this.pipe(
       res,
       req,
       next,
-      () => this.productSupplierService.addSupplierToVariant(productId, variantId, input, userId),
+      () => this.productSupplierService.addSupplierToVariant(productId, variantId, input),
       201,
     );
   }
@@ -284,11 +280,9 @@ export default class ProductRouter extends BaseRouter {
     if (isNaN(linkId)) return next(new BadRequestError('Invalid link ID.'));
 
     const input: UpdateProductSupplierInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
 
     await this.pipe(res, req, next, () =>
-      this.productSupplierService.updateProductSupplierLink(linkId, input, userId),
+      this.productSupplierService.updateProductSupplierLink(linkId, input),
     );
   }
 
@@ -319,15 +313,12 @@ export default class ProductRouter extends BaseRouter {
     const linkId = parseInt(req.params.linkId, 10);
     if (isNaN(linkId)) return next(new BadRequestError('Invalid link ID.'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
-
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.productSupplierService.deleteProductSupplierLink(linkId, userId);
+        await this.productSupplierService.deleteProductSupplierLink(linkId);
       },
       204,
     );

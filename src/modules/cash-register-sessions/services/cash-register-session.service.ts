@@ -15,6 +15,11 @@ import { CashRegisterRepository } from '@/modules/cash-registers/data/cash-regis
 import { UserRepository } from '@/modules/users';
 import { CashRegister } from '@/modules/cash-registers/models/cash-register.entity';
 import { CashRegisterTransactionRepository } from '@/modules/cash-register-transactions/data/cash-register-transaction.repository';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: CashRegisterSessionService | null = null;
 
@@ -190,6 +195,16 @@ export class CashRegisterSessionService {
     try {
       const savedSession = await this.sessionRepository.save(sessionEntity);
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.FINANCIAL_TRANSACTION,
+        savedSession.id.toString(),
+        {
+          cashRegisterId: savedSession.cashRegisterId,
+          openingBalance: savedSession.openingBalance,
+        },
+      );
+
       const populatedSession = await this.sessionRepository.findById(savedSession.id);
       const apiResponse = this.mapToApiResponse(populatedSession);
       if (!apiResponse)
@@ -286,6 +301,17 @@ export class CashRegisterSessionService {
         where: { id: savedSession.id },
         relations: ['cashRegister', 'openedByUser', 'closedByUser', 'cashRegister.currency'],
       });
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.COMPLETE,
+        EntityType.FINANCIAL_TRANSACTION,
+        savedSession.id.toString(),
+        {
+          closingBalanceActual: savedSession.closingBalanceActual,
+          differenceAmount: savedSession.differenceAmount,
+        },
+      );
+
       const apiResponse = this.mapToApiResponse(populatedSession);
       if (!apiResponse) throw new ServerError(`Failed to map closed session ${savedSession.id}.`);
       return apiResponse;

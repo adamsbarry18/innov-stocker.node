@@ -2,7 +2,7 @@ import { BaseRouter } from '@/common/routing/BaseRouter';
 import { authorize, Delete, Get, Patch, Post, Put } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
 import { SecurityLevel } from '@/modules/users/models/users.entity';
-import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
+import { BadRequestError } from '@/common/errors/httpErrors';
 import { CreateProductImageInput, UpdateProductImageInput } from './models/product-image.entity';
 import { ProductImageService } from './services/product-image.service';
 
@@ -53,21 +53,12 @@ export default class ProductImageRouter extends BaseRouter {
     const productId = parseInt(req.params.productId, 10);
     if (isNaN(productId)) return next(new BadRequestError('Invalid Product ID.'));
 
-    // Assuming input contains imageUrl. File upload itself would be handled by middleware like Multer.
-    // The middleware would make file URL available, e.g., in req.file.path or req.body.imageUrl (if pre-uploaded)
     const input: CreateProductImageInput = req.body;
-    // Example if using multer and storing URL:
-    // if (req.file) { input.imageUrl = req.file.path; // Or a publicly accessible URL }
-    // else if (!input.imageUrl) { return next(new BadRequestError('Image URL or file is required.')); }
-
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(
       res,
       req,
       next,
-      () => this.productImageService.addProductImage(productId, input, userId),
+      () => this.productImageService.addProductImage(productId, input),
       201,
     );
   }
@@ -187,18 +178,16 @@ export default class ProductImageRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Put('/products/:productId/images/:imageId')
-  @authorize({ level: SecurityLevel.INTEGRATOR })
+  @authorize({ level: SecurityLevel.USER })
   async updateProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     const imageId = parseInt(req.params.imageId, 10);
     if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
 
     const input: UpdateProductImageInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
     await this.pipe(res, req, next, () =>
-      this.productImageService.updateProductImage(productId, imageId, input, userId),
+      this.productImageService.updateProductImage(productId, imageId, input),
     );
   }
 
@@ -237,17 +226,14 @@ export default class ProductImageRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Patch('/products/:productId/images/:imageId/set-primary')
-  @authorize({ level: SecurityLevel.INTEGRATOR })
+  @authorize({ level: SecurityLevel.USER })
   async setPrimaryProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     const imageId = parseInt(req.params.imageId, 10);
     if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
 
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
-
     await this.pipe(res, req, next, () =>
-      this.productImageService.setPrimaryProductImage(productId, imageId, userId),
+      this.productImageService.setPrimaryProductImage(productId, imageId),
     );
   }
 
@@ -282,21 +268,18 @@ export default class ProductImageRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Delete('/products/:productId/images/:imageId')
-  @authorize({ level: SecurityLevel.INTEGRATOR })
+  @authorize({ level: SecurityLevel.USER })
   async deleteProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     const imageId = parseInt(req.params.imageId, 10);
     if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
-
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.productImageService.deleteProductImage(productId, imageId, userId);
+        await this.productImageService.deleteProductImage(productId, imageId);
       },
       204,
     );

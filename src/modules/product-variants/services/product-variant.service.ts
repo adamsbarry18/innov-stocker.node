@@ -10,6 +10,11 @@ import logger from '@/lib/logger';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '../data/product-variant.repository';
 import { ProductImageRepository } from '@/modules/product-images/data/product-image.repository';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: ProductVariantService | null = null;
 
@@ -107,6 +112,18 @@ export class ProductVariantService {
       const populatedVariant = await this.variantRepository.findById(savedVariant.id);
       const apiResponse = this.mapToApiResponse(populatedVariant);
       if (!apiResponse) throw new ServerError('Failed to map created product variant.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        savedVariant.id.toString(),
+        {
+          productId: productId,
+          variantName: savedVariant.nameVariant,
+          variantSku: savedVariant.skuVariant,
+        },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({ message: `Error creating variant for product ${productId}`, error, input });
@@ -252,6 +269,14 @@ export class ProductVariantService {
       const apiResponse = this.mapToApiResponse(updatedVariant);
       if (!apiResponse)
         throw new ServerError(`Failed to map updated product variant ${variantId}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        variantId.toString(),
+        { productId: productId, updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({
@@ -289,6 +314,13 @@ export class ProductVariantService {
 
     try {
       await this.variantRepository.softDelete(variantId);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PRODUCT_MANAGEMENT,
+        variantId.toString(),
+        { productId: productId },
+      );
     } catch (error) {
       logger.error({ message: `Error deleting variant ${variantId}`, error });
       throw new ServerError('Error deleting product variant.');
@@ -301,7 +333,6 @@ export class ProductVariantService {
    */
   static getInstance(): ProductVariantService {
     instance ??= new ProductVariantService();
-
     return instance;
   }
 }

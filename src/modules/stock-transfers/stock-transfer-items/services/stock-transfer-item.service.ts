@@ -21,6 +21,11 @@ import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { StockTransfer, StockTransferStatus } from '../../models/stock-transfer.entity';
 import { appDataSource } from '@/database/data-source';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: StockTransferItemService | null = null;
 
@@ -174,6 +179,18 @@ export class StockTransferItemService {
       });
       const apiResponse = this.mapToApiResponse(populatedItem);
       if (!apiResponse) throw new ServerError('Failed to map created stock transfer item.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.INVENTORY_AND_FLOW,
+        savedItem.id.toString(),
+        {
+          stockTransferId: stockTransferId,
+          productId: savedItem.productId,
+          quantityRequested: savedItem.quantityRequested,
+        },
+      );
+
       return apiResponse;
     });
   }
@@ -288,6 +305,17 @@ export class StockTransferItemService {
       });
       const apiResponse = this.mapToApiResponse(populatedItem);
       if (!apiResponse) throw new ServerError('Failed to map updated stock transfer item.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.INVENTORY_AND_FLOW,
+        itemId.toString(),
+        {
+          stockTransferId: stockTransferId,
+          updatedFields: Object.keys(validatedInput),
+        },
+      );
+
       return apiResponse;
     });
   }
@@ -323,6 +351,13 @@ export class StockTransferItemService {
       await transferRepoTx.save(transfer);
 
       logger.info(`Stock transfer item ID ${itemId} removed from transfer ${stockTransferId}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.INVENTORY_AND_FLOW,
+        itemId.toString(),
+        { stockTransferId: stockTransferId },
+      );
     });
   }
 
@@ -331,9 +366,7 @@ export class StockTransferItemService {
    * @returns The singleton instance of StockTransferItemService.
    */
   static getInstance(): StockTransferItemService {
-    if (!instance) {
-      instance = new StockTransferItemService();
-    }
+    instance ??= new StockTransferItemService();
     return instance;
   }
 }

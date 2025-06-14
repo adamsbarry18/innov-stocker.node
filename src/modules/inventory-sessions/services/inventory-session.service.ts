@@ -24,6 +24,11 @@ import dayjs from 'dayjs';
 import { StockMovementService } from '@/modules/stock-movements/services/stock-movement.service';
 import { type EntityManager, type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: InventorySessionService | null = null;
 
@@ -143,6 +148,17 @@ export class InventorySessionService {
       logger.info(
         `Inventory session ID ${savedSession.id} started for ${input.warehouseId ? 'Warehouse ' + input.warehouseId : 'Shop ' + input.shopId} by user ${initiatedByUserId}.`,
       );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.INVENTORY_AND_FLOW,
+        savedSession.id.toString(),
+        {
+          id: savedSession.id,
+          location: input.warehouseId ? 'Warehouse ' + input.warehouseId : 'Shop ' + input.shopId,
+        },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({
@@ -295,6 +311,14 @@ export class InventorySessionService {
       );
       throw new ServerError(`Failed to map updated session ${sessionId}.`);
     }
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.UPDATE,
+      EntityType.INVENTORY_AND_FLOW,
+      sessionId.toString(),
+      { updatedFields: Object.keys(input) },
+    );
+
     return apiResponse;
   }
 
@@ -334,6 +358,14 @@ export class InventorySessionService {
       logger.info(
         `Inventory session ID ${sessionId} completed and validated by user ${validatedByUserId}.`,
       );
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.COMPLETE,
+        EntityType.INVENTORY_AND_FLOW,
+        sessionId.toString(),
+        { id: session.id, status: session.status },
+      );
+
       return this.getInventorySessionResponse(sessionId, transactionalEntityManager);
     });
   }
@@ -525,6 +557,14 @@ export class InventorySessionService {
     // If items were added, they remain but have no stock impact.
 
     await this.sessionRepository.save(session);
+
+    await UserActivityLogService.getInstance().insertEntry(
+      ActionType.CANCEL,
+      EntityType.INVENTORY_AND_FLOW,
+      sessionId.toString(),
+      { id: session.id },
+    );
+
     return this.mapToApiResponse(session) as InventorySessionApiResponse;
   }
 

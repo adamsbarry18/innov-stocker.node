@@ -13,6 +13,11 @@ import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/htt
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: ShopService | null = null;
 
@@ -166,6 +171,14 @@ export class ShopService {
 
       const apiResponse = this.mapToApiResponse(populatedShop);
       if (!apiResponse) throw new ServerError(`Failed to map newly created shop ${savedShop.id}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PHYSICAL_LOCATION,
+        savedShop.id.toString(),
+        { shopName: savedShop.name, shopCode: savedShop.code },
+      );
+
       return apiResponse;
     });
   }
@@ -258,6 +271,14 @@ export class ShopService {
 
       const apiResponse = this.mapToApiResponse(updatedShop);
       if (!apiResponse) throw new ServerError(`Failed to map updated shop ${id}.`);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PHYSICAL_LOCATION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     });
   }
@@ -278,6 +299,12 @@ export class ShopService {
       }
 
       await this.shopRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PHYSICAL_LOCATION,
+        id.toString(),
+      );
     } catch (error) {
       logger.error({ message: `Error deleting shop ${id}`, error }, 'ShopService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

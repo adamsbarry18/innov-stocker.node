@@ -13,6 +13,11 @@ import logger from '@/lib/logger';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { ProductSupplierRepository } from '../data/product-supplier.repository';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: ProductSupplierService | null = null;
 
@@ -58,8 +63,7 @@ export class ProductSupplierService {
 
   async addSupplierToProduct(
     productId: number,
-    input: Omit<CreateProductSupplierForProductInput, 'productId'>, // productId comes from path
-    createdByUserId: number,
+    input: Omit<CreateProductSupplierForProductInput, 'productId'>,
   ): Promise<ProductSupplierApiResponse> {
     const product = await this.productRepository.findById(productId);
     if (!product) {
@@ -86,7 +90,6 @@ export class ProductSupplierService {
       ...input,
       productId,
       productVariantId: null,
-      // createdByUserId: createdByUserId, // If entity has this
     });
 
     if (!psEntity.isValid()) {
@@ -100,10 +103,22 @@ export class ProductSupplierService {
       const populatedPs = await this.productSupplierRepository.findById(savedPs.id);
       const apiResponse = this.mapToApiResponse(populatedPs);
       if (!apiResponse) throw new ServerError('Failed to map created product supplier link.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        savedPs.id.toString(),
+        {
+          productId: productId,
+          supplierId: savedPs.supplierId,
+          isDefault: savedPs.isDefaultSupplier,
+        },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({ message: `Error adding supplier to product ${productId}`, error, input });
-      if (error instanceof BadRequestError) throw error;
+      if (error instanceof BadRequestError) error;
       throw new ServerError('Failed to add supplier to product.');
     }
   }
@@ -111,8 +126,7 @@ export class ProductSupplierService {
   async addSupplierToVariant(
     productId: number,
     variantId: number,
-    input: Omit<CreateProductSupplierForVariantInput, 'productVariantId'>, // variantId comes from path
-    createdByUserId: number,
+    input: Omit<CreateProductSupplierForVariantInput, 'productVariantId'>,
   ): Promise<ProductSupplierApiResponse> {
     const variant = await this.variantRepository.findById(variantId);
     if (!variant || variant.productId !== productId) {
@@ -139,9 +153,8 @@ export class ProductSupplierService {
 
     const psEntity = this.productSupplierRepository.create({
       ...input,
-      productId: null, // Explicitly null as it's for a variant
+      productId: null,
       productVariantId: variantId,
-      // createdByUserId: createdByUserId,
     });
 
     if (!psEntity.isValid()) {
@@ -156,6 +169,18 @@ export class ProductSupplierService {
       const apiResponse = this.mapToApiResponse(populatedPs);
       if (!apiResponse)
         throw new ServerError('Failed to map created product variant supplier link.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        savedPs.id.toString(),
+        {
+          productVariantId: variantId,
+          supplierId: savedPs.supplierId,
+          isDefault: savedPs.isDefaultSupplier,
+        },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({ message: `Error adding supplier to variant ${variantId}`, error, input });
@@ -195,7 +220,7 @@ export class ProductSupplierService {
     if (!link) {
       throw new NotFoundError(`Product supplier link with ID ${linkId} not found.`);
     }
-    // TODO: Authorization - ensure user can view this link, potentially based on product/variant access
+
     const apiResponse = this.mapToApiResponse(link);
     if (!apiResponse) throw new ServerError('Failed to map product supplier link.');
     return apiResponse;
@@ -204,14 +229,12 @@ export class ProductSupplierService {
   async updateProductSupplierLink(
     linkId: number,
     input: UpdateProductSupplierInput,
-    updatedByUserId: number,
   ): Promise<ProductSupplierApiResponse> {
     const link = await this.productSupplierRepository.findById(linkId);
     if (!link) {
       throw new NotFoundError(`Product supplier link with ID ${linkId} not found.`);
     }
 
-    // Validate currency if changed
     if (input.currencyId && input.currencyId !== link.currencyId) {
       if (!(await this.currencyRepository.findById(input.currencyId))) {
         throw new BadRequestError(`New currency with ID ${input.currencyId} not found.`);
@@ -227,7 +250,6 @@ export class ProductSupplierService {
     }
 
     const updatePayload: Partial<ProductSupplier> = { ...input };
-    // updatePayload.updatedByUserId = updatedByUserId; // If entity has this
 
     if (Object.keys(updatePayload).length === 0 && !input.hasOwnProperty('isDefaultSupplier')) {
       return this.mapToApiResponse(link) as ProductSupplierApiResponse;
@@ -257,6 +279,14 @@ export class ProductSupplierService {
 
       const apiResponse = this.mapToApiResponse(updatedLink);
       if (!apiResponse) throw new ServerError('Failed to map updated product supplier link.');
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.PRODUCT_MANAGEMENT,
+        linkId.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       return apiResponse;
     } catch (error) {
       logger.error({ message: `Error updating product supplier link ${linkId}`, error, input });
@@ -265,14 +295,19 @@ export class ProductSupplierService {
     }
   }
 
-  async deleteProductSupplierLink(linkId: number, deletedByUserId: number): Promise<void> {
+  async deleteProductSupplierLink(linkId: number): Promise<void> {
     const link = await this.productSupplierRepository.findById(linkId);
     if (!link) {
       throw new NotFoundError(`Product supplier link with ID ${linkId} not found.`);
     }
-    // No specific dependencies to check for deletion of the link itself, as it's a linking table record.
     try {
       await this.productSupplierRepository.softDelete(linkId);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.PRODUCT_MANAGEMENT,
+        linkId.toString(),
+      );
     } catch (error) {
       logger.error({ message: `Error deleting product supplier link ${linkId}`, error });
       throw new ServerError('Error deleting product supplier link.');
@@ -280,9 +315,7 @@ export class ProductSupplierService {
   }
 
   static getInstance(): ProductSupplierService {
-    if (!instance) {
-      instance = new ProductSupplierService();
-    }
+    instance ??= new ProductSupplierService();
     return instance;
   }
 }

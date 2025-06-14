@@ -11,6 +11,11 @@ import {
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type CompanyApiResponse } from '@/modules/compagnies/models/company.entity';
+import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
+import {
+  ActionType,
+  EntityType,
+} from '@/modules/user-activity-logs/models/user-activity-log.entity';
 
 let instance: CurrencyService | null = null;
 
@@ -108,6 +113,13 @@ export class CurrencyService {
     try {
       const savedCurrency = await this.currencyRepository.save(currencyEntity);
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.CREATE,
+        EntityType.SYSTEM_CONFIGURATION,
+        savedCurrency.id.toString(),
+        { code: savedCurrency.code, name: savedCurrency.name },
+      );
+
       const apiResponse = this.mapToApiResponse(savedCurrency);
       if (!apiResponse) {
         throw new ServerError(
@@ -154,6 +166,13 @@ export class CurrencyService {
       const updatedCurrency = await this.currencyRepository.findById(id);
       if (!updatedCurrency) throw new ServerError('Failed to re-fetch currency after update.');
 
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.UPDATE,
+        EntityType.SYSTEM_CONFIGURATION,
+        id.toString(),
+        { updatedFields: Object.keys(input) },
+      );
+
       const apiResponse = this.mapToApiResponse(updatedCurrency);
       if (!apiResponse) {
         throw new ServerError(`Failed to map updated currency ${id} to API response.`);
@@ -185,6 +204,12 @@ export class CurrencyService {
       }
 
       await this.currencyRepository.softDelete(id);
+
+      await UserActivityLogService.getInstance().insertEntry(
+        ActionType.DELETE,
+        EntityType.SYSTEM_CONFIGURATION,
+        id.toString(),
+      );
     } catch (error) {
       logger.error(`Error deleting currency ${id}: ${error}`);
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;

@@ -1,4 +1,4 @@
-import { ActionType } from '@/modules/users/models/users.entity';
+import { UserActionType } from '@/modules/users/models/users.entity';
 
 // Assuming EmbeddedUserDTO is defined globally
 const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
@@ -6,12 +6,12 @@ const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
 export const userActivityLogSchemas = {
   CreateUserActivityLogInput: {
     type: 'object',
-    required: ['userId', 'actionType', 'entityType'],
+    required: ['userId', 'UserActionType', 'entityType'],
     properties: {
       userId: { type: 'integer', description: 'ID of the user performing the action.' },
-      actionType: {
+      UserActionType: {
         type: 'string',
-        enum: Object.values(ActionType),
+        enum: Object.values(UserActionType),
         description: 'The type of action performed.',
       },
       entityType: {
@@ -54,7 +54,7 @@ export const userActivityLogSchemas = {
       },
       userId: { type: 'integer', example: 1 },
       user: { allOf: [EmbeddedUserDTORef], nullable: true },
-      actionType: { type: 'string', enum: Object.values(ActionType), example: 'update' },
+      UserActionType: { type: 'string', enum: Object.values(UserActionType), example: 'update' },
       entityType: { type: 'string', example: 'SalesOrder' },
       entityId: { type: 'string', nullable: true, example: 'SO-20250620-00001' },
       details: {
