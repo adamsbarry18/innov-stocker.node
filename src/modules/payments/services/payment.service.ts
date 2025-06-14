@@ -1,6 +1,6 @@
 import { appDataSource } from '@/database/data-source';
 import { IsNull, type EntityManager, type FindManyOptions, type FindOptionsWhere } from 'typeorm';
-import { PaymentRepository } from '../data/payment.repository';
+import { PaymentRepository } from '../index';
 import { CurrencyRepository } from '../../currencies/data/currency.repository';
 import { PaymentMethodRepository } from '../../payment-methods/data/payment_method.repository';
 import { CustomerRepository } from '../../customers/data/customer.repository';

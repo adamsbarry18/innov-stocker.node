@@ -1,21 +1,22 @@
-import { AddressRepository } from '../../addresses/data/address.repository';
+import { AddressRepository } from '@/modules/addresses';
 import { type CreateAddressInput } from '../../addresses/models/address.entity';
-import { CustomerRepository } from '../../customers/data/customer.repository';
+import { CustomerRepository } from '@/modules/customers';
 import { type z } from 'zod';
 
 import {
+  CustomerShippingAddress,
+  CustomerShippingAddressRepository,
   type CreateCustomerShippingAddressInput,
   type UpdateCustomerShippingAddressInput,
   type CustomerShippingAddressApiResponse,
-  type CustomerShippingAddress,
   createCustomerShippingAddressSchema,
   updateCustomerShippingAddressSchema,
-} from '../models/csa.entity';
+} from '../index';
+
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { appDataSource } from '@/database/data-source';
 import { type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';
-import { CustomerShippingAddressRepository } from '../data/csa.repository';
 
 let instance: CustomerShippingAddressService | null = null;
 

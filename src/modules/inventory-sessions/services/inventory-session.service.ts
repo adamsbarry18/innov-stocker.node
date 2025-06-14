@@ -6,7 +6,7 @@ import {
   ForbiddenError,
 } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
-import { InventorySessionRepository } from '../data/inventory-session.repository';
+import { InventorySessionRepository } from '../index';
 import { WarehouseRepository } from '@/modules/warehouses/data/warehouse.repository';
 import { ShopRepository } from '@/modules/shops/data/shop.repository';
 import { User, UserRepository } from '@/modules/users';

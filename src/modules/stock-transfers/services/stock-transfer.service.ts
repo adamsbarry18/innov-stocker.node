@@ -15,7 +15,7 @@ import {
   type StockTransferApiResponse,
   StockTransferStatus,
   stockTransferValidationInputErrors,
-} from '../models/stock-transfer.entity';
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -24,7 +24,7 @@ import {
 } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
-import { StockTransferRepository } from '../data/stock-transfer.repository';
+import { StockTransferRepository } from '../index';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop } from '@/modules/shops/models/shop.entity';

@@ -7,7 +7,7 @@ import {
   type SupplierInvoiceApiResponse,
   SupplierInvoiceStatus,
   supplierInvoiceValidationInputErrors,
-} from '../models/supplier-invoice.entity';
+} from '../index';
 import { SupplierInvoicePurchaseOrderLink } from '../models/supplier-invoice-purchse-order-link.entity';
 import {
   NotFoundError,
@@ -19,7 +19,7 @@ import logger from '@/lib/logger';
 import dayjs from 'dayjs';
 
 // Repositories
-import { SupplierInvoiceRepository } from '../data/supplier-invoice.repository';
+import { SupplierInvoiceRepository } from '../index';
 import { SupplierRepository } from '@/modules/suppliers/data/supplier.repository';
 import { CurrencyRepository } from '@/modules/currencies/data/currency.repository';
 import { ProductRepository } from '@/modules/products/data/product.repository';

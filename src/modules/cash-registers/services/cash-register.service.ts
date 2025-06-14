@@ -1,21 +1,17 @@
-import { CashRegisterRepository } from '../data/cash-register.repository';
-import { ShopRepository } from '../../shops/data/shop.repository';
-import { CurrencyRepository } from '../../currencies/data/currency.repository';
 import {
+  CashRegister,
   type CreateCashRegisterInput,
   type UpdateCashRegisterInput,
   type CashRegisterApiResponse,
-  type CashRegister,
   cashRegisterValidationInputErrors,
-} from '../models/cash-register.entity';
+  CashRegisterRepository,
+} from '@/modules/cash-registers';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { ActionType, EntityType, UserActivityLogService } from '@/modules/user-activity-logs';
+import { ShopRepository } from '@/modules/shops';
+import { CurrencyRepository } from '@/modules/currencies';
 
 let instance: CashRegisterService | null = null;
 

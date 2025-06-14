@@ -1,4 +1,4 @@
-import { PaymentMethodRepository } from '../data/payment_method.repository';
+import { PaymentMethodRepository } from '../index';
 import {
   type CreatePaymentMethodInput,
   type UpdatePaymentMethodInput,

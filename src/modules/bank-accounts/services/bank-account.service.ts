@@ -1,20 +1,16 @@
-import { CurrencyRepository } from '../../currencies/data/currency.repository';
 import {
+  BankAccount,
   type CreateBankAccountInput,
   type UpdateBankAccountInput,
   type BankAccountApiResponse,
-  type BankAccount,
   bankAccountValidationInputErrors,
-} from '../models/bank-account.entity';
+  BankAccountRepository,
+} from '@/modules/bank-accounts';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
-import { BankAccountRepository } from '../data/bank-account.repository';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { ActionType, EntityType, UserActivityLogService } from '@/modules/user-activity-logs';
+import { CurrencyRepository } from '@/modules/currencies';
 
 let instance: BankAccountService | null = null;
 

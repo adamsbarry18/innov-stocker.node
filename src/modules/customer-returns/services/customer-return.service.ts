@@ -10,19 +10,18 @@ import { type FindManyOptions, type FindOptionsWhere, IsNull, type EntityManager
 import { appDataSource } from '@/database/data-source';
 import dayjs from 'dayjs';
 
-import { CustomerReturnRepository } from '../data/customer-return.repository';
-import { CustomerRepository } from '@/modules/customers/data/customer.repository';
-import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
-import { CustomerInvoiceRepository } from '@/modules/customer-invoices/data/customer-invoice.repository';
-import { ProductRepository } from '@/modules/products/data/product.repository';
-import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
+import { Customer, CustomerRepository } from '@/modules/customers';
+import { SalesOrder, SalesOrderRepository } from '@/modules/sales-orders';
+import { CustomerInvoice, CustomerInvoiceRepository } from '@/modules/customer-invoices';
+import { Product, ProductRepository } from '@/modules/products';
+import { ProductVariant, ProductVariantRepository } from '@/modules/product-variants';
 import { User, UserRepository } from '@/modules/users';
-import { StockMovementService } from '@/modules/stock-movements/services/stock-movement.service';
-import { PaymentService } from '@/modules/payments/services/payment.service';
-// TODO: import { CreditNoteService } from '@/modules/credit-notes/services/credit-note.service';
+import { StockMovementService, StockMovementType } from '@/modules/stock-movements';
+import { PaymentService } from '@/modules/payments';
 
 import {
   CustomerReturn,
+  CustomerReturnRepository,
   CustomerReturnStatus,
   customerReturnValidationInputErrors,
   type CreateCustomerReturnInput,
@@ -31,25 +30,17 @@ import {
   type ApproveReturnInput,
   type ReceiveReturnInput,
   type CompleteReturnInput,
-} from '../models/customer-return.entity';
+} from '../index';
+
 import {
   CustomerReturnItem,
   customerReturnItemValidationInputErrors,
-  type CreateCustomerReturnItemInput,
+  CreateCustomerReturnItemInput,
   ReturnItemActionTaken,
   createCustomerReturnItemSchema,
-} from '../customer-return-items/models/customer-return-item.entity';
-import { Customer } from '@/modules/customers/models/customer.entity';
-import { SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
-import { CustomerInvoice } from '@/modules/customer-invoices/models/customer-invoice.entity';
-import { Product } from '@/modules/products/models/product.entity';
-import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
-import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+} from '../index';
+
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 interface ValidationContext {
   isUpdate: boolean;

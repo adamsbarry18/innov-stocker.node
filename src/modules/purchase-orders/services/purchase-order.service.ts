@@ -15,7 +15,7 @@ import {
   type PurchaseOrderApiResponse,
   PurchaseOrderStatus,
   purchaseOrderValidationInputErrors,
-} from '../models/purchase-order.entity';
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -24,7 +24,7 @@ import {
 } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
-import { PurchaseOrderRepository } from '../data/purchase-order.repository';
+import { PurchaseOrderRepository } from '../index';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { PurchaseOrderItemRepository } from '../purchase-order-items/data/purchase-order-item.repository';
 import { PurchaseOrderItem } from '../purchase-order-items/models/purchase-order-item.entity';

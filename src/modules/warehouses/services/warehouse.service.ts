@@ -1,4 +1,4 @@
-import { WarehouseRepository } from '../data/warehouse.repository';
+import { WarehouseRepository } from '../index';
 import { AddressRepository } from '../../addresses/data/address.repository';
 import { UserRepository } from '../../users/data/users.repository';
 import {
@@ -7,7 +7,7 @@ import {
   type WarehouseApiResponse,
   Warehouse,
   warehouseValidationInputErrors,
-} from '../models/warehouse.entity';
+} from '../index';
 import { Address } from '../../addresses/models/address.entity';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';

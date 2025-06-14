@@ -16,8 +16,8 @@ import {
 } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type EntityManager } from 'typeorm';
-import { DeliveryRepository } from '@/modules/deliveries/data/delivery.repository';
-import { DeliveryItemRepository } from '../data/delivery-item.repository';
+import { DeliveryRepository } from '@/modules/deliveries';
+import { DeliveryItemRepository } from '@/modules/deliveries/delivery-items';
 import { type Delivery, DeliveryStatus } from '@/modules/deliveries/models/delivery.entity';
 import { type SalesOrder } from '@/modules/sales-orders/models/sales-order.entity';
 import { type Product } from '@/modules/products/models/product.entity';

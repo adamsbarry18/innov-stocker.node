@@ -6,7 +6,7 @@ import {
   ForbiddenError,
 } from '@/common/errors/httpErrors';
 import { PurchaseOrderRepository } from '@/modules/purchase-orders/data/purchase-order.repository';
-import { PurchaseOrderItemRepository } from '../data/purchase-order-item.repository';
+import { PurchaseOrderItemRepository } from '../index';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import {
@@ -17,7 +17,7 @@ import {
   type CreatePurchaseOrderItemInput,
   type PurchaseOrderItemApiResponse,
   type UpdatePurchaseOrderItemInput,
-} from '../models/purchase-order-item.entity';
+} from '../index';
 import {
   PurchaseOrder,
   PurchaseOrderStatus,

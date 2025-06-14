@@ -1,11 +1,7 @@
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
-import {
-  Company,
-  type UpdateCompanyInput,
-  type CompanyApiResponse,
-  companyValidationInputErrors,
-} from '../models/company.entity';
-import { CompanyRepository } from '../data/company.repository';
+import { Company, CompanyRepository } from '../index';
+import type { UpdateCompanyInput, CompanyApiResponse } from '../models/company.entity';
+import { companyValidationInputErrors } from '../models/company.entity';
 import logger from '@/lib/logger';
 let instance: CompanyService | null = null;
 

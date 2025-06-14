@@ -1,18 +1,20 @@
 import { appDataSource } from '@/database/data-source';
 import { v4 as uuidv4 } from 'uuid';
 import { IsNull, type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';
-import { DeliveryRepository } from '../data/delivery.repository';
 import { UserRepository } from '../../users/data/users.repository';
 import { StockMovementService } from '../../stock-movements/services/stock-movement.service';
 
 import {
   Delivery,
+  DeliveryRepository,
+  DeliveryItemRepository,
+  DeliveryItem,
   type CreateDeliveryInput,
   type UpdateDeliveryInput,
   type DeliveryApiResponse,
   DeliveryStatus,
   deliveryValidationInputErrors,
-} from '../models/delivery.entity';
+} from '../index';
 import { type SalesOrder, SalesOrderStatus } from '../../sales-orders/models/sales-order.entity';
 import {
   NotFoundError,
@@ -26,8 +28,6 @@ import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.re
 import { Address } from '@/modules/addresses/models/address.entity';
 import { Warehouse } from '@/modules/warehouses/models/warehouse.entity';
 import { Shop } from '@/modules/shops/models/shop.entity';
-import { DeliveryItemRepository } from '../delivery-items/data/delivery-item.repository';
-import { DeliveryItem } from '../delivery-items/models/delivery-item.entity';
 import { SalesOrderItem } from '@/modules/sales-orders/sales-order-items/models/sales-order-item.entity';
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
 import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';

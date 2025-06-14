@@ -1,25 +1,22 @@
 import {
   CashRegisterSession,
+  CashRegisterSessionStatus,
   type OpenCashRegisterSessionInput,
   type CloseCashRegisterSessionInput,
   type CashRegisterSessionApiResponse,
-  CashRegisterSessionStatus,
   cashRegisterSessionValidationInputErrors,
-} from '../models/cash-register-session.entity';
+  CashRegisterSessionRepository,
+} from '@/modules/cash-register-sessions';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { IsNull, type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
-import { CashRegisterSessionRepository } from '../data/cash-register-session.repository';
+
 import { CashRegisterRepository } from '@/modules/cash-registers/data/cash-register.repository';
 import { UserRepository } from '@/modules/users';
-import { CashRegister } from '@/modules/cash-registers/models/cash-register.entity';
-import { CashRegisterTransactionRepository } from '@/modules/cash-register-transactions/data/cash-register-transaction.repository';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { CashRegister } from '@/modules/cash-registers';
+import { CashRegisterTransactionRepository } from '@/modules/cash-register-transactions';
+import { ActionType, EntityType, UserActivityLogService } from '@/modules/user-activity-logs';
 
 let instance: CashRegisterSessionService | null = null;
 

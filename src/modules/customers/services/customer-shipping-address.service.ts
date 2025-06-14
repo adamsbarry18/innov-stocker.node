@@ -1,22 +1,20 @@
 import { IsNull } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
-import { CustomerRepository } from '../data/customer.repository';
-import { CustomerShippingAddressRepository } from '../data/customer-shipping-address.repository';
-import { AddressRepository } from '@/modules/addresses/data/address.repository';
 import {
-  type CreateCustomerShippingAddressInput,
-  type CustomerShippingAddressApiResponse,
-  type UpdateCustomerShippingAddressInput,
+  CustomerRepository,
+  CustomerShippingAddressRepository,
   CustomerShippingAddress,
+} from '../index';
+import { AddressRepository } from '@/modules/addresses';
+import type {
+  CreateCustomerShippingAddressInput,
+  CustomerShippingAddressApiResponse,
+  UpdateCustomerShippingAddressInput,
 } from '../models/customer-shipping-addresses.entity';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { Customer } from '../models/customer.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 export class CustomerShippingAddressService {
   private readonly customerRepository: CustomerRepository;

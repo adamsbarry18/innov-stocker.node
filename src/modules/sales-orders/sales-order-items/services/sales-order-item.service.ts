@@ -7,7 +7,7 @@ import {
   createSalesOrderItemSchema,
   updateSalesOrderItemSchema,
   salesOrderItemValidationInputErrors,
-} from '../models/sales-order-item.entity';
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -15,10 +15,10 @@ import {
   ForbiddenError,
 } from '@/common/errors/httpErrors';
 import { type EntityManager } from 'typeorm';
-import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
-import { SalesOrderItemRepository } from '../data/sales-order-item.repository';
-import { ProductRepository } from '@/modules/products/data/product.repository';
-import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
+import { SalesOrderRepository } from '@/modules/sales-orders';
+import { SalesOrderItemRepository } from '../index';
+import { ProductRepository } from '@/modules/products';
+import { ProductVariantRepository } from '@/modules/product-variants';
 import { SalesOrder, SalesOrderStatus } from '@/modules/sales-orders/models/sales-order.entity';
 
 let instance: SalesOrderItemService | null = null;

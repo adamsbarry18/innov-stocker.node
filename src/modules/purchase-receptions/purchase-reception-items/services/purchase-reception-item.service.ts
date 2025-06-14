@@ -5,7 +5,7 @@ import {
   type PurchaseReceptionItemApiResponse,
   createPurchaseReceptionItemSchema,
   updatePurchaseReceptionItemSchema,
-} from '../models/purchase-reception-item.entity';
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -13,7 +13,7 @@ import {
   ForbiddenError,
 } from '@/common/errors/httpErrors';
 import { appDataSource } from '@/database/data-source';
-import { PurchaseReceptionItemRepository } from '../data/purchase-reception-item.repository';
+import { PurchaseReceptionItemRepository } from '../index';
 import { PurchaseReceptionRepository } from '@/modules/purchase-receptions/data/purchase-reception.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import {

@@ -1,4 +1,4 @@
-import { UserActivityLogRepository } from '../data/user-activity-log.repository';
+import { UserActivityLogRepository } from '../index';
 import { UserRepository } from '@/modules/users/data/users.repository';
 import {
   UserActivityLog,
@@ -7,7 +7,7 @@ import {
   createUserActivityLogSchema,
   type ActionType,
   type EntityType,
-} from '../models/user-activity-log.entity';
+} from '../index';
 import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, type EntityManager } from 'typeorm';

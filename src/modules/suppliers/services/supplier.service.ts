@@ -1,4 +1,4 @@
-import { SupplierRepository } from '../data/supplier.repository';
+import { SupplierRepository } from '../index';
 
 import { AddressRepository } from '../../addresses/data/address.repository';
 import { CurrencyRepository } from '../../currencies/data/currency.repository';
@@ -9,7 +9,7 @@ import {
   type SupplierApiResponse,
   type Supplier,
   supplierValidationInputErrors,
-} from '../models/supplier.entity';
+} from '../index';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';

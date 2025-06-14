@@ -6,14 +6,14 @@ import {
   type FindManyOptions,
   type FindOptionsWhere,
 } from 'typeorm';
-import { CustomerRepository } from '../../customers/data/customer.repository';
-import { CurrencyRepository } from '../../currencies/data/currency.repository';
-import { AddressRepository } from '../../addresses/data/address.repository';
-import { WarehouseRepository } from '../../warehouses/data/warehouse.repository';
-import { ShopRepository } from '../../shops/data/shop.repository';
-import { ProductRepository } from '../../products/data/product.repository';
-import { UserRepository } from '../../users/data/users.repository';
-import { QuoteRepository } from '../../quotes/data/quote.repository';
+import { CustomerRepository } from '@/modules/customers';
+import { CurrencyRepository } from '@/modules/currencies';
+import { AddressRepository } from '@/modules/addresses';
+import { WarehouseRepository } from '@/modules/warehouses';
+import { ShopRepository } from '@/modules/shops';
+import { ProductRepository } from '@/modules/products';
+import { UserRepository } from '@/modules/users';
+import { QuoteRepository } from '@/modules/quotes';
 import { Quote, QuoteStatus } from '../../quotes/models/quote.entity';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -22,7 +22,7 @@ import {
   type UpdateSalesOrderInput,
   type SalesOrderApiResponse,
   SalesOrderStatus,
-} from '../models/sales-order.entity';
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -31,20 +31,15 @@ import {
 } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import dayjs from 'dayjs';
-import { SalesOrderRepository } from '../data/sales-order.repository';
-import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
-import { SalesOrderItemRepository } from '../sales-order-items/data/sales-order-item.repository';
+import { SalesOrderRepository } from '../index';
+import { ProductVariantRepository } from '@/modules/product-variants';
+import { SalesOrderItemRepository } from '@/modules/sales-orders/sales-order-items';
 import {
   type CreateSalesOrderItemInput,
   SalesOrderItem,
 } from '../sales-order-items/models/sales-order-item.entity';
-import { StockMovementService } from '@/modules/stock-movements/services/stock-movement.service';
-import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { StockMovementService, StockMovementType } from '@/modules/stock-movements';
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 let instance: SalesOrderService | null = null;
 

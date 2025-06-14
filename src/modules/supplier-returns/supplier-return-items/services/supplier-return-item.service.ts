@@ -8,7 +8,7 @@ import {
   createSupplierReturnItemSchema,
   updateSupplierReturnItemSchema,
   supplierReturnItemValidationInputErrors,
-} from '../models/supplier-return-item.entity';
+} from '../index';
 import {
   NotFoundError,
   BadRequestError,
@@ -19,7 +19,7 @@ import logger from '@/lib/logger';
 import { type EntityManager, type FindOptionsWhere, IsNull } from 'typeorm';
 import { SupplierReturn, SupplierReturnStatus } from '../../models/supplier-return.entity';
 import { SupplierReturnRepository } from '../../data/supplier-return.repository';
-import { SupplierReturnItemRepository } from '../data/supplier-return-item.repository';
+import { SupplierReturnItemRepository } from '../index';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
 import { PurchaseReceptionItemRepository } from '@/modules/purchase-receptions/purchase-reception-items/data/purchase-reception-item.repository';

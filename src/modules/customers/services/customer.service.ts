@@ -1,26 +1,21 @@
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
-import { CustomerRepository } from '../data/customer.repository';
-import { AddressRepository } from '../../addresses/data/address.repository';
-import { CurrencyRepository } from '../../currencies/data/currency.repository';
+import { CustomerRepository, Customer, CustomerShippingAddressRepository } from '../index';
+import { AddressRepository } from '@/modules/addresses';
+import { CurrencyRepository } from '@/modules/currencies';
 
-import {
-  type CreateCustomerInput,
-  type UpdateCustomerInput,
-  type CustomerApiResponse,
-  Customer,
-  customerValidationInputErrors,
+import type {
+  CreateCustomerInput,
+  UpdateCustomerInput,
+  CustomerApiResponse,
 } from '../models/customer.entity';
+import { customerValidationInputErrors } from '../models/customer.entity';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { appDataSource } from '@/database/data-source';
-import { CustomerGroupRepository } from '@/modules/customer-groups/data/customer-group.repository';
+import { CustomerGroupRepository } from '@/modules/customer-groups';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { CustomerShippingAddress } from '../models/customer-shipping-addresses.entity';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 let instance: CustomerService | null = null;
 
