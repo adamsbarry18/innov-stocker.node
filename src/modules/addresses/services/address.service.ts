@@ -1,4 +1,9 @@
-import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
+import {
+  BadRequestError,
+  DependencyError,
+  NotFoundError,
+  ServerError,
+} from '@/common/errors/httpErrors';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import logger from '@/lib/logger';
 import {
@@ -10,13 +15,16 @@ import {
   type UpdateAddressInput,
 } from '@/modules/addresses';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
+import { Service, ResourcesKeys, dependency } from '@/common/utils/Service';
 
 let instance: AddressService | null = null;
 
-export class AddressService {
+@dependency(ResourcesKeys.ADDRESSES)
+export class AddressService extends Service {
   private readonly addressRepository: AddressRepository;
 
   constructor(addressRepository: AddressRepository = new AddressRepository()) {
+    super(); // Appelle le constructeur de la classe Service
     this.addressRepository = addressRepository;
   }
 
@@ -153,9 +161,9 @@ export class AddressService {
       // avant de permettre la suppression, selon les règles métier.
       // Par exemple:
       // const isUsed = await this.companyRepository.exists({ where: { addressId: id }});
-      // if (isUsed) throw new BadRequestError('Address is in use and cannot be deleted.');
-
-      await this.addressRepository.softDelete(id);
+      await this.checkAndDelete(id, async () => {
+        await this.addressRepository.softDelete(id);
+      });
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -164,7 +172,12 @@ export class AddressService {
       );
     } catch (error) {
       logger.error(`Error deleting address ${id}: ${error}`);
-      if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
+      if (
+        error instanceof BadRequestError ||
+        error instanceof NotFoundError ||
+        error instanceof DependencyError
+      )
+        throw error;
       throw new ServerError(`Error deleting address ${id}.`);
     }
   }

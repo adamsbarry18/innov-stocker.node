@@ -2,6 +2,7 @@ import { type User } from '@/modules/users/models/users.entity';
 import { DependencyManager } from './DependencyManager';
 import { type DataSource } from 'typeorm';
 import { ReadyManager } from './ReaderManager';
+import * as Errors from '@/common/errors/httpErrors';
 
 const DS_SERVICE = new WeakMap<Service, DataSource | object>();
 
@@ -66,9 +67,8 @@ interface ICanDelete {
  * Classe de base des services
  */
 export class Service {
-  // Removed 'extends DataSource'
   entity?: string;
-  private static _currentUser: User | null = null; // Make _user static
+  private static _currentUser: User | null = null;
   // Hack to have a proper type for constructor https://github.com/microsoft/TypeScript/issues/3841
   ['constructor']!: typeof Service;
 
@@ -88,7 +88,6 @@ export class Service {
    * Retourne l'objet d'accès aux données
    */
   get DataSource(): DataSource | object {
-    // Changed return type to include object
     return DS_SERVICE.get(this) as DataSource | object;
   }
 
@@ -100,7 +99,6 @@ export class Service {
   }
 
   static resourceKey(): ResourcesKeys {
-    // Overridden by @dependency
     return this.name as ResourcesKeys;
   }
 
@@ -112,14 +110,20 @@ export class Service {
     return await DependencyManager.getInstance().getDependents(this.constructor.resourceKey(), id);
   }
 
+  /**
+   * Méthode à implémenter par les services concrets pour vérifier si leurs propres entités
+   * dépendent de la ressource donnée (celle que l'on tente de supprimer).
+   * @param dependentResourceKey La clé de la ressource que l'on tente de supprimer (ex: ResourcesKeys.ADDRESSES)
+   * @param dependentResourceId L'ID de la ressource que l'on tente de supprimer
+   * @returns Une promesse résolue avec un tableau de DependentWrapper pour les entités dépendantes.
+   */
   //eslint-disable-next-line @typescript-eslint/require-await
-  async getDependencies({
-    resourceKey,
-    id,
-  }: {
-    resourceKey: ResourcesKeys;
-    id: number;
-  }): Promise<DependentWrapper[]> {
+  async getDependentEntities(
+    dependentResourceKey: ResourcesKeys,
+    dependentResourceId: number,
+  ): Promise<DependentWrapper[]> {
+    // Par défaut, retourne un tableau vide. Chaque service concret
+    // qui a des dépendances RESTRICT doit implémenter cette méthode.
     return [];
   }
 
@@ -129,6 +133,23 @@ export class Service {
       result: dependents.length === 0,
       dependents,
     };
+  }
+
+  protected async checkAndDelete(
+    id: number,
+    deleteFn: (id: number) => Promise<void>,
+  ): Promise<void> {
+    const canDelete = await this.canDelete(id);
+    if (!canDelete.result) {
+      if (canDelete.dependents && canDelete.dependents.length > 0) {
+        throw new Errors.DependencyError(canDelete.dependents);
+      } else {
+        throw new Errors.BadRequestError(
+          `Unknown dependencies for ${this.constructor.resourceKey()} with id ${id}`,
+        );
+      }
+    }
+    await deleteFn(id);
   }
 
   static setUser(user: User): void {
@@ -146,7 +167,6 @@ export class Service {
 
 export function service(registry: { entity: string }): ClassDecorator {
   return function (target: any): void {
-    // Ajout par défaut du name
     target.prototype.entity = registry.entity;
   };
 }
@@ -167,12 +187,14 @@ export function dependency(
 
 export class DependentWrapper {
   resourceKey: ResourcesKeys;
-  id: string;
+  resourceName: string; // Nom de la ressource (ex: "Company", "Customer")
+  resourceId: string; // ID de la ressource dépendante
   preventDeletion: boolean;
 
-  constructor(id: string, preventDeletion: boolean) {
-    this.resourceKey = ResourcesKeys.NA;
-    this.id = id;
+  constructor(resourceKey: ResourcesKeys, resourceId: string, preventDeletion: boolean) {
+    this.resourceKey = resourceKey;
+    this.resourceName = resourceKey.charAt(0).toUpperCase() + resourceKey.slice(1); // Capitalize for display
+    this.resourceId = resourceId;
     this.preventDeletion = preventDeletion;
   }
 }
