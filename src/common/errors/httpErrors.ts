@@ -19,7 +19,7 @@ export enum ErrorStatus {
   ERR_VALIDATION = 400,
   ERR_BAD_REQUEST = 400,
   ERR_PWD_IDENTICAL = 400,
-  ERR_DEPENDENCY = 400,
+  ERR_DEPENDENCY = 409,
   ERR_UNAUTHORIZED = 401,
   ERR_PWD_EXPIRED = 403,
   ERR_FORBIDDEN = 403,
@@ -75,7 +75,7 @@ export class BadRequestError extends BaseError {
 export class DependencyError extends BaseError {
   data!: DependentWrapper[];
   constructor(dependents: DependentWrapper[] = []) {
-    super('ERR_DEPENDENCY', 'Bad request', dependents);
+    super('ERR_DEPENDENCY', 'Conflict due to dependencies', dependents);
   }
 }
 

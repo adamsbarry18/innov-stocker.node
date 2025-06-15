@@ -257,5 +257,20 @@ describe('Address API', () => {
       expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
+
+    it('should return 409 if address is in use by another entity (e.g., Company)', async () => {
+      // Address ID 1 is used by the company in 2-datas.sql
+      const addressInUseId = 1; // Adresse 1 est utilisée par la compagnie 1
+
+      // Attempt to delete the address that is in use
+      const res = await request(app)
+        .delete(`/api/v1/addresses/${addressInUseId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(409);
+      expect(res.body.status).toBe('fail');
+      expect(res.body.message).toContain('dependencies');
+      expect(res.body.data[0].resourceKey).toBe('company');
+    });
   });
 });

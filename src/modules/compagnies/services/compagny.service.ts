@@ -1,15 +1,35 @@
-import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
-import { Company, CompanyRepository } from '../index';
-import type { UpdateCompanyInput, CompanyApiResponse } from '../models/company.entity';
-import { companyValidationInputErrors } from '../models/company.entity';
+import {
+  BadRequestError,
+  NotFoundError,
+  ServerError,
+  DependencyError,
+} from '@/common/errors/httpErrors';
+import {
+  Company,
+  CompanyRepository,
+  UpdateCompanyInput,
+  CompanyApiResponse,
+  companyValidationInputErrors,
+} from '../index';
 import logger from '@/lib/logger';
+import { Service, ResourcesKeys, DependentWrapper, dependency } from '@/common/utils/Service';
+import { AddressRepository } from '@/modules/addresses';
+import { IsNull } from 'typeorm';
+
 let instance: CompanyService | null = null;
 
-export class CompanyService {
+@dependency(ResourcesKeys.COMPANY, [ResourcesKeys.ADDRESSES])
+export class CompanyService extends Service {
   private readonly companyRepository: CompanyRepository;
+  private readonly addressRepository: AddressRepository;
 
-  constructor(companyRepository: CompanyRepository = new CompanyRepository()) {
+  constructor(
+    companyRepository: CompanyRepository = new CompanyRepository(),
+    addressRepository: AddressRepository = new AddressRepository(),
+  ) {
+    super();
     this.companyRepository = companyRepository;
+    this.addressRepository = addressRepository;
   }
 
   mapToApiResponse(company: Company | null): CompanyApiResponse | null {
@@ -118,10 +138,58 @@ export class CompanyService {
     }
   }
 
-  static getInstance(): CompanyService {
-    if (!instance) {
-      instance = new CompanyService();
+  /**
+   * Implémente la vérification des dépendances pour la ressource COMPANY.
+   * Vérifie si des entreprises utilisent l'adresse spécifiée.
+   * @param dependentResourceKey La clé de la ressource dépendante (doit être ResourcesKeys.ADDRESSES)
+   * @param dependentResourceId L'ID de la ressource dépendante (l'ID de l'adresse)
+   * @returns Un tableau de DependentWrapper pour les entreprises dépendantes.
+   */
+  async getDependentEntities(
+    dependentResourceKey: ResourcesKeys,
+    dependentResourceId: number,
+  ): Promise<DependentWrapper[]> {
+    if (dependentResourceKey === ResourcesKeys.ADDRESSES) {
+      const companies = await this.companyRepository.findByAddressId(dependentResourceId);
+      return companies.map(
+        (company) => new DependentWrapper(ResourcesKeys.COMPANY, company.id.toString(), true),
+      );
     }
+    return [];
+  }
+
+  /**
+   * Supprime une entreprise par son ID, après vérification des dépendances.
+   * @param id L'ID de l'entreprise à supprimer.
+   * @throws NotFoundError si l'entreprise n'est pas trouvée.
+   * @throws DependencyError si l'entreprise est utilisée par d'autres entités.
+   * @throws ServerError si une erreur inattendue se produit.
+   */
+  async delete(id: number): Promise<void> {
+    try {
+      const company = await this.companyRepository.findCompanyById(id);
+      if (!company) {
+        throw new NotFoundError(`Company with ID ${id} not found.`);
+      }
+
+      await this.checkAndDelete(id, async () => {
+        await this.companyRepository.softDelete(id); // Use repository directly
+      });
+    } catch (error) {
+      logger.error(`Error deleting company ${id}: ${error}`);
+      if (
+        error instanceof BadRequestError ||
+        error instanceof NotFoundError ||
+        error instanceof DependencyError
+      )
+        throw error;
+      throw new ServerError(`Error deleting company ${id}.`);
+    }
+  }
+
+  static getInstance(): CompanyService {
+    instance ??= new CompanyService();
+
     return instance;
   }
 }

@@ -1,4 +1,4 @@
-import { type Service, type ResourcesKeys, type DependentWrapper } from './Service';
+import { type Service, ResourcesKeys, DependentWrapper } from './Service';
 
 let instance: DependencyManager | null = null;
 
@@ -51,11 +51,10 @@ export class DependencyManager {
     for (const key of Object.keys(this.services) as ResourcesKeys[]) {
       const serviceRef = this.services[key];
       if (serviceRef && serviceRef.dependencies.includes(entityKey)) {
-        const entities = await serviceRef.service.getDependencies({ resourceKey: entityKey, id });
+        const entities = await serviceRef.service.getDependentEntities(entityKey, id);
         for (const entity of entities) {
-          entity.resourceKey = key;
+          res.push(new DependentWrapper(key, entity.resourceId, entity.preventDeletion));
         }
-        res.push(...entities);
       }
     }
     return res;

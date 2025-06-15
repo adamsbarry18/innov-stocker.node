@@ -50,4 +50,35 @@ export class CompanyRepository {
       where: { deletedAt: IsNull() }, // Assuming the main company record is not soft-deleted
     });
   }
+
+  /**
+   * Finds companies by address ID.
+   * @param addressId The ID of the address to search for.
+   * @returns A list of companies linked to the given address.
+   */
+  async findByAddressId(addressId: number): Promise<Company[]> {
+    return await this.repository.find({
+      where: { addressId, deletedAt: IsNull() },
+    });
+  }
+
+  /**
+   * Retrieves a company by its ID, including soft-deleted ones.
+   * This is useful for dependency checks where we need to know if an entity *ever* existed or is referenced.
+   * @param id The ID of the company to retrieve.
+   */
+  async findById(id: number): Promise<Company | null> {
+    return await this.repository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+  }
+
+  /**
+   * Soft deletes a company by its ID.
+   * @param id The ID of the company to soft delete.
+   */
+  async softDelete(id: number): Promise<void> {
+    await this.repository.softDelete(id);
+  }
 }
