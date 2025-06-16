@@ -34,34 +34,6 @@ export class ProductSupplierRepository {
     }
   }
 
-  async findByProductId(productId: number): Promise<ProductSupplier[]> {
-    try {
-      return await this.repository.find({
-        where: { productId, deletedAt: IsNull() },
-        relations: this.getDefaultRelations(),
-        order: { isDefaultSupplier: 'DESC', createdAt: 'ASC' },
-      });
-    } catch (error) {
-      logger.error({ message: `Error finding suppliers for product ${productId}`, error });
-      throw new ServerError('Error finding product suppliers.');
-    }
-  }
-
-  async findByProductVariantId(productVariantId: number): Promise<ProductSupplier[]> {
-    try {
-      return await this.repository.find({
-        where: { productVariantId, deletedAt: IsNull() },
-        relations: this.getDefaultRelations(),
-        order: { isDefaultSupplier: 'DESC', createdAt: 'ASC' },
-      });
-    } catch (error) {
-      logger.error({
-        message: `Error finding suppliers for product variant ${productVariantId}`,
-        error,
-      });
-      throw new ServerError('Error finding product variant suppliers.');
-    }
-  }
 
   async findSpecificLink(
     productId: number | null,
@@ -173,6 +145,54 @@ export class ProductSupplierRepository {
     } catch (error) {
       logger.error({ message: `Error unsetting default for other product suppliers`, error });
       throw new ServerError('Error updating default product supplier status.');
+    }
+  }
+
+  async findByProductId(productId: number): Promise<ProductSupplier[]> {
+    try {
+      return await this.repository.find({
+        where: { productId, deletedAt: IsNull() },
+        relations: this.getDefaultRelations(),
+      });
+    } catch (error) {
+      logger.error({ message: `Error finding product suppliers for product ${productId}`, error });
+      throw new ServerError('Error finding product suppliers.');
+    }
+  }
+
+  async findByProductVariantId(productVariantId: number): Promise<ProductSupplier[]> {
+    try {
+      return await this.repository.find({
+        where: { productVariantId, deletedAt: IsNull() },
+        relations: this.getDefaultRelations(),
+      });
+    } catch (error) {
+      logger.error({ message: `Error finding product suppliers for variant ${productVariantId}`, error });
+      throw new ServerError('Error finding product suppliers.');
+    }
+  }
+
+  async findBySupplierId(supplierId: number): Promise<ProductSupplier[]> {
+    try {
+      return await this.repository.find({
+        where: { supplierId, deletedAt: IsNull() },
+        relations: this.getDefaultRelations(),
+      });
+    } catch (error) {
+      logger.error({ message: `Error finding product suppliers for supplier ${supplierId}`, error });
+      throw new ServerError('Error finding product suppliers.');
+    }
+  }
+
+  async findByCurrencyId(currencyId: number): Promise<ProductSupplier[]> {
+    try {
+      return await this.repository.find({
+        where: { currencyId, deletedAt: IsNull() },
+        relations: this.getDefaultRelations(),
+      });
+    } catch (error) {
+      logger.error({ message: `Error finding product suppliers for currency ${currencyId}`, error });
+      throw new ServerError('Error finding product suppliers.');
     }
   }
 

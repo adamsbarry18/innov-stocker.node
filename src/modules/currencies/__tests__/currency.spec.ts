@@ -241,6 +241,18 @@ describe('Currency API', () => {
       expect(res.status).toBe(204);
     });
 
+    it('should return 409 if trying to delete a currency used by a company', async () => {
+      // Currency ID 1 (EUR) is used as defaultCurrencyId in company 1 in 2-datas.sql
+      const currencyInUseId = 1;
+      const res = await request(app)
+        .delete(`/api/v1/currencies/${currencyInUseId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(409);
+      expect(res.body.status).toBe('fail');
+      expect(res.body.message).toContain('dependencies');
+    });
+
     it('should return 404 for deleting a non-existent currency ID (as admin)', async () => {
       const nonExistentId = 9999;
       const res = await request(app)

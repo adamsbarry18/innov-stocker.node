@@ -7,7 +7,13 @@ import {
   type ProductImageApiResponse,
   productImageValidationInputErrors,
 } from '../models/product-image.entity';
-import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
+import {
+  NotFoundError,
+  BadRequestError,
+  ServerError,
+  DependencyError,
+} from '@/common/errors/httpErrors';
+import { Service, ResourcesKeys, dependency, DependentWrapper } from '@/common/utils/Service';
 import logger from '@/lib/logger';
 import { IsNull } from 'typeorm';
 import { ProductRepository } from '@/modules/products/data/product.repository';
@@ -19,7 +25,8 @@ import {
 
 let instance: ProductImageService | null = null;
 
-export class ProductImageService {
+@dependency(ResourcesKeys.PRODUCT_IMAGES, [ResourcesKeys.PRODUCTS])
+export class ProductImageService extends Service {
   private readonly productRepository: ProductRepository;
   private readonly imageRepository: ProductImageRepository;
 
@@ -27,6 +34,7 @@ export class ProductImageService {
     productRepository: ProductRepository = new ProductRepository(),
     imageRepository: ProductImageRepository = new ProductImageRepository(),
   ) {
+    super();
     this.productRepository = productRepository;
     this.imageRepository = imageRepository;
   }
@@ -173,19 +181,21 @@ export class ProductImageService {
   }
 
   async deleteProductImage(productId: number, imageId: number): Promise<void> {
-    const image = await this.imageRepository.findById(imageId);
-    if (!image || image.productId !== productId) {
-      throw new NotFoundError(`Image with ID ${imageId} not found for product ${productId}.`);
-    }
-
-    if (image.isPrimary) {
-      throw new BadRequestError(
-        'Cannot delete the primary image. Set another image as primary first, or delete the product itself.',
-      );
-    }
-
     try {
-      await this.imageRepository.softDelete(imageId);
+      const image = await this.imageRepository.findById(imageId);
+      if (!image || image.productId !== productId) {
+        throw new NotFoundError(`Image with ID ${imageId} not found for product ${productId}.`);
+      }
+
+      if (image.isPrimary) {
+        throw new BadRequestError(
+          'Cannot delete the primary image. Set another image as primary first, or delete the product itself.',
+        );
+      }
+
+      await this.checkAndDelete(imageId, async () => {
+        await this.imageRepository.softDelete(imageId);
+      });
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -195,8 +205,28 @@ export class ProductImageService {
       );
     } catch (error) {
       logger.error({ message: `Error deleting image ${imageId} for product ${productId}`, error });
+      if (
+        error instanceof BadRequestError ||
+        error instanceof NotFoundError ||
+        error instanceof DependencyError
+      ) {
+        throw error;
+      }
       throw new ServerError('Error deleting product image.');
     }
+  }
+
+  async getDependentEntities(
+    dependentResourceKey: ResourcesKeys,
+    dependentResourceId: number,
+  ): Promise<DependentWrapper[]> {
+    if (dependentResourceKey === ResourcesKeys.PRODUCTS) {
+      const images = await this.imageRepository.findByProductId(dependentResourceId);
+      return images.map(
+        (i) => new DependentWrapper(ResourcesKeys.PRODUCT_IMAGES, i.id.toString(), true),
+      );
+    }
+    return [];
   }
 
   async setPrimaryProductImage(

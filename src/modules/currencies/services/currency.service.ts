@@ -7,14 +7,17 @@ import type {
   UpdateCurrencyInput,
 } from '../models/currency.entity';
 import { currencyValidationInputErrors } from '../models/currency.entity';
-import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
+import { BadRequestError, DependencyError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type CompanyApiResponse } from '@/modules/compagnies/models/company.entity';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 let instance: CurrencyService | null = null;
 
-export class CurrencyService {
+import { dependency, ResourcesKeys, Service } from '@/common/utils/Service';
+
+@dependency(ResourcesKeys.CURRENCIES)
+export class CurrencyService extends Service {
   private readonly currencyRepository: CurrencyRepository;
   private readonly companyRepository: CompanyRepository;
 
@@ -22,6 +25,7 @@ export class CurrencyService {
     currencyRepository: CurrencyRepository = new CurrencyRepository(),
     companyRepository: CompanyRepository = new CompanyRepository(),
   ) {
+    super();
     this.currencyRepository = currencyRepository;
     this.companyRepository = companyRepository;
   }
@@ -137,7 +141,7 @@ export class CurrencyService {
       if (!currency) throw new NotFoundError(`Currency with id ${id} not found.`);
 
       const tempCurrency = this.currencyRepository.create({ ...currency, ...input });
-      if (input.code) tempCurrency.code = input.code.toUpperCase(); // Ensure code is uppercase for validation
+      if (input.code) tempCurrency.code = input.code.toUpperCase(); 
 
       if (!tempCurrency.isValid()) {
         throw new BadRequestError(
@@ -149,7 +153,6 @@ export class CurrencyService {
       if (input.code) {
         updatePayload.code = input.code.toUpperCase();
       }
-      // updatePayload.updatedByUserId = updatedByUserId; // Si audit
 
       const result = await this.currencyRepository.update(id, updatePayload);
       if (result.affected === 0) {
@@ -190,15 +193,10 @@ export class CurrencyService {
     try {
       const currency = await this.currencyRepository.findById(id);
       if (!currency) throw new NotFoundError(`Currency with id ${id} not found.`);
-
-      const companySettings = await this.companyRepository.getCompanySettings();
-      if (companySettings?.defaultCurrencyId === id) {
-        throw new BadRequestError(
-          `Cannot delete currency '${currency.code}' as it is the default company currency. Please set a different default currency first.`,
-        );
-      }
-
-      await this.currencyRepository.softDelete(id);
+      
+      await this.checkAndDelete(id, async () => {
+        await this.currencyRepository.softDelete(id);
+      });
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -207,10 +205,15 @@ export class CurrencyService {
       );
     } catch (error) {
       logger.error(`Error deleting currency ${id}: ${error}`);
-      if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
+      if (
+        error instanceof BadRequestError ||
+        error instanceof NotFoundError ||
+        error instanceof DependencyError
+      ) throw error;
       throw new ServerError(`Error deleting currency ${id}.`);
     }
   }
+
 
   async setDefaultCompanyCurrency(currencyId: number): Promise<CompanyApiResponse> {
     const currencyToSetDefault = await this.currencyRepository.findById(currencyId);

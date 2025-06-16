@@ -1,23 +1,18 @@
-import { ShopRepository } from '../index';
-import { AddressRepository } from '../../addresses/data/address.repository';
-import { UserRepository } from '../../users/data/users.repository';
 import {
   type CreateShopInput,
   type UpdateShopInput,
   type ShopApiResponse,
   Shop,
+  ShopRepository,
   shopValidationInputErrors,
 } from '../index';
-import { Address } from '../../addresses/models/address.entity';
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
-import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
-import {
-  ActionType,
-  EntityType,
-} from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { ActionType, EntityType, UserActivityLogService } from '@/modules/user-activity-logs';
+import { Address, AddressRepository } from '@/modules/addresses';
+import { UserRepository } from '@/modules/users';
 
 let instance: ShopService | null = null;
 

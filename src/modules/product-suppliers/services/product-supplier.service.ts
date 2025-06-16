@@ -8,7 +8,13 @@ import {
   type ProductSupplierApiResponse,
   productSupplierValidationInputErrors,
 } from '../models/product-supplier.entity';
-import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
+import {
+  NotFoundError,
+  BadRequestError,
+  ServerError,
+  DependencyError,
+} from '@/common/errors/httpErrors';
+import { Service, ResourcesKeys, dependency, DependentWrapper } from '@/common/utils/Service';
 import logger from '@/lib/logger';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
@@ -21,7 +27,13 @@ import {
 
 let instance: ProductSupplierService | null = null;
 
-export class ProductSupplierService {
+@dependency(ResourcesKeys.PRODUCT_SUPPLIERS, [
+  ResourcesKeys.PRODUCTS,
+  ResourcesKeys.PRODUCT_VARIANTS,
+  ResourcesKeys.SUPPLIERS,
+  ResourcesKeys.CURRENCIES,
+])
+export class ProductSupplierService extends Service {
   private readonly productRepository: ProductRepository;
   private readonly variantRepository: ProductVariantRepository;
   private readonly productSupplierRepository: ProductSupplierRepository;
@@ -35,6 +47,7 @@ export class ProductSupplierService {
     supplierRepository: SupplierRepository = new SupplierRepository(),
     currencyRepository: CurrencyRepository = new CurrencyRepository(),
   ) {
+    super();
     this.productRepository = productRepository;
     this.variantRepository = variantRepository;
     this.productSupplierRepository = productSupplierRepository;
@@ -296,12 +309,15 @@ export class ProductSupplierService {
   }
 
   async deleteProductSupplierLink(linkId: number): Promise<void> {
-    const link = await this.productSupplierRepository.findById(linkId);
-    if (!link) {
-      throw new NotFoundError(`Product supplier link with ID ${linkId} not found.`);
-    }
     try {
-      await this.productSupplierRepository.softDelete(linkId);
+      const link = await this.productSupplierRepository.findById(linkId);
+      if (!link) {
+        throw new NotFoundError(`Product supplier link with ID ${linkId} not found.`);
+      }
+
+      await this.checkAndDelete(linkId, async () => {
+        await this.productSupplierRepository.softDelete(linkId);
+      });
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -310,8 +326,43 @@ export class ProductSupplierService {
       );
     } catch (error) {
       logger.error({ message: `Error deleting product supplier link ${linkId}`, error });
+      if (
+        error instanceof BadRequestError ||
+        error instanceof NotFoundError ||
+        error instanceof DependencyError
+      ) {
+        throw error;
+      }
       throw new ServerError('Error deleting product supplier link.');
     }
+  }
+
+  async getDependentEntities(
+    dependentResourceKey: ResourcesKeys,
+    dependentResourceId: number,
+  ): Promise<DependentWrapper[]> {
+    let links: ProductSupplier[] = [];
+    switch (dependentResourceKey) {
+      case ResourcesKeys.PRODUCTS:
+        links = await this.productSupplierRepository.findByProductId(dependentResourceId);
+        break;
+      case ResourcesKeys.PRODUCT_VARIANTS:
+        links = await this.productSupplierRepository.findByProductVariantId(
+          dependentResourceId,
+        );
+        break;
+      case ResourcesKeys.SUPPLIERS:
+        links = await this.productSupplierRepository.findBySupplierId(dependentResourceId);
+        break;
+      case ResourcesKeys.CURRENCIES:
+        links = await this.productSupplierRepository.findByCurrencyId(dependentResourceId);
+        break;
+      default:
+        return [];
+    }
+    return links.map(
+      (ps) => new DependentWrapper(ResourcesKeys.PRODUCT_SUPPLIERS, ps.id.toString(), true),
+    );
   }
 
   static getInstance(): ProductSupplierService {

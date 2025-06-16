@@ -5,7 +5,13 @@ import {
   type ProductVariantApiResponse,
   productVariantValidationInputErrors,
 } from '../models/product-variant.entity';
-import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
+import {
+  NotFoundError,
+  BadRequestError,
+  ServerError,
+  DependencyError,
+} from '@/common/errors/httpErrors';
+import { Service, ResourcesKeys, dependency, DependentWrapper } from '@/common/utils/Service';
 import logger from '@/lib/logger';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '../data/product-variant.repository';
@@ -18,7 +24,8 @@ import {
 
 let instance: ProductVariantService | null = null;
 
-export class ProductVariantService {
+@dependency(ResourcesKeys.PRODUCT_VARIANTS, [ResourcesKeys.PRODUCTS])
+export class ProductVariantService extends Service {
   private readonly productRepository: ProductRepository;
   private readonly variantRepository: ProductVariantRepository;
   private readonly imageRepository: ProductImageRepository;
@@ -34,6 +41,7 @@ export class ProductVariantService {
     variantRepository: ProductVariantRepository = new ProductVariantRepository(),
     imageRepository: ProductImageRepository = new ProductImageRepository(),
   ) {
+    super();
     this.productRepository = productRepository;
     this.variantRepository = variantRepository;
     this.imageRepository = imageRepository;
@@ -295,25 +303,21 @@ export class ProductVariantService {
    * @param variantId - The ID of the product variant to delete.
    */
   async deleteProductVariant(productId: number, variantId: number): Promise<void> {
-    const product = await this.productRepository.findById(productId);
-    if (!product) {
-      throw new NotFoundError(`Product with ID ${productId} not found.`);
-    }
-    const variant = await this.variantRepository.findById(variantId);
-    if (!variant || variant.productId !== productId) {
-      throw new NotFoundError(
-        `Product variant with ID ${variantId} not found for product ${productId}.`,
-      );
-    }
-
-    // TODO: Dépendance - Check if variant is in use (stock movements, order items, composite items, product suppliers)
-    // const isInUse = await this.variantRepository.isVariantInUse(variantId);
-    // if (isInUse) {
-    //   throw new BadRequestError(`Product variant '${variant.nameVariant}' is in use and cannot be deleted.`);
-    // }
-
     try {
-      await this.variantRepository.softDelete(variantId);
+      const product = await this.productRepository.findById(productId);
+      if (!product) {
+        throw new NotFoundError(`Product with ID ${productId} not found.`);
+      }
+      const variant = await this.variantRepository.findById(variantId);
+      if (!variant || variant.productId !== productId) {
+        throw new NotFoundError(
+          `Product variant with ID ${variantId} not found for product ${productId}.`,
+        );
+      }
+
+      await this.checkAndDelete(variantId, async () => {
+        await this.variantRepository.softDelete(variantId);
+      });
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -323,8 +327,28 @@ export class ProductVariantService {
       );
     } catch (error) {
       logger.error({ message: `Error deleting variant ${variantId}`, error });
+      if (
+        error instanceof BadRequestError ||
+        error instanceof NotFoundError ||
+        error instanceof DependencyError
+      ) {
+        throw error;
+      }
       throw new ServerError('Error deleting product variant.');
     }
+  }
+
+  async getDependentEntities(
+    dependentResourceKey: ResourcesKeys,
+    dependentResourceId: number,
+  ): Promise<DependentWrapper[]> {
+    if (dependentResourceKey === ResourcesKeys.PRODUCTS) {
+      const variants = await this.variantRepository.findByProductId(dependentResourceId);
+      return variants.map(
+        (v) => new DependentWrapper(ResourcesKeys.PRODUCT_VARIANTS, v.id.toString(), true),
+      );
+    }
+    return [];
   }
 
   /**

@@ -262,7 +262,6 @@ describe('Address API', () => {
       // Address ID 1 is used by the company in 2-datas.sql
       const addressInUseId = 1; // Adresse 1 est utilisée par la compagnie 1
 
-      // Attempt to delete the address that is in use
       const res = await request(app)
         .delete(`/api/v1/addresses/${addressInUseId}`)
         .set('Authorization', `Bearer ${adminToken}`);

@@ -9,18 +9,26 @@ import {
 } from '../models/product-category.entity';
 
 import { type FindManyOptions, type FindOptionsWhere, IsNull } from 'typeorm';
-import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
+import {
+  BadRequestError,
+  DependencyError,
+  NotFoundError,
+  ServerError,
+} from '@/common/errors/httpErrors';
 import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
 import {
   ActionType,
   EntityType,
 } from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { Service, ResourcesKeys, dependency } from '@/common/utils/Service';
 
 let instance: ProductCategoryService | null = null;
 
-export class ProductCategoryService {
+@dependency(ResourcesKeys.PRODUCT_CATEGORIES)
+export class ProductCategoryService extends Service {
   private readonly categoryRepository: ProductCategoryRepository;
   constructor(categoryRepository: ProductCategoryRepository = new ProductCategoryRepository()) {
+    super();
     this.categoryRepository = categoryRepository;
   }
 
@@ -229,14 +237,9 @@ export class ProductCategoryService {
       const category = await this.categoryRepository.findById(id);
       if (!category) throw new NotFoundError(`Product category with id ${id} not found.`);
 
-      const isUsed = await this.categoryRepository.isCategoryUsedByProducts(id);
-      if (isUsed) {
-        throw new BadRequestError(
-          `Category '${category.name}' is in use by products and cannot be deleted. Please reassign products first.`,
-        );
-      }
-
-      await this.categoryRepository.softDelete(id);
+      await this.checkAndDelete(id, async () => {
+        await this.categoryRepository.softDelete(id);
+      });
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -245,7 +248,12 @@ export class ProductCategoryService {
       );
     } catch (error) {
       logger.error(`Error deleting product category ${id}: ${error}`);
-      if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
+      if (
+        error instanceof BadRequestError ||
+        error instanceof NotFoundError ||
+        error instanceof DependencyError
+      )
+        throw error;
       throw new ServerError(`Error deleting product category ${id}.`);
     }
   }
