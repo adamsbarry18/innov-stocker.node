@@ -245,7 +245,7 @@ export default class ProductRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async deleteProduct(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
+    if (isNaN(id)) return next(new BadRequestError('Invalid ID.'));
 
     await this.pipe(
       res,

@@ -9,7 +9,13 @@ import {
   productValidationInputErrors,
 } from '../models/product.entity';
 
-import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
+import {
+  NotFoundError,
+  BadRequestError,
+  ServerError,
+  DependencyError,
+} from '@/common/errors/httpErrors';
+import { Service, ResourcesKeys, dependency, DependentWrapper } from '@/common/utils/Service';
 import logger from '@/lib/logger';
 import { ProductRepository } from '../data/product.repository';
 import { ProductImageRepository } from '@/modules/product-images/data/product-image.repository';
@@ -38,7 +44,8 @@ import {
 
 let instance: ProductService | null = null;
 
-export class ProductService {
+@dependency(ResourcesKeys.PRODUCTS, [ResourcesKeys.PRODUCT_CATEGORIES])
+export class ProductService extends Service {
   private readonly productRepository: ProductRepository;
   private readonly imageRepository: ProductImageRepository;
   private readonly categoryRepository: ProductCategoryRepository;
@@ -54,6 +61,7 @@ export class ProductService {
     imageRepository: ProductImageRepository = new ProductImageRepository(),
     categoryRepository: ProductCategoryRepository = new ProductCategoryRepository(),
   ) {
+    super();
     this.productRepository = productRepository;
     this.imageRepository = imageRepository;
     this.categoryRepository = categoryRepository;
@@ -127,13 +135,11 @@ export class ProductService {
     input: CreateProductInput,
     createdByUserId: number,
   ): Promise<ProductApiResponse> {
-    const category = await this.categoryRepository.findById(input.productCategoryId);
-    if (!category) {
-      throw new BadRequestError(`Product category with ID ${input.productCategoryId} not found.`);
-    }
-    const existingBySku = await this.productRepository.findBySku(input.sku);
-    if (existingBySku) {
-      throw new BadRequestError(`Product with SKU '${input.sku}' already exists.`);
+    if (input.sku) {
+      const existingBySku = await this.productRepository.findBySku(input.sku);
+      if (existingBySku) {
+        throw new BadRequestError(`Product with SKU '${input.sku}' already exists.`);
+      }
     }
     if (input.barcodeQrCode) {
       const existingByBarcode = await this.productRepository.findByBarcode(input.barcodeQrCode);
@@ -340,17 +346,15 @@ export class ProductService {
    * @param productId - The ID of the product to delete.
    */
   async deleteProduct(productId: number): Promise<void> {
-    const product = await this.productRepository.findById(productId);
-    if (!product) throw new NotFoundError(`Product with id ${productId} not found.`);
-
-    // TODO: Dépendance - Vérifier si le produit est utilisé dans des transactions, stocks, etc.
-    // const isInUse = await this.productRepository.isProductInUse(productId);
-    // if (isInUse) {
-    //   throw new BadRequestError(`Product '${product.name}' is in use (e.g., in orders, stock) and cannot be deleted.`);
-    // }
-
     try {
-      await this.productRepository.softDelete(productId);
+      const product = await this.productRepository.findById(productId);
+      if (!product) {
+        throw new NotFoundError(`Product with ID ${productId} not found.`);
+      }
+
+      await this.checkAndDelete(productId, async () => {
+        await this.productRepository.softDelete(productId);
+      });
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -358,12 +362,31 @@ export class ProductService {
         productId.toString(),
       );
     } catch (error) {
-      logger.error(
-        { message: `Error deleting product ${productId}`, error },
-        'ProductService.deleteProduct',
-      );
+      logger.error(`Error deleting product ${productId}: ${error}`);
+      if (
+        error instanceof BadRequestError ||
+        error instanceof NotFoundError ||
+        error instanceof DependencyError
+      ) {
+        throw error;
+      }
       throw new ServerError(`Error deleting product ${productId}.`);
     }
+  }
+
+  async getDependentEntities(
+    dependentResourceKey: ResourcesKeys,
+    dependentResourceId: number,
+  ): Promise<DependentWrapper[]> {
+    if (dependentResourceKey === ResourcesKeys.PRODUCT_CATEGORIES) {
+      const { products } = await this.productRepository.findAll({
+        where: { productCategoryId: dependentResourceId },
+      });
+      return products.map(
+        (p) => new DependentWrapper(ResourcesKeys.PRODUCTS, p.id.toString(), true),
+      );
+    }
+    return [];
   }
 
   /**

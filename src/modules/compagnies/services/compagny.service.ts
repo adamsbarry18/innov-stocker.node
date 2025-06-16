@@ -13,25 +13,23 @@ import {
 } from '../index';
 import logger from '@/lib/logger';
 import { Service, ResourcesKeys, DependentWrapper, dependency } from '@/common/utils/Service';
-import { AddressRepository } from '@/modules/addresses';
-import { IsNull } from 'typeorm';
 
 let instance: CompanyService | null = null;
 
-@dependency(ResourcesKeys.COMPANY, [ResourcesKeys.ADDRESSES])
+@dependency(ResourcesKeys.COMPANY, [ResourcesKeys.ADDRESSES, ResourcesKeys.CURRENCIES])
 export class CompanyService extends Service {
   private readonly companyRepository: CompanyRepository;
-  private readonly addressRepository: AddressRepository;
 
-  constructor(
-    companyRepository: CompanyRepository = new CompanyRepository(),
-    addressRepository: AddressRepository = new AddressRepository(),
-  ) {
+  constructor(companyRepository: CompanyRepository = new CompanyRepository()) {
     super();
     this.companyRepository = companyRepository;
-    this.addressRepository = addressRepository;
   }
 
+  /**
+   * Maps a Company entity to a CompanyApiResponse.
+   * @param company The Company entity to map.
+   * @returns The mapped CompanyApiResponse, or null if the input is null.
+   */
   mapToApiResponse(company: Company | null): CompanyApiResponse | null {
     if (!company) return null;
     return company.toApi();
@@ -41,8 +39,6 @@ export class CompanyService extends Service {
    * Retrieves a company by its ID.
    * @param id The ID of the company to retrieve.
    * @returns The company API response.
-   * @throws NotFoundError if the company is not found.
-   * @throws ServerError if an unexpected error occurs.
    */
   async getCompanyDetails(id: number): Promise<CompanyApiResponse> {
     try {
@@ -66,7 +62,6 @@ export class CompanyService extends Service {
   /**
    * Retrieves all companies.
    * @returns A list of company API responses.
-   * @throws ServerError if an unexpected error occurs.
    */
   async getAllCompanies(): Promise<CompanyApiResponse[]> {
     try {
@@ -87,9 +82,6 @@ export class CompanyService extends Service {
    * @param id The ID of the company to update.
    * @param input The update data.
    * @returns The updated company API response.
-   * @throws BadRequestError if the input data is invalid.
-   * @throws NotFoundError if the company is not found.
-   * @throws ServerError if an unexpected error occurs.
    */
   async updateCompanyDetails(id: number, input: UpdateCompanyInput): Promise<CompanyApiResponse> {
     // Validation des ID d'adresse et de devise (vérifier leur existence)
@@ -139,11 +131,11 @@ export class CompanyService extends Service {
   }
 
   /**
-   * Implémente la vérification des dépendances pour la ressource COMPANY.
-   * Vérifie si des entreprises utilisent l'adresse spécifiée.
-   * @param dependentResourceKey La clé de la ressource dépendante (doit être ResourcesKeys.ADDRESSES)
-   * @param dependentResourceId L'ID de la ressource dépendante (l'ID de l'adresse)
-   * @returns Un tableau de DependentWrapper pour les entreprises dépendantes.
+   * Implements dependency checking for the COMPANY resource.
+   * Checks if any companies use the specified address.
+   * @param dependentResourceKey The key of the dependent resource (must be ResourcesKeys.ADDRESSES)
+   * @param dependentResourceId The ID of the dependent resource (the address ID)
+   * @returns An array of DependentWrapper for dependent companies.
    */
   async getDependentEntities(
     dependentResourceKey: ResourcesKeys,
@@ -154,16 +146,19 @@ export class CompanyService extends Service {
       return companies.map(
         (company) => new DependentWrapper(ResourcesKeys.COMPANY, company.id.toString(), true),
       );
+    } else if (dependentResourceKey === ResourcesKeys.CURRENCIES) {
+      // Check if any company uses this currency as default
+      const companies = await this.companyRepository.getAllCompanies();
+      return companies
+        .filter((company) => company.defaultCurrencyId === dependentResourceId)
+        .map((company) => new DependentWrapper(ResourcesKeys.COMPANY, company.id.toString(), true));
     }
     return [];
   }
 
   /**
-   * Supprime une entreprise par son ID, après vérification des dépendances.
-   * @param id L'ID de l'entreprise à supprimer.
-   * @throws NotFoundError si l'entreprise n'est pas trouvée.
-   * @throws DependencyError si l'entreprise est utilisée par d'autres entités.
-   * @throws ServerError si une erreur inattendue se produit.
+   * Deletes a company by its ID, after checking dependencies.
+   * @param id The ID of the company to delete.
    */
   async delete(id: number): Promise<void> {
     try {
@@ -173,7 +168,7 @@ export class CompanyService extends Service {
       }
 
       await this.checkAndDelete(id, async () => {
-        await this.companyRepository.softDelete(id); // Use repository directly
+        await this.companyRepository.softDelete(id);
       });
     } catch (error) {
       logger.error(`Error deleting company ${id}: ${error}`);
@@ -187,6 +182,10 @@ export class CompanyService extends Service {
     }
   }
 
+  /**
+   * Returns the singleton instance of CompanyService.
+   * @returns The CompanyService instance.
+   */
   static getInstance(): CompanyService {
     instance ??= new CompanyService();
 

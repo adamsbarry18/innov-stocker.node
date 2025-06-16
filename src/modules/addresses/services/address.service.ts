@@ -24,15 +24,25 @@ export class AddressService extends Service {
   private readonly addressRepository: AddressRepository;
 
   constructor(addressRepository: AddressRepository = new AddressRepository()) {
-    super(); // Appelle le constructeur de la classe Service
+    super();
     this.addressRepository = addressRepository;
   }
 
+  /**
+   * Maps an Address entity to an AddressApiResponse.
+   * @param address The Address entity to map.
+   * @returns The mapped AddressApiResponse, or null if the input is null.
+   */
   mapToApiResponse(address: Address | null): AddressApiResponse | null {
     if (!address) return null;
     return address.toApi();
   }
 
+  /**
+   * Finds an address by its ID.
+   * @param id The ID of the address to find.
+   * @returns The AddressApiResponse for the found address.
+   */
   async findById(id: number): Promise<AddressApiResponse> {
     try {
       const address = await this.addressRepository.findById(id);
@@ -50,6 +60,11 @@ export class AddressService extends Service {
     }
   }
 
+  /**
+   * Finds all addresses based on provided options.
+   * @param options Options for filtering, pagination, and sorting.
+   * @returns An object containing an array of AddressApiResponse and the total count.
+   */
   async findAll(options?: {
     limit?: number;
     offset?: number;
@@ -73,6 +88,11 @@ export class AddressService extends Service {
     }
   }
 
+  /**
+   * Creates a new address.
+   * @param input The data for creating the address.
+   * @returns The AddressApiResponse for the newly created address.
+   */
   async create(input: CreateAddressInput): Promise<AddressApiResponse> {
     const addressEntity = this.addressRepository.create({
       ...input,
@@ -107,6 +127,12 @@ export class AddressService extends Service {
     }
   }
 
+  /**
+   * Updates an existing address.
+   * @param id The ID of the address to update.
+   * @param input The data for updating the address.
+   * @returns The AddressApiResponse for the updated address.
+   */
   async update(id: number, input: UpdateAddressInput): Promise<AddressApiResponse> {
     try {
       const address = await this.addressRepository.findById(id);
@@ -152,15 +178,15 @@ export class AddressService extends Service {
     }
   }
 
+  /**
+   * Deletes an address by its ID.
+   * @param id The ID of the address to delete.
+   */
   async delete(id: number): Promise<void> {
     try {
       const address = await this.addressRepository.findById(id);
       if (!address) throw new NotFoundError(`Address with id ${id} not found.`);
 
-      // Ici, vous pourriez vouloir vérifier si l'adresse est utilisée par d'autres entités
-      // avant de permettre la suppression, selon les règles métier.
-      // Par exemple:
-      // const isUsed = await this.companyRepository.exists({ where: { addressId: id }});
       await this.checkAndDelete(id, async () => {
         await this.addressRepository.softDelete(id);
       });
@@ -182,6 +208,10 @@ export class AddressService extends Service {
     }
   }
 
+  /**
+   * Returns the singleton instance of AddressService.
+   * @returns The AddressService instance.
+   */
   static getInstance(): AddressService {
     instance ??= new AddressService();
     return instance;
