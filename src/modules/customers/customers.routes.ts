@@ -257,14 +257,12 @@ export default class CustomerRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Delete('/customers/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.USER })
   async deleteCustomer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const customerId = parseInt(req.params.id, 10);
     if (isNaN(customerId)) {
       return next(new BadRequestError('Invalid customer ID format.'));
     }
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
 
     await this.pipe(
       res,

@@ -247,5 +247,14 @@ describe('PaymentMethod API', () => {
       expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
+
+    it('should return 400 if the payment method has associated payments', async () => {
+      const paymentMethodInUseId = 2; // ID de la méthode de paiement 'Carte Bancaire' utilisée dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/payment-methods/${paymentMethodInUseId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
+    });
   });
 });

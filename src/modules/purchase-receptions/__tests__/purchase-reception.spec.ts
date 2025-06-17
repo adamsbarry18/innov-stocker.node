@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import app from '@/app';
 import { adminToken } from '@/tests/globalSetup';
 import dayjs from 'dayjs';
+import { v4 as uuidv4 } from 'uuid';
 import { PurchaseReceptionStatus } from '../models/purchase-reception.entity';
 import { PurchaseOrderStatus } from '@/modules/purchase-orders/models/purchase-order.entity';
 
@@ -38,6 +39,7 @@ describe('Purchase Receptions API', () => {
   ) => {
     const poPayload = {
       supplierId,
+      orderNumber: `PO-TEST-${dayjs().format('YYYYMMDDHHmmss')}-${uuidv4().substring(0, 8)}`, // Ensure unique order number for tests
       orderDate: dayjs().format('YYYY-MM-DD'),
       expectedDeliveryDate: dayjs().add(7, 'day').format('YYYY-MM-DD'),
       status: PurchaseOrderStatus.PENDING_APPROVAL,
@@ -438,6 +440,15 @@ describe('Purchase Receptions API', () => {
         .delete(`/api/v1/purchase-receptions/${receptionId}`)
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
+    });
+
+    it('should return 400 if the reception is linked to a supplier invoice', async () => {
+      const receptionId = 1; // ID de la réception liée à une facture fournisseur dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/purchase-receptions/${receptionId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
     });
   });
 });

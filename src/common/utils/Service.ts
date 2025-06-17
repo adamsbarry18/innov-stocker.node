@@ -135,7 +135,7 @@ export class Service {
     };
   }
 
-  protected async checkAndDelete(
+  async checkAndDelete(
     id: number,
     deleteFn: (id: number) => Promise<void>,
   ): Promise<void> {

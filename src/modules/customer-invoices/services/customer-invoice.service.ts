@@ -12,11 +12,11 @@ import {
   CustomerInvoiceSalesOrderLink,
   CustomerInvoiceRepository,
   CustomerInvoiceStatus,
-  CreateCustomerInvoiceInput,
-  UpdateCustomerInvoiceInput,
-  CustomerInvoiceApiResponse,
+  type CreateCustomerInvoiceInput,
+  type UpdateCustomerInvoiceInput,
+  type CustomerInvoiceApiResponse,
   customerInvoiceValidationInputErrors,
-  CreateCustomerInvoiceItemInput,
+  type CreateCustomerInvoiceItemInput,
   CustomerInvoiceItem,
   customerInvoiceItemValidationInputErrors,
 } from '../index';
@@ -49,7 +49,6 @@ const UPDATABLE_FIELDS_FOR_PAID_INVOICE = [
 ] as const;
 
 let instance: CustomerInvoiceService | null = null;
-
 export class CustomerInvoiceService {
   /**
    * Constructs an instance of CustomerInvoiceService.

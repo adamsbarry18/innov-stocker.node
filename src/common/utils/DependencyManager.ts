@@ -1,4 +1,4 @@
-import { type Service, ResourcesKeys, DependentWrapper } from './Service';
+import { type Service, type ResourcesKeys, DependentWrapper } from './Service';
 
 let instance: DependencyManager | null = null;
 

@@ -237,5 +237,15 @@ describe('Supplier API', () => {
       expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
+
+    it('should return 400 if the supplier has associated records', async () => {
+      const supplierIdWithDependencies = 1; // ID du fournisseur avec dépendances ajouté dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/suppliers/${supplierIdWithDependencies}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
+      expect(res.body.data).toContain('is in use and cannot be deleted');
+    });
   });
 });

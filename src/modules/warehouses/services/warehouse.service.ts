@@ -302,12 +302,12 @@ export class WarehouseService {
       const warehouse = await this.warehouseRepository.findById(id);
       if (!warehouse) throw new NotFoundError(`Warehouse with id ${id} not found.`);
 
-      /*const isInUse = await this.warehouseRepository.isWarehouseInUse(id);
+      const isInUse = await this.warehouseRepository.isWarehouseInUse(id);
       if (isInUse) {
         throw new BadRequestError(
           `Warehouse '${warehouse.name}' is in use and cannot be deleted. Please reassign associated records first.`,
         );
-      }*/
+      }
 
       await this.warehouseRepository.softDelete(id);
 

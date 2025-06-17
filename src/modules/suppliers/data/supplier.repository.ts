@@ -11,6 +11,8 @@ import { appDataSource } from '@/database/data-source';
 import { Supplier } from '../models/supplier.entity';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { PurchaseOrder } from '@/modules/purchase-orders';
+import { ProductSupplier } from '@/modules/product-suppliers';
 
 interface FindAllSuppliersOptions {
   skip?: number;
@@ -167,13 +169,14 @@ export class SupplierRepository {
     }
   }
 
-  /* TODO: Dépendance - Implementer cette méthode avec PurchaseOrderRepository, ProductSupplierRepository, etc.
   async isSupplierInUse(supplierId: number): Promise<boolean> {
-    logger.warn('SupplierRepository.isSupplierInUse is a placeholder and should be implemented.');
-    // Example:
-    // const poCount = await this.repository.manager.getRepository(PurchaseOrder).count({where: {supplierId}});
-    // const psCount = await this.repository.manager.getRepository(ProductSupplier).count({where: {supplierId}});
-    // return poCount > 0 || psCount > 0;
+    const poCount = await this.repository.manager
+      .getRepository(PurchaseOrder)
+      .count({ where: { supplierId } });
+    const psCount = await this.repository.manager
+      .getRepository(ProductSupplier)
+      .count({ where: { supplierId } });
+    return poCount > 0 || psCount > 0;
     return false;
-  }*/
+  }
 }

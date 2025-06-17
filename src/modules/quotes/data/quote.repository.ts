@@ -10,6 +10,7 @@ import { appDataSource } from '@/database/data-source';
 import { Quote } from '../models/quote.entity';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { SalesOrder } from '@/modules/sales-orders';
 
 interface FindAllQuotesOptions {
   skip?: number;
@@ -157,13 +158,9 @@ export class QuoteRepository {
     }
   }
 
-  /*TODO: Dépendance - Implémenter avec SalesOrderRepository
   async isQuoteConvertedToOrder(quoteId: number): Promise<boolean> {
-    logger.warn('QuoteRepository.isQuoteConvertedToOrder is a placeholder.');
-    // Example:
-    // const salesOrderRepo = this.repository.manager.getRepository(SalesOrder);
-    // const count = await salesOrderRepo.count({where: {quoteId: quoteId, deletedAt: IsNull()}});
-    // return count > 0;
-    return false;
-  }*/
+    const salesOrderRepo = this.repository.manager.getRepository(SalesOrder);
+    const count = await salesOrderRepo.count({ where: { quoteId: quoteId, deletedAt: IsNull() } });
+    return count > 0;
+  }
 }

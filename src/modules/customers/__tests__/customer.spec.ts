@@ -238,5 +238,14 @@ describe('Customer API', () => {
       expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
+
+    it('should return 400 if the customer has associated sales orders or invoices', async () => {
+      const customerId = 3; // ID du client avec dépendances ajouté dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/customers/${customerId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
+    });
   });
 });

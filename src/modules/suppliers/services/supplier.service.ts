@@ -268,12 +268,12 @@ export class SupplierService {
       const supplier = await this.supplierRepository.findById(id);
       if (!supplier) throw new NotFoundError(`Supplier with id ${id} not found.`);
 
-      // TODO: Dépendance - Vérifier si le fournisseur est utilisé
-      // (ex: PurchaseOrders, ProductSuppliers) avant la suppression.
-      // const isUsed = await this.supplierRepository.isSupplierInUse(id); // Méthode à implémenter dans le repo
-      // if (isUsed) {
-      //   throw new BadRequestError(`Supplier '${supplier.name}' is in use and cannot be deleted. Please reassign associated records first.`);
-      // }
+      const isUsed = await this.supplierRepository.isSupplierInUse(id);
+      if (isUsed) {
+        throw new BadRequestError(
+          `Supplier '${supplier.name}' is in use and cannot be deleted. Please reassign associated records first.`,
+        );
+      }
 
       await this.supplierRepository.softDelete(id);
 

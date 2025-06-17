@@ -318,12 +318,14 @@ export default class DeliveryRouter extends BaseRouter {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
 
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found'));
     await this.pipe(
       res,
       req,
       next,
       async () => {
-        await this.deliveryService.deleteDelivery(id);
+        await this.deliveryService.deleteDelivery(id, userId);
       },
       204,
     );

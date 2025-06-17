@@ -411,7 +411,7 @@ export class SupplierReturnService {
     try {
       const supplierReturn = await this.getExistingReturn(id);
       this.validateDeletion(supplierReturn);
-      this.validateNoProcessedTransactions(id);
+      await this.validateNoProcessedTransactions(id);
       await this.validateUser(deletedByUserId);
 
       await this.returnRepository.softDelete(id);
@@ -1017,22 +1017,22 @@ export class SupplierReturnService {
 
     if (!deletableStatuses.includes(supplierReturn.status)) {
       throw new BadRequestError(
-        `Supplier return in status '${supplierReturn.status}' cannot be deleted.`,
+        `Supplier return in status "${supplierReturn.status}" cannot be deleted.`,
       );
     }
   }
 
-  /**TODO
+  /**
    * Validates that there are no processed financial transactions linked to the return before deletion.
    * @param returnId - The ID of the return to validate.
    */
-  private validateNoProcessedTransactions(returnId: number): void {
-    /*const isProcessed = await this.returnRepository.isReturnProcessedForCreditOrRefund(returnId);
+  private async validateNoProcessedTransactions(returnId: number): Promise<void> {
+    const isProcessed = await this.returnRepository.isReturnProcessedForCreditOrRefund(returnId);
     if (isProcessed) {
       throw new BadRequestError(
-        `Return ${returnId} has been processed for credit/refund and cannot be deleted.`,
+        `Return ${returnId} has been processed for credit/refund and cannot be deleted. Please reverse associated payments/credits first.`,
       );
-    }*/
+    }
   }
 
   // Private processing methods

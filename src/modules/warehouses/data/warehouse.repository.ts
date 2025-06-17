@@ -10,6 +10,7 @@ import { appDataSource } from '@/database/data-source';
 import { Warehouse } from '../models/warehouse.entity';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { StockMovement } from '@/modules/stock-movements';
 
 interface FindAllWarehousesOptions {
   skip?: number;
@@ -153,13 +154,11 @@ export class WarehouseRepository {
     }
   }
 
-  /* TODO: Dépendance - Implémenter cette méthode avec les repositories pertinents (StockMovement, InventorySession, etc.)
   async isWarehouseInUse(warehouseId: number): Promise<boolean> {
-    logger.warn('WarehouseRepository.isWarehouseInUse is a placeholder.');
-    // Example:
-    // const stockMovementRepo = this.repository.manager.getRepository(StockMovement);
-    // const count = await stockMovementRepo.count({where: [{warehouseId: warehouseId}, {shopId: warehouseId}]}); // if shopId can reference warehouseId
-    // return count > 0;
-    return false;
-  }*/
+    const stockMovementRepo = this.repository.manager.getRepository(StockMovement);
+    const count = await stockMovementRepo.count({
+      where: [{ warehouseId: warehouseId }, { shopId: warehouseId }],
+    });
+    return count > 0;
+  }
 }

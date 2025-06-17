@@ -6,6 +6,8 @@ import {
   type UpdateResult,
   type FindManyOptions,
 } from 'typeorm';
+import { PurchaseReception } from '@/modules/purchase-receptions';
+import { SupplierInvoicePurchaseOrderLink } from '@/modules/supplier-invoices';
 import { appDataSource } from '@/database/data-source';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
@@ -168,18 +170,26 @@ export class PurchaseOrderRepository {
     }
   }
 
-  /* TODO: Dépendance - Implémenter avec PurchaseReceptionRepository, SupplierInvoiceRepository
   async isPurchaseOrderLinkedToReceptionOrInvoice(orderId: number): Promise<boolean> {
-    logger.warn(
-      'PurchaseOrderRepository.isPurchaseOrderLinkedToReceptionOrInvoice is a placeholder.',
-    );
-    // Example:
-    // const receptionRepo = this.repository.manager.getRepository(PurchaseReception);
-    // const receptionCount = await receptionRepo.count({where: {purchaseOrderId: orderId, deletedAt: IsNull()}});
-    // if (receptionCount > 0) return true;
-    // const invoiceLinkRepo = this.repository.manager.getRepository(SupplierInvoicePurchaseOrderLink);
-    // const invoiceLinkCount = await invoiceLinkRepo.count({where: {purchaseOrderId: orderId}});
-    // return invoiceLinkCount > 0;
-    return false;
-  }*/
+    try {
+      const receptionRepo = this.repository.manager.getRepository(PurchaseReception);
+      const receptionCount = await receptionRepo.count({
+        where: { purchaseOrderId: orderId, deletedAt: IsNull() },
+      });
+      if (receptionCount > 0) return true;
+
+      const invoiceLinkRepo = this.repository.manager.getRepository(
+        SupplierInvoicePurchaseOrderLink,
+      );
+      const invoiceLinkCount = await invoiceLinkRepo.count({
+        where: { purchaseOrderId: orderId },
+      });
+
+      return invoiceLinkCount > 0;
+    } catch (error) {
+      throw new ServerError(
+        `Error checking if purchase order ${orderId} is linked to reception or invoice. ${error}`,
+      );
+    }
+  }
 }

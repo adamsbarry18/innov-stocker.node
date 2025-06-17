@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
 import {
   BadRequestError,
   ForbiddenError,
@@ -8,8 +9,6 @@ import {
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, IsNull, type EntityManager } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
-import dayjs from 'dayjs';
-
 import { Customer, CustomerRepository } from '@/modules/customers';
 import { SalesOrder, SalesOrderRepository } from '@/modules/sales-orders';
 import { CustomerInvoice, CustomerInvoiceRepository } from '@/modules/customer-invoices';
@@ -18,12 +17,16 @@ import { ProductVariant, ProductVariantRepository } from '@/modules/product-vari
 import { User, UserRepository } from '@/modules/users';
 import { StockMovementService, StockMovementType } from '@/modules/stock-movements';
 import { PaymentService } from '@/modules/payments';
-
 import {
   CustomerReturn,
   CustomerReturnRepository,
   CustomerReturnStatus,
   customerReturnValidationInputErrors,
+  customerReturnItemValidationInputErrors,
+  CustomerReturnItem,
+  ReturnItemActionTaken,
+  createCustomerReturnItemSchema,
+  type CreateCustomerReturnItemInput,
   type CreateCustomerReturnInput,
   type UpdateCustomerReturnInput,
   type CustomerReturnApiResponse,
@@ -31,15 +34,6 @@ import {
   type ReceiveReturnInput,
   type CompleteReturnInput,
 } from '../index';
-
-import {
-  CustomerReturnItem,
-  customerReturnItemValidationInputErrors,
-  CreateCustomerReturnItemInput,
-  ReturnItemActionTaken,
-  createCustomerReturnItemSchema,
-} from '../index';
-
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 interface ValidationContext {
@@ -63,7 +57,6 @@ export class CustomerReturnService {
     private readonly userRepository: UserRepository = new UserRepository(),
     private readonly stockMovementService: StockMovementService = StockMovementService.getInstance(),
     private readonly paymentService: PaymentService = PaymentService.getInstance(),
-    // TODO: private readonly creditNoteService: CreditNoteService = CreditNoteService.getInstance(),
   ) {}
 
   /**
@@ -1023,18 +1016,19 @@ export class CustomerReturnService {
     }
   }
 
-  /**TODO
+  /**
    * Validates that there are no processed financial transactions linked to the return before deletion.
    * @param returnId - The ID of the return to validate.
    */
   private async validateNoProcessedTransactions(returnId: number): Promise<void> {
-    /*const isProcessed = await this.returnRepository.isReturnProcessedForRefundOrExchange(returnId);
+    const isProcessed = await this.returnRepository.isReturnProcessedForRefundOrExchange(returnId);
     if (isProcessed) {
       throw new BadRequestError(
         `Return ${returnId} has been processed for refund/exchange and cannot be deleted.`,
       );
-    }*/
+    }
   }
+
   /**
    * Processes the reception of return items, including stock movements.
    * @param customerReturn - The customer return entity.

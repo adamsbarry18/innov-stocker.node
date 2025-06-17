@@ -69,14 +69,16 @@ INSERT INTO suppliers (id, name, contact_person_name, email, phone_number, websi
 -- -----------------------------------------------------
 INSERT INTO customers (id, first_name, last_name, company_name, email, phone_number, vat_number, siret_number, default_currency_id, default_payment_terms_days, credit_limit, customer_group_id, billing_address_id, default_shipping_address_id, notes, created_by_user_id, updated_by_user_id, created_time, updated_time, deleted_time) VALUES
 (1, 'Jean', 'Dupont', NULL, 'jean.dupont@email.com', '0612345678', NULL, NULL, 1, 0, NULL, 1, 4, 5, 'Client fidèle', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-(2, NULL, NULL, 'Entreprise ABC SARL', 'contact@entreprise-abc.com', '0123456789', 'FRABC123456', 'ABC12345600011', 1, 30, 5000.00, 2, 6, 6, 'Client professionnel régulier', 2, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
+(2, NULL, NULL, 'Entreprise ABC SARL', 'contact@entreprise-abc.com', '0123456789', 'FRABC123456', 'ABC12345600011', 1, 30, 5000.00, 2, 6, 6, 'Client professionnel régulier', 2, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(3, 'Client', 'AvecDependances', 'ClientDependant SARL', 'client.dependant@example.com', '0700000000', NULL, NULL, 1, 15, 1000.00, 1, 4, 5, 'Client pour tests de dépendances', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
 
 -- -----------------------------------------------------
 -- Table customer_shipping_addresses
 -- -----------------------------------------------------
 INSERT INTO customer_shipping_addresses (id, customer_id, address_id, address_label, is_default, created_time, updated_time) VALUES
 (1, 1, 5, 'Domicile Principal', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 6, 'Siège Social', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 2, 6, 'Siège Social', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 3, 5, 'Adresse de livraison dépendante', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- -----------------------------------------------------
 -- Table warehouses
@@ -190,7 +192,8 @@ INSERT INTO sales_orders (id, order_number, customer_id, quote_id, order_date, s
 (2, 'SO-2025-00002', 2, NULL, '2025-05-12', 'in_preparation', 1, 1999.0000, 399.8000, 2398.8000, 25.0000, 6, 6, 1, NULL, 2, 'Vente 2 Laptops Entreprise ABC', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
 (3, 'SO-2025-00003', 1, NULL, '2025-05-29', 'approved', 1, 100.0000, 20.0000, 120.0000, 0.0000, 5, 4, 1, NULL, 1, 'Commande pour tests de livraison', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
 (4, 'SO-2025-00004', 1, NULL, '2025-05-30', 'approved', 1, 600.0000, 120.0000, 720.0000, 0.0000, 5, 4, 1, NULL, 1, 'Commande pour tests de livraison d''articles', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-(5, 'SO-2025-00005', 1, NULL, '2025-05-30', 'approved', 1, 150.0000, 30.0000, 180.0000, 0.0000, 5, 4, 1, NULL, 1, 'Commande pour ajout d''article de livraison', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
+(5, 'SO-2025-00005', 1, NULL, '2025-05-30', 'approved', 1, 150.0000, 30.0000, 180.0000, 0.0000, 5, 4, 1, NULL, 1, 'Commande pour ajout d''article de livraison', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(6, 'SO-2025-00006', 3, NULL, '2025-06-15', 'approved', 1, 200.0000, 40.0000, 240.0000, 0.0000, 5, 4, 1, NULL, 1, 'Commande pour client avec dépendances', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
 
 -- -----------------------------------------------------
 -- Table sales_order_items
@@ -205,7 +208,8 @@ INSERT INTO sales_order_items (id, sales_order_id, product_id, product_variant_i
 (7, 4, 3, NULL, 'Chargeur USB-C Rapide pour test livraison', 10.000, 10.0000, 0.00, 20.00, 100.0000, 0.000, 0.000),
 (8, 5, 1, NULL, 'Smartphone Modèle X pour nouvel article de livraison', 3.000, 50.0000, 0.00, 20.00, 150.0000, 0.000, 0.000),
 (9, 5, 3, NULL, 'Chargeur USB-C Rapide pour nouvel article de livraison', 5.000, 10.0000, 0.00, 20.00, 50.0000, 0.000, 0.000),
-(10, 4, 1, NULL, 'Nouvel article pour test livraison', 5.000, 100.0000, 0.00, 20.00, 500.0000, 0.000, 0.000);
+(10, 4, 1, NULL, 'Nouvel article pour test livraison', 5.000, 100.0000, 0.00, 20.00, 500.0000, 0.000, 0.000),
+(11, 6, 1, NULL, 'Smartphone Modèle X pour client dépendant', 1.000, 200.0000, 0.00, 20.00, 200.0000, 0.000, 0.000);
 
 -- -----------------------------------------------------
 -- Table purchase_receptions
@@ -270,7 +274,8 @@ INSERT INTO delivery_items (id, delivery_id, sales_order_item_id, product_id, pr
 -- -----------------------------------------------------
 INSERT INTO customer_invoices (id, invoice_number, customer_id, invoice_date, due_date, status, currency_id, total_amount_ht, total_vat_amount, total_amount_ttc, amount_paid, billing_address_id, created_by_user_id, notes, terms_and_conditions, created_time, updated_time, deleted_time) VALUES
 (1, 'INV-CUST-2025-00001', 1, '2025-05-11', '2025-05-26', 'sent', 1, 1009.0000, 201.8000, 1210.8000, 0.0000, 4, 2, 'Facture pour SO-2025-00001', 'Paiement sous 15 jours', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-(2, 'INV-CUST-2025-00002', 2, '2025-05-14', '2025-06-13', 'draft', 1, 1024.5000, 204.9000, 1229.4000, 0.0000, 6, 2, 'Facture pour 1 Laptop de SO-2025-00002 + port', 'Paiement sous 30 jours', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
+(2, 'INV-CUST-2025-00002', 2, '2025-05-14', '2025-06-13', 'draft', 1, 1024.5000, 204.9000, 1229.4000, 0.0000, 6, 2, 'Facture pour 1 Laptop de SO-2025-00002 + port', 'Paiement sous 30 jours', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(3, 'INV-CUST-2025-00003', 3, '2025-06-16', '2025-07-01', 'sent', 1, 200.0000, 40.0000, 240.0000, 0.0000, 4, 1, 'Facture pour client avec dépendances', 'Paiement sous 15 jours', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL);
 
 -- -----------------------------------------------------
 -- Table customer_invoice_items
@@ -280,7 +285,8 @@ INSERT INTO customer_invoice_items (id, customer_invoice_id, product_id, product
 (2, 1, 3, NULL, 'Chargeur USB-C Rapide (Facturé)', 1.000, 24.0000, 0.00, 20.00, 24.0000, 2, 2),
 (3, 1, NULL, NULL, 'Frais de port', 1.000, 10.0000, 0.00, 20.00, 10.0000, NULL, NULL),
 (4, 2, 2, NULL, 'Ordinateur Portable Pro 15" (Facturé)', 1.000, 999.5000, 0.00, 20.00, 999.5000, 3, 3),
-(5, 2, NULL, NULL, 'Frais de port (partiel)', 1.000, 25.0000, 0.00, 20.00, 25.0000, NULL, NULL);
+(5, 2, NULL, NULL, 'Frais de port (partiel)', 1.000, 25.0000, 0.00, 20.00, 25.0000, NULL, NULL),
+(6, 3, 1, NULL, 'Smartphone Modèle X (Facturé pour client dépendant)', 1.000, 200.0000, 0.00, 20.00, 200.0000, NULL, 11);
 
 -- -----------------------------------------------------
 -- Table customer_invoice_sales_order_links
@@ -309,14 +315,16 @@ INSERT INTO supplier_return_items (id, supplier_return_id, product_id, product_v
 -- -----------------------------------------------------
 INSERT INTO customer_returns (id, return_number, customer_id, sales_order_id, customer_invoice_id, return_date, status, reason, created_by_user_id, notes, created_time, updated_time) VALUES
 (1, 'RMA-CUST-2025-001', 1, 1, 1, '2025-05-25', 'received', 'Ne convient pas', 2, 'Client souhaite échanger contre un autre modèle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'RMA-CUST-2025-002', 2, 2, 2, '2025-05-28', 'pending_reception', 'Panne au déballage', 1, 'Laptop ne démarre pas', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 'RMA-CUST-2025-002', 2, 2, 2, '2025-05-28', 'pending_reception', 'Panne au déballage', 1, 'Laptop ne démarre pas', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'RMA-CUST-2025-003', 1, NULL, NULL, '2025-06-10', 'refunded', 'Remboursement effectué', 1, 'Retour avec remboursement déjà traité pour test de suppression', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- -----------------------------------------------------
 -- Table customer_return_items
 -- -----------------------------------------------------
 INSERT INTO customer_return_items (id, customer_return_id, product_id, product_variant_id, quantity, unit_price_at_return, `condition`, action_taken) VALUES
 (1, 1, 2, NULL, 1.000, 975.0000, 'new', 'pending_inspection'), -- Retour Ordinateur Portable
-(2, 2, 2, NULL, 1.000, 999.5000, 'damaged', 'repair');      -- Retour autre Ordinateur Portable
+(2, 2, 2, NULL, 1.000, 999.5000, 'damaged', 'repair'),      -- Retour autre Ordinateur Portable
+(3, 3, 3, NULL, 1.000, 24.9000, 'new', 'refund_approved'); -- Article pour retour 3
 
 -- -----------------------------------------------------
 -- Table inventory_sessions
@@ -370,11 +378,12 @@ INSERT INTO cash_register_sessions (id, cash_register_id, opened_by_user_id, clo
 -- -----------------------------------------------------
 -- Table payments
 -- -----------------------------------------------------
-INSERT INTO payments (id, payment_date, amount, currency_id, payment_method_id, direction, customer_id, supplier_id, customer_invoice_id, supplier_invoice_id, sales_order_id, purchase_order_id, bank_account_id, cash_register_session_id, reference_number, notes, recorded_by_user_id, created_time, updated_time) VALUES
-(1, '2025-05-20', 611.9880, 1, 2, 'inbound', 1, NULL, 1, NULL, 1, NULL, NULL, 1, 'CB-TXN-001', 'Paiement CB Smartphone Dupont', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, '2025-05-22', 12600.0000, 1, 3, 'outbound', NULL, 1, NULL, 1, NULL, 1, 1, NULL, 'VIR-SUP-001', 'Paiement virement Hightech PO1', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, '2025-05-23', 171.0000, 1, 3, 'outbound', NULL, 2, NULL, 2, NULL, 2, 1, NULL, 'VIR-SUP-002', 'Paiement virement Office Supplies Fact 2', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(4, '2025-05-24', 500.0000, 1, 1, 'inbound', 2, NULL, 2, NULL, 2, NULL, NULL, 1, 'CASH-ACOMPTE-ABC', 'Acompte espèces Entreprise ABC Fact 2', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO payments (id, payment_date, amount, currency_id, payment_method_id, direction, customer_id, supplier_id, customer_invoice_id, supplier_invoice_id, sales_order_id, purchase_order_id, bank_account_id, cash_register_session_id, reference_number, notes, recorded_by_user_id, created_time, updated_time, related_return_id) VALUES
+(1, '2025-05-20', 611.9880, 1, 2, 'inbound', 1, NULL, 1, NULL, 1, NULL, NULL, 1, 'CB-TXN-001', 'Paiement CB Smartphone Dupont', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(2, '2025-05-22', 12600.0000, 1, 3, 'outbound', NULL, 1, NULL, 1, NULL, 1, 1, NULL, 'VIR-SUP-001', 'Paiement virement Hightech PO1', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(3, '2025-05-23', 171.0000, 1, 3, 'outbound', NULL, 2, NULL, 2, NULL, 2, 1, NULL, 'VIR-SUP-002', 'Paiement virement Office Supplies Fact 2', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(4, '2025-05-24', 500.0000, 1, 1, 'inbound', 2, NULL, 2, NULL, 2, NULL, NULL, 1, 'CASH-ACOMPTE-ABC', 'Acompte espèces Entreprise ABC Fact 2', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+(5, '2025-06-11', 24.9000, 1, 1, 'inbound', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'REFUND-RMA-003', 'Remboursement pour retour RMA-CUST-2025-003', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3);
 
 
 -- -----------------------------------------------------

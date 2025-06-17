@@ -212,11 +212,6 @@ export class PaymentMethodService {
       const method = await this.methodRepository.findById(id);
       if (!method) throw new NotFoundError(`Payment method with id ${id} not found.`);
 
-      // TODO: Dépendance - Vérifier si la méthode de paiement est utilisée dans des transactions (Payments table)
-      // const isUsed = await this.paymentRepository.count({ where: { paymentMethodId: id } });
-      // if (isUsed > 0) {
-      //   throw new BadRequestError(`Payment method '${method.name}' is in use and cannot be deleted.`);
-      // }
       const isPaymentMethodInUse = await this.methodRepository.isPaymentMethodInUse(id);
       if (isPaymentMethodInUse) {
         throw new BadRequestError(

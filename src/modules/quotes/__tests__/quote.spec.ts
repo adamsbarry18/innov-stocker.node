@@ -243,5 +243,14 @@ describe('Quotes API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(getRes.status).toBe(404); // Assuming soft-deleted entities are not found by findById
     });
+
+    it('should return 400 if the quote has been converted to an order', async () => {
+      const convertedQuoteId = 1; // ID du devis converti en commande dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/quotes/${convertedQuoteId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
+    });
   });
 });

@@ -129,7 +129,6 @@ export class PaymentMethodRepository {
   }
 
   async isPaymentMethodInUse(methodId: number): Promise<boolean> {
-    logger.warn('PaymentMethodRepository.isPaymentMethodInUse is a placeholder.');
     const paymentRepository = this.repository.manager.getRepository(Payment);
     const count = await paymentRepository.count({ where: { paymentMethodId: methodId } });
     return count > 0;
