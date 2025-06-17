@@ -413,5 +413,14 @@ describe('CustomerReturns API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
     });
+
+    it('should return 400 if the return has processed financial transactions', async () => {
+      const returnWithProcessedTransactionId = 3;
+      const res = await request(app)
+        .delete(`/api/v1/customer-returns/${returnWithProcessedTransactionId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.data).toContain(`Customer return in status 'refunded' cannot be deleted.`);
+    });
   });
 });

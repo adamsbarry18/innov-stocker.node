@@ -1,5 +1,5 @@
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
-import { CustomerRepository, Customer, CustomerShippingAddressRepository } from '../index';
+import { CustomerRepository, Customer } from '../index';
 import { AddressRepository } from '@/modules/addresses';
 import { CurrencyRepository } from '@/modules/currencies';
 
@@ -9,32 +9,48 @@ import type {
   CustomerApiResponse,
 } from '../models/customer.entity';
 import { customerValidationInputErrors } from '../models/customer.entity';
-import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
+import {
+  NotFoundError,
+  BadRequestError,
+  ServerError,
+  DependencyError,
+} from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { appDataSource } from '@/database/data-source';
 import { CustomerGroupRepository } from '@/modules/customer-groups';
 import { Address } from '@/modules/addresses/models/address.entity';
 import { CustomerShippingAddress } from '../models/customer-shipping-addresses.entity';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
+import { Service, ResourcesKeys, DependentWrapper, dependency } from '@/common/utils/Service';
+import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
+import { CustomerInvoiceRepository } from '@/modules/customer-invoices/data/customer-invoice.repository';
 
 let instance: CustomerService | null = null;
 
-export class CustomerService {
+@dependency(ResourcesKeys.CUSTOMERS, [ResourcesKeys.SALES_ORDERS, ResourcesKeys.CUSTOMER_INVOICES])
+export class CustomerService extends Service {
   private readonly customerRepository: CustomerRepository;
   private readonly addressRepository: AddressRepository;
   private readonly currencyRepository: CurrencyRepository;
   private readonly customerGroupRepository: CustomerGroupRepository;
+  private readonly salesOrderRepository: SalesOrderRepository;
+  private readonly customerInvoiceRepository: CustomerInvoiceRepository;
 
   constructor(
     customerRepository: CustomerRepository = new CustomerRepository(),
     addressRepository: AddressRepository = new AddressRepository(),
     currencyRepository: CurrencyRepository = new CurrencyRepository(),
     customerGroupRepository: CustomerGroupRepository = new CustomerGroupRepository(),
+    salesOrderRepository: SalesOrderRepository = new SalesOrderRepository(),
+    customerInvoiceRepository: CustomerInvoiceRepository = new CustomerInvoiceRepository(),
   ) {
+    super();
     this.customerRepository = customerRepository;
     this.addressRepository = addressRepository;
     this.currencyRepository = currencyRepository;
     this.customerGroupRepository = customerGroupRepository;
+    this.salesOrderRepository = salesOrderRepository;
+    this.customerInvoiceRepository = customerInvoiceRepository;
   }
 
   /**
@@ -348,11 +364,12 @@ export class CustomerService {
       const customer = await this.customerRepository.findById(id);
       if (!customer) throw new NotFoundError(`Customer with id ${id} not found.`);
 
-      // TODO: Dépendance - Vérifier si le client est utilisé (SalesOrders, Invoices, etc.)
-      // const isUsed = await this.customerRepository.isCustomerInUse(id);
-      // if (isUsed) {
-      //   throw new BadRequestError(`Customer '${customer.getDisplayName()}' has associated orders/invoices and cannot be deleted.`);
-      // }
+      const isUsed = await this.customerRepository.isCustomerInUse(id);
+      if (isUsed) {
+        throw new BadRequestError(
+          `Customer '${customer.getDisplayName()}' has associated orders/invoices and cannot be deleted.`,
+        );
+      }
 
       await this.customerRepository.softDelete(id);
 

@@ -193,9 +193,28 @@ export class SupplierReturnRepository {
     }
   }
 
-  /* TODO: Dépendance - Implémenter avec le module de gestion des avoirs/remboursements fournisseurs
   async isReturnProcessedForCreditOrRefund(returnId: number): Promise<boolean> {
-    logger.warn('SupplierReturnRepository.isReturnProcessedForCreditOrRefund is a placeholder.');
-    return false;
-  }*/
+    try {
+      const paymentCount = await this.repository.manager
+        .createQueryBuilder()
+        .select('COUNT(*)')
+        .from('payments', 'p')
+        .where('p.related_return_id = :returnId', { returnId })
+        .andWhere('p.deleted_time IS NULL')
+        .getCount();
+
+      return paymentCount > 0;
+    } catch (error) {
+      logger.error(
+        {
+          message: `Error checking if supplier return ${returnId} is processed for credit/refund`,
+          error,
+        },
+        'SupplierReturnRepository.isReturnProcessedForCreditOrRefund',
+      );
+      throw new ServerError(
+        `Error checking if supplier return ${returnId} is processed for credit/refund.`,
+      );
+    }
+  }
 }

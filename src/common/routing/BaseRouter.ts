@@ -89,13 +89,17 @@ export abstract class BaseRouter {
       };
       res.status(statusCode).json(responseBody);
     } catch (error) {
-      // En mode test, ne pas logger les erreurs attendues (NotFoundError, BadRequestError)
+      // En mode test, ne pas logger les erreurs attendues (NotFoundError, BadRequestError, DependencyError)
       const isExpectedTestError =
         config.NODE_ENV === 'test' &&
         error instanceof BaseError &&
-        ['ERR_NOT_FOUND', 'ERR_BAD_REQUEST', 'ERR_FORBIDDEN', 'ERR_UNAUTHORIZED'].includes(
-          error.code,
-        );
+        [
+          'ERR_NOT_FOUND',
+          'ERR_BAD_REQUEST',
+          'ERR_FORBIDDEN',
+          'ERR_UNAUTHORIZED',
+          'ERR_DEPENDENCY',
+        ].includes(error.code);
 
       if (!isExpectedTestError) {
         logger.error(error, `Error during piped execution for ${req.method} ${req.path}`);

@@ -215,9 +215,25 @@ export class DeliveryRepository {
     }
   }
 
-  /* TODO: Dépendance - Implémenter avec CustomerInvoiceRepository
   async isDeliveryLinkedToInvoice(deliveryId: number): Promise<boolean> {
-    logger.warn('DeliveryRepository.isDeliveryLinkedToInvoice is a placeholder.');
-    return false;
-  }*/
+    try {
+      const count = await this.repository.manager
+        .createQueryBuilder()
+        .select('COUNT(cii.id)')
+        .from('customer_invoice_items', 'cii')
+        .innerJoin('delivery_items', 'di', 'cii.delivery_item_id = di.id')
+        .where('di.delivery_id = :deliveryId', { deliveryId })
+        .andWhere('cii.deleted_time IS NULL')
+        .andWhere('di.deleted_time IS NULL')
+        .getCount();
+
+      return count > 0;
+    } catch (error) {
+      logger.error(
+        { message: `Error checking if delivery ${deliveryId} is linked to an invoice`, error },
+        'DeliveryRepository.isDeliveryLinkedToInvoice',
+      );
+      throw new ServerError(`Error checking if delivery ${deliveryId} is linked to an invoice.`);
+    }
+  }
 }

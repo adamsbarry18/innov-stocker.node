@@ -337,19 +337,16 @@ export class PurchaseReceptionService {
         `Cannot delete a reception that has been processed (status: ${reception.status}). Consider a supplier return or stock adjustment if items were incorrectly received and stock updated.`,
       );
     }
-    // TODO: isReceptionLinkedToInvoice - Implement with SupplierInvoiceRepository
-    // const isLinkedToInvoice = await this.receptionRepository.isReceptionLinkedToInvoice(id);
-    // if (isLinkedToInvoice) {
-    //   throw new BadRequestError(`Reception '${reception.receptionNumber}' is linked to a supplier invoice and cannot be deleted.`);
-    // }
+    const isLinkedToInvoice = await this.receptionRepository.isReceptionLinkedToInvoice(id);
+    if (isLinkedToInvoice) {
+      throw new BadRequestError(
+        `Reception '${reception.receptionNumber}' is linked to a supplier invoice and cannot be deleted.`,
+      );
+    }
 
     try {
       await appDataSource.transaction(async (transactionalEntityManager) => {
         const receptionRepoTx = transactionalEntityManager.getRepository(PurchaseReception);
-        // If items are hard-deleted due to cascade on PurchaseReception soft-delete, this is fine.
-        // If not, and items should also be soft-deleted:
-        // const itemRepoTx = transactionalEntityManager.getRepository(PurchaseReceptionItem);
-        // await itemRepoTx.softDelete({ purchaseReceptionId: id });
         await receptionRepoTx.softDelete(id);
 
         await UserActivityLogService.getInstance().insertEntry(

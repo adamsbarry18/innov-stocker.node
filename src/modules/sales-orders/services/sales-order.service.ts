@@ -42,7 +42,6 @@ import { StockMovementService, StockMovementType } from '@/modules/stock-movemen
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 let instance: SalesOrderService | null = null;
-
 export class SalesOrderService {
   constructor(
     private readonly orderRepository: SalesOrderRepository = new SalesOrderRepository(),

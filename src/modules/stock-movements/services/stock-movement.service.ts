@@ -348,6 +348,66 @@ export class StockMovementService {
   }
 
   /**
+   * Reverses stock movements for cancelled or deleted deliveries.
+   * This effectively "unreserves" or "returns" stock to the inventory.
+   * @param deliveryId - The ID of the delivery being cancelled/deleted.
+   * @param deliveryItems - The items associated with the delivery.
+   * @param userId - The ID of the user performing the unreservation.
+   * @param manager - The EntityManager for transactional operations.
+   */
+  async unreserveStockForDelivery(
+    deliveryId: number,
+    deliveryItems: any[],
+    userId: number,
+    manager: EntityManager,
+  ): Promise<void> {
+    if (!deliveryItems || deliveryItems.length === 0) {
+      logger.warn(`No items to unreserve for delivery ID ${deliveryId}.`);
+      return;
+    }
+
+    for (const item of deliveryItems) {
+      const quantityToReverse = Number(item.quantityShipped);
+
+      if (quantityToReverse <= 0) {
+        logger.warn(
+          `Skipping unreservation for delivery item ${item.id} as quantity is not positive.`,
+        );
+        continue;
+      }
+
+      const stockMovementInput: CreateStockMovementInput = {
+        productId: item.productId,
+        productVariantId: item.productVariantId,
+        warehouseId: item.delivery?.dispatchWarehouseId,
+        shopId: item.delivery?.dispatchShopId,
+        movementType: StockMovementType.CUSTOMER_RETURN,
+        quantity: quantityToReverse,
+        movementDate: new Date(),
+        unitCostAtMovement: Number(item.unitPriceAtReturn ?? 0),
+        userId: userId,
+        referenceDocumentType: 'delivery_cancellation',
+        referenceDocumentId: deliveryId.toString(),
+        notes: `Stock unreserved due to cancellation/deletion of Delivery ${deliveryId}`,
+      };
+
+      if (!stockMovementInput.warehouseId && !stockMovementInput.shopId) {
+        logger.error(
+          `Cannot unreserve stock for delivery item ${item.id}: No dispatch location found for delivery ${deliveryId}.`,
+        );
+        throw new ServerError(
+          `Cannot unreserve stock: Missing dispatch location for delivery ${deliveryId}.`,
+        );
+      }
+
+      await this.createMovement(stockMovementInput, manager);
+      logger.info(
+        `Stock unreserved for delivery item ${item.id} (Product: ${item.productId}, Qty: ${quantityToReverse}) due to delivery cancellation/deletion.`,
+      );
+    }
+  }
+
+  /**
    * Returns the singleton instance of StockMovementService.
    * @returns The StockMovementService instance.
    */

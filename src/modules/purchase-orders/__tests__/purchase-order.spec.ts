@@ -168,5 +168,14 @@ describe('Purchase Orders API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(204);
     });
+
+    it('should return 400 if the purchase order is linked to receptions or invoices', async () => {
+      const orderId = 1; // ID de la commande d'achat liée à des réceptions/factures dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/purchase-orders/${orderId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
+    });
   });
 });

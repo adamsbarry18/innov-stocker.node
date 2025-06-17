@@ -418,5 +418,14 @@ describe('Deliveries API', () => {
       const res = await request(app).delete(`/api/v1/deliveries/${deliveryToDeleteId}`);
       expect(res.status).toBe(401);
     });
+
+    it('should return 400 if the delivery is linked to an invoice', async () => {
+      const deliveryIdWithInvoice = 1; // ID de la livraison liée à une facture dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/deliveries/${deliveryIdWithInvoice}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
+    });
   });
 });

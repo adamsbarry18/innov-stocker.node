@@ -246,7 +246,7 @@ export class DeliveryService {
    * @param id The ID of the delivery to delete.
    * @param deletedByUserId The ID of the user deleting the delivery.
    */
-  async deleteDelivery(id: number): Promise<void> {
+  async deleteDelivery(id: number, deletedByUserId: number): Promise<void> {
     await appDataSource.transaction(async (manager) => {
       const delivery = await this.deliveryRepository.findById(id, {
         transactionalEntityManager: manager,
@@ -255,13 +255,37 @@ export class DeliveryService {
         throw new NotFoundError(`Delivery with id ${id} not found.`);
       }
 
-      this.validateDeliveryCanBeDeleted(delivery);
+      await this.validateDeliveryCanBeDeleted(delivery);
 
       if (delivery.status === DeliveryStatus.IN_PREPARATION) {
-        logger.info(
-          `TODO: Reverse any stock reservations for cancelled/deleted delivery ID ${id}.`,
-        );
-        // await this.stockMovementService.unreserveStockForDelivery(id, delivery.items);
+        const deliveryWithItems = await this.deliveryRepository.findById(id, {
+          relations: ['items', 'items.salesOrderItem', 'items.product'],
+          transactionalEntityManager: manager,
+        });
+
+        if (deliveryWithItems && deliveryWithItems.items) {
+          const itemsForUnreserve = deliveryWithItems.items.map((item) => ({
+            ...item,
+            unitPriceAtReturn:
+              item.salesOrderItem?.product?.defaultPurchasePrice ??
+              item.product?.defaultPurchasePrice ??
+              0,
+            delivery: {
+              dispatchWarehouseId: deliveryWithItems.dispatchWarehouseId,
+              dispatchShopId: deliveryWithItems.dispatchShopId,
+            },
+          }));
+          await this.stockMovementService.unreserveStockForDelivery(
+            id,
+            itemsForUnreserve,
+            deletedByUserId,
+            manager,
+          );
+        } else {
+          logger.warn(
+            `Delivery ${id} in IN_PREPARATION status but no items found for stock unreservation.`,
+          );
+        }
       }
 
       try {
@@ -936,7 +960,7 @@ export class DeliveryService {
    * Validates if a delivery can be deleted based on its status.
    * @param delivery The delivery.
    */
-  private validateDeliveryCanBeDeleted(delivery: Delivery): void {
+  private async validateDeliveryCanBeDeleted(delivery: Delivery): Promise<void> {
     if (
       delivery.status === DeliveryStatus.SHIPPED ||
       delivery.status === DeliveryStatus.DELIVERED
@@ -945,9 +969,11 @@ export class DeliveryService {
         `Delivery in status '${delivery.status}' cannot be deleted. Consider a customer return process.`,
       );
     }
-    // TODO: Dépendance - Check if linked to non-voided customer invoices
-    // const isLinked = await this.deliveryRepository.isDeliveryLinkedToInvoice(id);
-    // if(isLinked) throw new BadRequestError('Delivery is linked to an invoice.');
+    // Check if linked to non-voided customer invoices
+    const isLinked = await this.deliveryRepository.isDeliveryLinkedToInvoice(delivery.id);
+    if (isLinked) {
+      throw new BadRequestError(`Delivery is linked to an invoice and cannot be deleted.`);
+    }
   }
 
   /**

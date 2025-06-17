@@ -427,5 +427,14 @@ describe('SupplierReturns API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
     });
+
+    it('should return 400 if the supplier return has associated processed transactions', async () => {
+      const returnIdWithProcessedTransaction = 3; // ID du retour fournisseur avec paiement associé dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/supplier-returns/${returnIdWithProcessedTransaction}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
+    });
   });
 });

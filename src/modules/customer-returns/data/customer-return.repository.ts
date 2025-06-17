@@ -189,10 +189,28 @@ export class CustomerReturnRepository {
     }
   }
 
-  /* TODO: Dépendance - Implémenter avec PaymentRepository ou CreditNoteRepository
   async isReturnProcessedForRefundOrExchange(returnId: number): Promise<boolean> {
-    logger.warn('CustomerReturnRepository.isReturnProcessedForRefundOrExchange is a placeholder.');
-    // Example: Check if a payment (refund) or credit note is linked to this returnId
-    return false;
-  }*/
+    try {
+      const paymentCount = await this.repository
+        .createQueryBuilder('cr')
+        .innerJoin('payments', 'p', 'p.related_return_id = cr.id')
+        .where('cr.id = :returnId', { returnId })
+        .andWhere('p.direction = :direction', { direction: 'inbound' })
+        .andWhere('p.deleted_time IS NULL')
+        .getCount();
+
+      return paymentCount > 0;
+    } catch (error) {
+      logger.error(
+        {
+          message: `Error checking if return ${returnId} is processed for refund/exchange`,
+          error,
+        },
+        'CustomerReturnRepository.isReturnProcessedForRefundOrExchange',
+      );
+      throw new ServerError(
+        `Error checking if return ${returnId} is processed for refund/exchange.`,
+      );
+    }
+  }
 }

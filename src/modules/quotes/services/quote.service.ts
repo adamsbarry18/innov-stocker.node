@@ -329,7 +329,7 @@ export class QuoteService {
           )
         ) {
           throw new ForbiddenError(
-            `Quote is in status '${quote.status}' and cannot be fully modified.`,
+            `Quote is in status "${quote.status}" and cannot be fully modified.`,
           );
         }
       }
@@ -495,11 +495,12 @@ export class QuoteService {
         throw new BadRequestError(`Quote is in status '${quote.status}' and cannot be deleted.`);
       }
 
-      // TODO: Dépendance - Vérifier si le devis est lié à une commande client qui n'est pas annulée.
-      // const isConverted = await this.quoteRepository.isQuoteConvertedToOrder(id);
-      // if (isConverted) {
-      //   throw new BadRequestError(`Quote '${quote.quoteNumber}' has been converted to an order and cannot be deleted.`);
-      // }
+      const isConverted = await this.quoteRepository.isQuoteConvertedToOrder(id);
+      if (isConverted) {
+        throw new BadRequestError(
+          `Quote '${quote.quoteNumber}' has been converted to an order and cannot be deleted.`,
+        );
+      }
 
       await this.quoteRepository.softDelete(id);
 

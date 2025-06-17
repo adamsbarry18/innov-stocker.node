@@ -169,7 +169,6 @@ export class CustomerRepository {
 
   async softDelete(id: number): Promise<UpdateResult> {
     try {
-      // Dependency checks (e.g., on orders, invoices) should be in the service layer
       return await this.repository.softDelete(id);
     } catch (error) {
       logger.error(

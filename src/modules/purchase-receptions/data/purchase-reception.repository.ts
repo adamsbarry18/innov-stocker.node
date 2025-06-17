@@ -5,11 +5,14 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
+  In,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import { PurchaseReception } from '../models/purchase-reception.entity';
 import logger from '@/lib/logger';
+import { SupplierInvoiceItem } from '@/modules/supplier-invoices';
+import { PurchaseReceptionItem } from '../purchase-reception-items';
 
 interface FindAllReceptionsOptions {
   skip?: number;
@@ -154,12 +157,30 @@ export class PurchaseReceptionRepository {
     }
   }
 
-  /*TODO: Dépendance - Implémenter avec SupplierInvoiceRepository
   async isReceptionLinkedToInvoice(receptionId: number): Promise<boolean> {
-    logger.warn('PurchaseReceptionRepository.isReceptionLinkedToInvoice is a placeholder.');
-    // Example:
-    // const supplierInvoiceItemRepo = this.repository.manager.getRepository(SupplierInvoiceItem);
-    // const count = await supplierInvoiceItemRepo.count({where: {purchaseReceptionItemId: In(receptionItemIds)}}); // Needs receptionItemIds
-    return false;
-  }*/
+    try {
+      const receptionItemRepo = this.repository.manager.getRepository(PurchaseReceptionItem);
+      const receptionItems = await receptionItemRepo.find({
+        where: { purchaseReceptionId: receptionId },
+        select: ['id'],
+      });
+
+      if (receptionItems.length === 0) {
+        return false;
+      }
+
+      const receptionItemIds = receptionItems.map((item) => item.id);
+
+      const supplierInvoiceItemRepo = this.repository.manager.getRepository(SupplierInvoiceItem);
+      const count = await supplierInvoiceItemRepo.count({
+        where: { purchaseReceptionItemId: In(receptionItemIds) },
+      });
+
+      return count > 0;
+    } catch (error) {
+      throw new ServerError(
+        `Error checking if reception ${receptionId} is linked to an invoice. ${error}`,
+      );
+    }
+  }
 }

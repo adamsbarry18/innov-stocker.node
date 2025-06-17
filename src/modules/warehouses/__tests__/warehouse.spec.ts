@@ -255,5 +255,15 @@ describe('Warehouse API', () => {
       expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
+
+    it('should return 400 if the warehouse has associated records', async () => {
+      const warehouseIdWithDependencies = 1; // ID de l'entrepôt avec dépendances ajouté dans 2-datas.sql
+      const res = await request(app)
+        .delete(`/api/v1/warehouses/${warehouseIdWithDependencies}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(400);
+      expect(res.body.status).toBe('fail');
+      expect(res.body.data).toContain('is in use and cannot be deleted');
+    });
   });
 });

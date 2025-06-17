@@ -622,11 +622,12 @@ export class PurchaseOrderService {
         );
       }
 
-      // TODO: Dépendance - Vérifier si la commande est liée à des réceptions ou factures non annulées
-      // const isLinked = await this.orderRepository.isPurchaseOrderLinkedToReceptionOrInvoice(id);
-      // if (isLinked) {
-      //   throw new BadRequestError(`Purchase order '${order.orderNumber}' has associated receptions or invoices and cannot be deleted.`);
-      // }
+      const isLinked = await this.orderRepository.isPurchaseOrderLinkedToReceptionOrInvoice(id);
+      if (isLinked) {
+        throw new BadRequestError(
+          `Purchase order "${order.orderNumber}" has associated receptions or invoices and cannot be deleted.`,
+        );
+      }
 
       await this.orderRepository.softDelete(id);
 
