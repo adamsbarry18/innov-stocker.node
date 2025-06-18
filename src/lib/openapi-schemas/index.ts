@@ -32,6 +32,7 @@ import { customerReturnSchemas } from './customer-returns/customer-return.schema
 import { supplierReturnSchemas } from './supplier-returns/supplier-return.schema';
 import { userActivityLogSchemas } from './user-activity-logs/user-activity-log.schema';
 import { notificationSchemas } from './notifications/notification.schema';
+import { importSchemas } from './imports/import.schema';
 
 export const schemas = {
   ...userSchemas,
@@ -68,6 +69,7 @@ export const schemas = {
   ...supplierReturnSchemas,
   ...userActivityLogSchemas,
   ...notificationSchemas,
+  ...importSchemas,
 };
 
 export const getOpenAPIComponents = (): { components: { schemas: typeof schemas } } => ({
@@ -111,4 +113,5 @@ export {
   supplierReturnSchemas,
   userActivityLogSchemas,
   notificationSchemas,
+  importSchemas,
 };

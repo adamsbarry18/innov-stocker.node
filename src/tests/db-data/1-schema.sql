@@ -1316,5 +1316,27 @@ CREATE INDEX `idx_notifications_user_read_created` ON `notifications` (
     `created_time`
 );
 
+-- -----------------------------------------------------
+-- Table `import_batches`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `import_batches`;
+
+CREATE TABLE `import_batches` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `entity_type` VARCHAR(50) NOT NULL,
+    `status` VARCHAR(30) DEFAULT 'pending' NOT NULL,
+    `summary` JSON DEFAULT NULL,
+    `error_details` JSON DEFAULT NULL,
+    `critical_error` TEXT DEFAULT NULL,
+    `payload` JSON NOT NULL,
+    `original_file_name` VARCHAR(255) DEFAULT NULL,
+    `created_by_user_id` INT NOT NULL,
+    `updated_by_user_id` INT DEFAULT NULL,
+    `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_time` TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT `fk_import_batches_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 -- Réactiver les vérifications de clés étrangères
 SET FOREIGN_KEY_CHECKS = 1;
