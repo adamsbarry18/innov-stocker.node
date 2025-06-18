@@ -11,7 +11,6 @@ import { appDataSource } from '@/database/data-source';
 import dayjs from 'dayjs';
 
 import { SupplierReturnRepository } from '../index';
-import { SupplierReturnItemRepository } from '../supplier-return-items/data/supplier-return-item.repository';
 import { SupplierRepository } from '@/modules/suppliers/data/supplier.repository';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
@@ -62,7 +61,6 @@ let instance: SupplierReturnService | null = null;
 export class SupplierReturnService {
   constructor(
     private readonly returnRepository: SupplierReturnRepository = new SupplierReturnRepository(),
-    private readonly itemRepository: SupplierReturnItemRepository = new SupplierReturnItemRepository(),
     private readonly supplierRepository: SupplierRepository = new SupplierRepository(),
     private readonly productRepository: ProductRepository = new ProductRepository(),
     private readonly variantRepository: ProductVariantRepository = new ProductVariantRepository(),
@@ -104,7 +102,7 @@ export class SupplierReturnService {
         return response;
       } catch (error: any) {
         logger.error(
-          `[createSupplierReturn] Erreur lors de la création du retour fournisseur: ${error.message || JSON.stringify(error)}`,
+          `[createSupplierReturn] Erreur lors de la création du retour fournisseur: ${error.message ?? JSON.stringify(error)}`,
           { error },
         );
         throw error;
@@ -223,11 +221,7 @@ export class SupplierReturnService {
   ): Promise<SupplierReturnApiResponse> {
     return appDataSource.transaction(async (manager) => {
       const supplierReturn = await this.getExistingReturn(returnId, manager);
-      this.validateStatusTransition(
-        supplierReturn,
-        SupplierReturnStatus.APPROVED_BY_SUPPLIER,
-        approvedByUserId,
-      );
+      this.validateStatusTransition(supplierReturn, SupplierReturnStatus.APPROVED_BY_SUPPLIER);
 
       await this.updateReturnStatus(
         returnId,
@@ -331,11 +325,7 @@ export class SupplierReturnService {
   ): Promise<SupplierReturnApiResponse> {
     return appDataSource.transaction(async (manager) => {
       const supplierReturn = await this.getExistingReturn(returnId, manager);
-      this.validateStatusTransition(
-        supplierReturn,
-        SupplierReturnStatus.COMPLETED,
-        completedByUserId,
-      );
+      this.validateStatusTransition(supplierReturn, SupplierReturnStatus.COMPLETED);
       await this.validateUser(completedByUserId, manager);
 
       await this.processReturnCompletion(supplierReturn, input, completedByUserId, manager);
@@ -374,11 +364,7 @@ export class SupplierReturnService {
   ): Promise<SupplierReturnApiResponse> {
     return appDataSource.transaction(async (manager) => {
       const supplierReturn = await this.getExistingReturn(returnId, manager);
-      this.validateStatusTransition(
-        supplierReturn,
-        SupplierReturnStatus.CANCELLED,
-        cancelledByUserId,
-      );
+      this.validateStatusTransition(supplierReturn, SupplierReturnStatus.CANCELLED);
       await this.validateUser(cancelledByUserId, manager);
 
       await this.updateReturnStatus(
@@ -674,6 +660,7 @@ export class SupplierReturnService {
   ): Promise<SupplierReturn> {
     const repo = manager.getRepository(SupplierReturn);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { items, sourceWarehouseId, sourceShopId, shipDate, ...headerInput } = input;
     const returnData: Partial<SupplierReturn> = {
       ...headerInput,
@@ -795,15 +782,21 @@ export class SupplierReturnService {
     const allowedFields = UPDATABLE_FIELDS_FOR_PROCESSED_RETURN;
     const restrictedInput: Partial<UpdateSupplierReturnInput> = {};
 
+    const isKeyOfUpdateInput = (key: string): key is keyof UpdateSupplierReturnInput => {
+      return key in input;
+    };
+
     allowedFields.forEach((field) => {
-      if (input.hasOwnProperty(field)) {
-        (restrictedInput as any)[field] = (input as any)[field];
+      if (isKeyOfUpdateInput(field) && field in input) {
+        restrictedInput[field] = input[field];
       }
     });
 
     const hasDisallowedFields = Object.keys(input).some(
       (key) =>
-        ![...allowedFields, 'status', 'items'].includes(key as any) && input.hasOwnProperty(key),
+        ![...allowedFields, 'status', 'items'].includes(key) &&
+        isKeyOfUpdateInput(key) &&
+        key in input,
     );
 
     if (hasDisallowedFields) {
@@ -879,10 +872,10 @@ export class SupplierReturnService {
 
       if (!item.isValid()) {
         logger.error(
-          `[updateReturnItems] Validation échouée pour l'élément de retour (Product ID: ${itemInput.productId || 'N/A'}). Erreurs: ${supplierReturnItemValidationInputErrors.join('; ')}`,
+          `[updateReturnItems] Validation échouée pour l'élément de retour (Product ID: ${itemInput.productId ?? 'N/A'}). Erreurs: ${supplierReturnItemValidationInputErrors.join('; ')}`,
         );
         throw new BadRequestError(
-          `Invalid data for return item (Product ID: ${itemInput.productId || 'N/A'}). Errors: ${supplierReturnItemValidationInputErrors.join('; ')}`,
+          `Invalid data for return item (Product ID: ${itemInput.productId ?? 'N/A'}). Errors: ${supplierReturnItemValidationInputErrors.join('; ')}`,
         );
       }
       newItems.push(item);
@@ -945,7 +938,6 @@ export class SupplierReturnService {
   private validateStatusTransition(
     supplierReturn: SupplierReturn,
     newStatus: SupplierReturnStatus,
-    userId?: number,
   ): void {
     if (!Object.values(SupplierReturnStatus).includes(newStatus)) {
       throw new BadRequestError(`Invalid status: '${newStatus}'.`);
@@ -993,7 +985,6 @@ export class SupplierReturnService {
       [SupplierReturnStatus.COMPLETED]: [],
       [SupplierReturnStatus.CANCELLED]: [],
     };
-
     if (
       !allowedTransitions[currentStatus] ||
       !allowedTransitions[currentStatus].includes(newStatus)

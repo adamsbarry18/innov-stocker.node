@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
@@ -86,12 +85,12 @@ export class SupplierReturnRepository {
 
   async findLastReturnNumber(prefix: string): Promise<string | null> {
     try {
-      const lastReturn = await this.repository
+      const lastReturn: { maxReturnNumber: string | null } = (await this.repository
         .createQueryBuilder('sr')
         .select('MAX(sr.returnNumber)', 'maxReturnNumber')
         .where('sr.returnNumber LIKE :prefix', { prefix: `${prefix}%` })
-        .getRawOne();
-      return lastReturn?.maxReturnNumber || null;
+        .getRawOne()) ?? { maxReturnNumber: null };
+      return lastReturn?.maxReturnNumber ?? null;
     } catch (error) {
       logger.error({ message: 'Error fetching last supplier return number', error, prefix });
       throw new ServerError('Could not fetch last supplier return number.');
@@ -143,8 +142,11 @@ export class SupplierReturnRepository {
         : this.repository;
       return await repo.save(sr);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_sr_return_number')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('uq_sr_return_number')) {
           throw new BadRequestError(
             `Supplier return with number '${sr.returnNumber}' already exists.`,
           );
@@ -167,8 +169,7 @@ export class SupplierReturnRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(SupplierReturn)
         : this.repository;
-      const { items, ...headerDto } = dto;
-      return await repo.update({ id, deletedAt: IsNull() }, headerDto);
+      return await repo.update({ id, deletedAt: IsNull() }, dto);
     } catch (error: any) {
       logger.error(
         { message: `Error updating supplier return with id ${id}`, error },

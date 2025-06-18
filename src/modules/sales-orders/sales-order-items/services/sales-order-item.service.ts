@@ -104,7 +104,7 @@ export class SalesOrderItemService {
       productName: product.name,
       variantName,
       defaultVat: product.defaultVatRatePercentage,
-      unitPriceHt: variantPriceHt ?? product.defaultSellingPriceHt, // Prefer variant price, fallback to product price
+      unitPriceHt: variantPriceHt ?? product.defaultSellingPriceHt,
     };
   }
 
@@ -149,11 +149,10 @@ export class SalesOrderItemService {
       const itemEntity = itemRepoTx.create({
         ...validatedInput,
         salesOrderId: salesOrderId,
-        description: validatedInput.description || variantName || productName,
-        unitPriceHt:
-          validatedInput.unitPriceHt !== undefined
-            ? validatedInput.unitPriceHt
-            : productDefaultPrice || 0,
+        description: validatedInput.description ?? variantName ?? productName,
+        unitPriceHt: validatedInput.unitPriceHt
+          ? validatedInput.unitPriceHt
+          : (productDefaultPrice ?? 0),
         vatRatePercentage:
           validatedInput.vatRatePercentage !== undefined
             ? validatedInput.vatRatePercentage
@@ -190,7 +189,7 @@ export class SalesOrderItemService {
    * @returns An array of sales order item API responses.
    */
   async getSalesOrderItems(salesOrderId: number): Promise<SalesOrderItemApiResponse[]> {
-    await this.getOrderAndCheckStatus(salesOrderId); // Validate SO existence
+    await this.getOrderAndCheckStatus(salesOrderId);
     const items = await this.itemRepository.findBySalesOrderId(salesOrderId);
     return items
       .map((item) => this.mapToApiResponse(item))
@@ -262,21 +261,13 @@ export class SalesOrderItemService {
         );
       }
 
-      // Apply updates from input
       Object.assign(item, validatedInput);
-
-      // If quantity or unitPriceHt are updated, ensure they are valid
       if (validatedInput.quantity !== undefined && validatedInput.quantity <= 0) {
         throw new BadRequestError('Quantity must be positive.');
       }
       if (validatedInput.unitPriceHt !== undefined && validatedInput.unitPriceHt < 0) {
         throw new BadRequestError('Unit price cannot be negative.');
       }
-
-      // If product or productVariant are changed (though schema omits them, good to be defensive)
-      // This part might need adjustment if productId/productVariantId can be updated via other means
-      // For now, assuming they are not directly updatable via UpdateSalesOrderItemInput based on schema.
-      // If they were, we'd need to re-validate product/variant existence and update description/defaultVat/unitPriceHt.
 
       if (!item.isValid()) {
         throw new BadRequestError(
@@ -286,7 +277,6 @@ export class SalesOrderItemService {
 
       const savedItem = await itemRepoTx.save(item);
 
-      // Recalculate sales order totals
       const itemsForTotal = await itemRepoTx.find({ where: { salesOrderId } });
       order.items = itemsForTotal;
       order.calculateTotals();
@@ -320,7 +310,7 @@ export class SalesOrderItemService {
 
       const order = await this.getOrderAndCheckStatus(
         salesOrderId,
-        [SalesOrderStatus.DRAFT, SalesOrderStatus.PENDING_APPROVAL], // Example editable statuses
+        [SalesOrderStatus.DRAFT, SalesOrderStatus.PENDING_APPROVAL],
         transactionalEntityManager,
       );
       const item = await itemRepoTx.findOneBy({ id: itemId, salesOrderId });
@@ -330,7 +320,7 @@ export class SalesOrderItemService {
         );
       }
 
-      await itemRepoTx.remove(item); // Hard delete of the item
+      await itemRepoTx.remove(item);
 
       const itemsForTotal = await itemRepoTx.find({ where: { salesOrderId } });
       order.items = itemsForTotal;
@@ -345,9 +335,7 @@ export class SalesOrderItemService {
    * @returns The SalesOrderItemService instance.
    */
   static getInstance(): SalesOrderItemService {
-    if (!instance) {
-      instance = new SalesOrderItemService();
-    }
+    instance ??= new SalesOrderItemService();
     return instance;
   }
 }

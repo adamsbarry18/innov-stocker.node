@@ -13,7 +13,6 @@ import {
   ServerError,
   ForbiddenError,
 } from '@/common/errors/httpErrors';
-import logger from '@/lib/logger';
 import { QuoteItemRepository } from '../data/quote-item.repository';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '@/modules/product-variants/data/product-variant.repository';
@@ -111,25 +110,22 @@ export class QuoteItemService {
       const itemEntity = itemRepoTx.create({
         ...validatedInput,
         quoteId: quoteId,
-        description: validatedInput.description || variantName || productName,
+        description: validatedInput.description ?? variantName ?? productName,
         vatRatePercentage:
           validatedInput.vatRatePercentage !== undefined
             ? validatedInput.vatRatePercentage
             : defaultVat,
-        // createdByUserId: createdByUserId, // If audit on QuoteItem
       });
-      // Basic entity validation (e.g. quantity > 0)
       if (!itemEntity.isValid()) {
         throw new BadRequestError(`Item data is invalid (internal check).`);
       }
 
       const savedItem = await itemRepoTx.save(itemEntity);
 
-      // Recalculate quote totals
       const itemsForTotal = await itemRepoTx.find({ where: { quoteId } });
-      quote.items = itemsForTotal; // Make sure the quote entity has the latest items for calculation
+      quote.items = itemsForTotal;
       quote.calculateTotals();
-      quote.updatedByUserId = createdByUserId; // Audit for quote update
+      quote.updatedByUserId = createdByUserId;
       await quoteRepoTx.save(quote);
 
       const populatedItem = await itemRepoTx.findOne({
@@ -247,9 +243,7 @@ export class QuoteItemService {
   }
 
   static getInstance(): QuoteItemService {
-    if (!instance) {
-      instance = new QuoteItemService();
-    }
+    instance ??= new QuoteItemService();
     return instance;
   }
 }

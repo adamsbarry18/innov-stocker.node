@@ -83,12 +83,12 @@ export class CustomerReturnRepository {
 
   async findLastReturnNumber(prefix: string): Promise<string | null> {
     try {
-      const lastReturn = await this.repository
+      const lastReturn: { maxReturnNumber: string | null } = (await this.repository
         .createQueryBuilder('cr')
         .select('MAX(cr.returnNumber)', 'maxReturnNumber')
         .where('cr.returnNumber LIKE :prefix', { prefix: `${prefix}%` })
-        .getRawOne();
-      return lastReturn?.maxReturnNumber || null;
+        .getRawOne()) ?? { maxReturnNumber: null };
+      return lastReturn?.maxReturnNumber ?? null;
     } catch (error) {
       logger.error({ message: 'Error fetching last customer return number', error, prefix });
       throw new ServerError('Could not fetch last customer return number.');
@@ -139,8 +139,11 @@ export class CustomerReturnRepository {
         : this.repository;
       return await repo.save(cr);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_cr_return_number')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('uq_cr_return_number')) {
           throw new BadRequestError(
             `Customer return with number '${cr.returnNumber}' already exists.`,
           );
@@ -163,8 +166,7 @@ export class CustomerReturnRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(CustomerReturn)
         : this.repository;
-      const { items, ...headerDto } = dto;
-      return await repo.update({ id, deletedAt: IsNull() }, headerDto);
+      return await repo.update({ id, deletedAt: IsNull() }, dto);
     } catch (error: any) {
       logger.error(
         { message: `Error updating customer return with id ${id}`, error },

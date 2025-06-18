@@ -36,9 +36,8 @@ export class PurchaseReceptionItemRepository {
   ): Promise<PurchaseReceptionItem | null> {
     try {
       return await this.repository.findOne({
-        where: { id }, // Assuming soft delete handled by Model or cascade from PurchaseReception
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        where: { id },
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding purchase reception item by id ${id}`, error });
@@ -67,12 +66,11 @@ export class PurchaseReceptionItemRepository {
   ): Promise<PurchaseReceptionItem[]> {
     try {
       return await this.repository.find({
-        where: { purchaseReceptionId, ...(options?.where || {}) },
-        relations:
-          options?.relations === undefined
-            ? ['product', 'productVariant', 'purchaseOrderItem']
-            : options.relations,
-        order: options?.order || { createdAt: 'ASC' },
+        where: { purchaseReceptionId, ...(options?.where ?? {}) },
+        relations: options?.relations
+          ? ['product', 'productVariant', 'purchaseOrderItem']
+          : options?.relations,
+        order: options?.order ?? { createdAt: 'ASC' },
       });
     } catch (error) {
       logger.error({
@@ -105,9 +103,12 @@ export class PurchaseReceptionItemRepository {
     try {
       return await this.repository.save(item);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
         if (
-          error.message?.includes(
+          (error.message as string).includes(
             'purchaseReceptionId_productId_productVariantId_purchaseOrderItemId_unique',
           )
         ) {

@@ -250,7 +250,8 @@ export default class SupplierReturnRouter extends BaseRouter {
   async approveSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found.'));
     const { supplierRmaNumber, notes } = req.body;
     await this.pipe(res, req, next, () =>
       this.service.approveSupplierReturn(id, userId, supplierRmaNumber, notes),
@@ -292,7 +293,8 @@ export default class SupplierReturnRouter extends BaseRouter {
   async shipSupplierReturnAction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found.'));
     const input: ShipSupplierReturnInput = req.body;
     await this.pipe(res, req, next, () => this.service.shipSupplierReturn(id, input, userId));
   }
@@ -332,7 +334,8 @@ export default class SupplierReturnRouter extends BaseRouter {
   async completeSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found.'));
     const input: CompleteSupplierReturnInput = req.body;
     await this.pipe(res, req, next, () =>
       this.service.completeSupplierReturnProcess(id, input, userId),
@@ -368,7 +371,8 @@ export default class SupplierReturnRouter extends BaseRouter {
   async cancelSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found.'));
     await this.pipe(res, req, next, () => this.service.cancelSupplierReturn(id, userId));
   }
 

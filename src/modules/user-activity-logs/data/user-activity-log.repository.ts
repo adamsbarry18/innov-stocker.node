@@ -3,7 +3,6 @@ import {
   type DataSource,
   type FindOptionsWhere,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';

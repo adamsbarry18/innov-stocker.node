@@ -318,7 +318,7 @@ export class StockMovementService {
 
     const locationParam = warehouseId ? { warehouseId } : { shopId };
     const locationType = warehouseId ? 'warehouse' : 'shop';
-    const locationId = (warehouseId !== undefined ? warehouseId : shopId) as number;
+    const locationId = (warehouseId ?? shopId) as number;
 
     if (locationType === 'warehouse') {
       const warehouse = await this.warehouseRepository.findById(locationId);

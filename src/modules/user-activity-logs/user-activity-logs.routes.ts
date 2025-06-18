@@ -1,13 +1,5 @@
 import { BaseRouter } from '@/common/routing/BaseRouter';
-import {
-  Get,
-  Post,
-  authorize,
-  paginate,
-  sortable,
-  filterable,
-  searchable,
-} from '@/common/routing/decorators';
+import { Get, Post, authorize, paginate, sortable, filterable } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
 import { SecurityLevel } from '../users/models/users.entity';
 import { UserActivityLogService } from './services/user-activity-log.service';

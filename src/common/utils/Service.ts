@@ -135,10 +135,7 @@ export class Service {
     };
   }
 
-  async checkAndDelete(
-    id: number,
-    deleteFn: (id: number) => Promise<void>,
-  ): Promise<void> {
+  async checkAndDelete(id: number, deleteFn: (id: number) => Promise<void>): Promise<void> {
     const canDelete = await this.canDelete(id);
     if (!canDelete.result) {
       if (canDelete.dependents && canDelete.dependents.length > 0) {
@@ -211,7 +208,7 @@ export async function debounceAsyncFunction<T>(key: string, fn: () => T): Promis
   const existingPending = pendingAsyncFunctionPromise.get(key);
   if (existingPending) {
     const res = await existingPending;
-    return res;
+    return res as T;
   }
   const newPending = (async (): Promise<T> => {
     try {
@@ -232,10 +229,10 @@ export async function debounceAsyncFunction<T>(key: string, fn: () => T): Promis
  * @param obj object to copy
  * @returns return object copied
  */
-export const deepCopy = function (obj: object): object {
+export const deepCopy = function <T>(obj: T): T {
   if (!obj) return obj;
   if (typeof obj !== 'object' && !Array.isArray(obj)) return obj;
-  return JSON.parse(JSON.stringify(obj));
+  return JSON.parse(JSON.stringify(obj)) as T;
 };
 
 export function isJson(str: string): boolean {

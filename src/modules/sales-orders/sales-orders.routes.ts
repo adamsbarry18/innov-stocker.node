@@ -256,7 +256,8 @@ export default class SalesOrderRouter extends BaseRouter {
   async approveSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     await this.pipe(res, req, next, () =>
       this.orderService.updateSalesOrderStatus(id, SalesOrderStatus.APPROVED, userId),
     );
@@ -295,7 +296,8 @@ export default class SalesOrderRouter extends BaseRouter {
   async prepareSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     await this.pipe(res, req, next, () =>
       this.orderService.updateSalesOrderStatus(id, SalesOrderStatus.IN_PREPARATION, userId),
     );
@@ -334,7 +336,8 @@ export default class SalesOrderRouter extends BaseRouter {
   async cancelSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     await this.pipe(res, req, next, () =>
       this.orderService.updateSalesOrderStatus(id, SalesOrderStatus.CANCELLED, userId),
     );

@@ -73,12 +73,12 @@ export class QuoteRepository {
 
   async findLastQuoteNumber(prefix: string): Promise<string | null> {
     try {
-      const lastQuote = await this.repository
+      const lastQuote: { maxQuoteNumber: string | null } | undefined = await this.repository
         .createQueryBuilder('quote')
         .select('MAX(quote.quoteNumber)', 'maxQuoteNumber')
         .where('quote.quoteNumber LIKE :prefix', { prefix: `${prefix}%` })
         .getRawOne();
-      return lastQuote?.maxQuoteNumber || null;
+      return lastQuote?.maxQuoteNumber ?? null;
     } catch (error) {
       logger.error({ message: 'Error fetching last quote number', error, prefix });
       throw new ServerError('Could not fetch last quote number.');
@@ -121,8 +121,11 @@ export class QuoteRepository {
     try {
       return await this.repository.save(quote);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('quote_number_unique')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('quote_number_unique')) {
           throw new BadRequestError(`Quote with number '${quote.quoteNumber}' already exists.`);
         }
       }

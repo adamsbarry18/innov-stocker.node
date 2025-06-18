@@ -43,8 +43,7 @@ const salesOrderSchemaValidation = z
     dispatchShopId: z.number().int().positive().nullable().optional(),
     notes: z.string().nullable().optional(),
   })
-  .refine((data) => data.dispatchWarehouseId || data.dispatchShopId, {
-    // Au moins un lieu d'expédition
+  .refine((data) => data.dispatchWarehouseId ?? data.dispatchShopId, {
     message: 'Either dispatchWarehouseId or dispatchShopId must be provided.',
     path: ['dispatchWarehouseId'],
   });
@@ -97,7 +96,6 @@ export type SalesOrderApiResponse = {
   items?: SalesOrderItemApiResponse[];
   createdByUserId: number;
   createdByUser?: UserApiResponse | null;
-  // approvedByUserId, etc. si vous ajoutez des champs d'audit spécifiques aux statuts
   updatedByUserId: number | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -111,7 +109,7 @@ export const salesOrderValidationInputErrors: string[] = [];
 @Index(['orderDate'])
 export class SalesOrder extends Model {
   @Column({ type: 'varchar', length: 50, name: 'order_number', unique: true })
-  orderNumber!: string; // Auto-generated
+  orderNumber!: string;
 
   @Column({ type: 'int', name: 'customer_id' })
   customerId!: number;
@@ -190,7 +188,7 @@ export class SalesOrder extends Model {
 
   @OneToMany(() => SalesOrderItem, (item) => item.salesOrder, {
     cascade: ['insert', 'update', 'remove'],
-    eager: false, // Changed to false
+    eager: false,
   })
   items!: SalesOrderItem[];
 
@@ -204,7 +202,7 @@ export class SalesOrder extends Model {
   @Column({ type: 'int', name: 'updated_by_user_id', nullable: true })
   updatedByUserId: number | null = null;
 
-  @ManyToOne(() => User, { eager: false, onDelete: 'SET NULL', nullable: true }) // Eager false
+  @ManyToOne(() => User, { eager: false, onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'updated_by_user_id' })
   updatedByUser?: User | null;
 
@@ -244,7 +242,7 @@ export class SalesOrder extends Model {
           } as CustomerApiResponse)
         : null,
       quoteId: this.quoteId,
-      quoteNumber: this.quote?.quoteNumber, // Nécessite de charger la relation 'quote'
+      quoteNumber: this.quote?.quoteNumber,
       orderDate: Model.formatISODate(this.orderDate),
       status: this.status,
       currencyId: this.currencyId,

@@ -728,7 +728,6 @@ export class StockTransferService {
     manager: EntityManager,
   ): Promise<StockTransferStatus> {
     const itemRepo = manager.getRepository(StockTransferItem);
-    let allItemsFullyReceived = true;
 
     for (const receiveItem of input.items) {
       const item = transfer.items.find((i) => i.id === receiveItem.stockTransferItemId);
@@ -748,10 +747,6 @@ export class StockTransferService {
 
       item.quantityReceived = Number(item.quantityReceived) + Number(receiveItem.quantityReceived);
       await itemRepo.save(item);
-
-      if (item.quantityReceived < Number(item.quantityShipped)) {
-        allItemsFullyReceived = false;
-      }
 
       const unitCost = item.product?.defaultPurchasePrice ?? 0;
 

@@ -112,8 +112,9 @@ describe('Quote Items API (nested under Quotes)', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data)).toBe(true);
-      expect(res.body.data.length).toBeGreaterThanOrEqual(1); // At least one item added in beforeAll
-      expect(res.body.data.some((item: any) => item.id === createdQuoteItemId)).toBe(true);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+      const items: { id: number }[] = res.body.data;
+      expect(items.some((item) => item.id === createdQuoteItemId)).toBe(true);
     });
   });
 

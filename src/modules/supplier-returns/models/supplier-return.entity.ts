@@ -43,7 +43,7 @@ const supplierReturnSchemaValidation = z
     supplierRmaNumber: z.string().max(100).nullable().optional(), // RMA number from supplier
     shipDate: z.coerce.date().nullable().optional(), // Date of actual shipment
   })
-  .refine((data) => data.sourceWarehouseId || data.sourceShopId, {
+  .refine((data) => data.sourceWarehouseId ?? data.sourceShopId, {
     message:
       'Either sourceWarehouseId or sourceShopId must be provided (where items are returned from).',
     path: ['sourceWarehouseId'],

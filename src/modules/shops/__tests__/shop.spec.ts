@@ -52,7 +52,7 @@ describe('Shop API', () => {
     });
 
     it('should return 400 for missing required addressId', async () => {
-      const { addressId, ...rest } = testShop;
+      const { ...rest } = testShop;
       const res = await request(app)
         .post('/api/v1/shops')
         .set('Authorization', `Bearer ${adminToken}`)

@@ -55,14 +55,12 @@ export default class StockTransferItemRouter extends BaseRouter {
     if (isNaN(transferId)) return next(new BadRequestError('Invalid Stock Transfer ID in path.'));
 
     const input: CreateStockTransferItemInput = req.body;
-    const userId = req.user?.id;
-    if (!userId) return next(new UnauthorizedError('User ID not found.'));
 
     await this.pipe(
       res,
       req,
       next,
-      () => this.itemService.addItemToTransfer(transferId, input, userId),
+      () => this.itemService.addItemToTransfer(transferId, input),
       201,
     );
   }

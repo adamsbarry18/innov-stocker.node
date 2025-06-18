@@ -52,7 +52,7 @@ describe('Warehouse API', () => {
     });
 
     it('should return 400 for missing required addressId', async () => {
-      const { addressId, ...rest } = testWarehouse;
+      const { ...rest } = testWarehouse;
       const res = await request(app)
         .post('/api/v1/warehouses')
         .set('Authorization', `Bearer ${adminToken}`)

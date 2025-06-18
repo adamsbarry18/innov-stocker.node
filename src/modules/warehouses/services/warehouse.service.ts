@@ -251,8 +251,10 @@ export class WarehouseService {
         updatePayload.capacityNotes = null;
 
       let hasChanges = false;
-      for (const key in input) {
-        if (input.hasOwnProperty(key) && (input as any)[key] !== (warehouseToUpdate as any)[key]) {
+      const allowedKeys = ['name', 'code', 'addressId', 'managerId', 'capacityNotes', 'isActive'];
+      
+      for (const key of allowedKeys) {
+        if (key in input && input[key as keyof UpdateWarehouseInput] !== warehouseToUpdate[key as keyof Warehouse]) {
           hasChanges = true;
           break;
         }

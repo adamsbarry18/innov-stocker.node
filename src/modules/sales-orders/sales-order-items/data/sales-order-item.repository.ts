@@ -32,8 +32,7 @@ export class SalesOrderItemRepository {
         : this.repository;
       return await repo.findOne({
         where: { id },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding sales order item by id ${id}`, error });
@@ -47,10 +46,9 @@ export class SalesOrderItemRepository {
   ): Promise<SalesOrderItem[]> {
     try {
       return await this.repository.find({
-        where: { salesOrderId, ...(options?.where || {}) },
-        relations:
-          options?.relations === undefined ? ['product', 'productVariant'] : options.relations,
-        order: options?.order || { createdAt: 'ASC' },
+        where: { salesOrderId, ...(options?.where ?? {}) },
+        relations: options?.relations ? ['product', 'productVariant'] : options?.relations,
+        order: options?.order ?? { createdAt: 'ASC' },
       });
     } catch (error) {
       logger.error({ message: `Error finding items for sales order ${salesOrderId}`, error });
@@ -133,7 +131,6 @@ export class SalesOrderItemRepository {
     items: SalesOrderItem[],
     transactionalEntityManager?: EntityManager,
   ): Promise<SalesOrderItem[]> {
-    // Hard delete
     try {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(SalesOrderItem)
@@ -146,7 +143,6 @@ export class SalesOrderItemRepository {
   }
 
   async deleteById(id: number, transactionalEntityManager?: EntityManager): Promise<DeleteResult> {
-    // Hard delete by ID
     try {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(SalesOrderItem)

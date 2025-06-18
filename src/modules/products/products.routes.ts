@@ -494,12 +494,7 @@ export default class ProductRouter extends BaseRouter {
   async getProductStockMovements(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     if (isNaN(productId)) return next(new BadRequestError('Invalid Product ID.'));
-    await this.pipe(res, req, next, () =>
-      this.service.getProductStockMovements(productId, {
-        limit: req.pagination?.limit,
-        offset: req.pagination?.offset,
-      }),
-    );
+    await this.pipe(res, req, next, () => this.service.getProductStockMovements(productId));
   }
 
   /**

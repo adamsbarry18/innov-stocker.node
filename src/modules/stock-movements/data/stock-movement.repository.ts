@@ -32,8 +32,7 @@ export class StockMovementRepository {
     try {
       return await this.repository.findOne({
         where: { id },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding stock movement with id ${id}`, error });
@@ -46,13 +45,13 @@ export class StockMovementRepository {
   ): Promise<{ movements: StockMovement[]; count: number }> {
     try {
       // No deletedAt filter for StockMovement
-      const where = options.where || {};
+      const where = options.where ?? {};
       const findOptions: FindManyOptions<StockMovement> = {
         where,
-        order: options.order || { movementDate: 'DESC', createdAt: 'DESC' },
+        order: options.order ?? { movementDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations: options.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options.relations ?? this.getDefaultRelations(),
       };
       const [movements, count] = await this.repository.findAndCount(findOptions);
       return { movements, count };
@@ -87,7 +86,7 @@ export class StockMovementRepository {
       }
 
       const result = await qb.getRawOne();
-      return Number(result?.currentStock || 0);
+      return Number(result?.currentStock ?? 0);
     } catch (error) {
       logger.error({
         message: `Error calculating stock level`,

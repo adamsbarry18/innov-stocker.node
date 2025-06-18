@@ -10,7 +10,7 @@ import logger from '@/lib/logger';
  * @description Configuration loading from .env files.
  * @priority Specific environment files (.env.development, .env.production) > base .env file.
  */
-const nodeEnv = process.env.NODE_ENV || 'development';
+const nodeEnv = process.env.NODE_ENV ?? 'development';
 const envPathSpecific = path.resolve(process.cwd(), `.env.${nodeEnv}`);
 const envPathBase = path.resolve(process.cwd(), '.env');
 
@@ -132,15 +132,15 @@ let config: z.infer<typeof envSchema>;
 
 try {
   config = envSchema.parse(process.env);
-  console.info(`[Config] Configuration loaded successfully for NODE_ENV=${config.NODE_ENV}`);
+  // console.info(`[Config] Configuration loaded successfully for NODE_ENV=${config.NODE_ENV}`);
 } catch (error) {
   if (error instanceof z.ZodError) {
-    console.error(
+    logger.error(
       '❌ Invalid environment variables configuration:',
       JSON.stringify(error.format(), null, 2),
     );
   } else {
-    console.error('❌ Unexpected error parsing environment variables:', error);
+    logger.error('❌ Unexpected error parsing environment variables:', error);
   }
   throw error;
 }

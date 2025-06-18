@@ -550,6 +550,7 @@ export class SupplierInvoiceService {
   ): Promise<SupplierInvoice> {
     const repo = manager.getRepository(SupplierInvoice);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { items, purchaseOrderIds, ...headerInput } = input;
     const invoiceData: Partial<SupplierInvoice> = {
       ...headerInput,
@@ -588,7 +589,7 @@ export class SupplierInvoiceService {
     }
 
     for (const itemInput of itemInputs) {
-      const item: any = repo.create({
+      const item: SupplierInvoiceItem = repo.create({
         ...itemInput,
         supplierInvoiceId: invoiceId,
         totalLineAmountHt: this.calculateLineTotal(itemInput.quantity, itemInput.unitPriceHt),
@@ -596,7 +597,7 @@ export class SupplierInvoiceService {
 
       if (!item.isValid()) {
         throw new BadRequestError(
-          `Invalid data for invoice item (Product ID: ${itemInput.productId || 'N/A'}).`,
+          `Invalid data for invoice item (Product ID: ${itemInput.productId ?? 'N/A'}).`,
         );
       }
 
@@ -680,8 +681,15 @@ export class SupplierInvoiceService {
     const restrictedInput: Partial<UpdateSupplierInvoiceInput> = {};
 
     allowedFields.forEach((field) => {
-      if (input.hasOwnProperty(field)) {
-        (restrictedInput as any)[field] = (input as any)[field];
+      if (Object.prototype.hasOwnProperty.call(input, field)) {
+        switch (field) {
+          case 'notes':
+            restrictedInput.notes = input.notes;
+            break;
+          case 'fileAttachmentUrl':
+            restrictedInput.fileAttachmentUrl = input.fileAttachmentUrl;
+            break;
+        }
       }
     });
 
@@ -925,6 +933,7 @@ export class SupplierInvoiceService {
     manager: EntityManager,
   ): Promise<void> {
     const repo = manager.getRepository(SupplierInvoice);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { items, purchaseOrderIds, ...headerInput } = input;
 
     const updateData = {

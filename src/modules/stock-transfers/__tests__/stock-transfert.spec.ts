@@ -145,7 +145,9 @@ describe('StockTransfers API', () => {
         .get('/api/v1/stock-transfers?status=shipped')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
-      expect(res.body.data.transfers.every((t: any) => t.status === 'shipped')).toBe(true);
+      expect(
+        (res.body.data.transfers as Array<{ status: string }>).every((t) => t.status === 'shipped'),
+      ).toBe(true);
     });
 
     it('should search stock transfers by transferNumber or notes', async () => {
@@ -153,9 +155,8 @@ describe('StockTransfers API', () => {
         .get(`/api/v1/stock-transfers?q=${testStockTransferInputWithItems.notes}`) // Search by notes
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
-      expect(
-        res.body.data.transfers.some((t: any) => t.notes === testStockTransferInputWithItems.notes),
-      ).toBe(true);
+      const transfers: Array<{ notes: string }> = res.body.data.transfers;
+      expect(transfers.some((t) => t.notes === testStockTransferInputWithItems.notes)).toBe(true);
     });
   });
 
@@ -225,12 +226,15 @@ describe('StockTransfers API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.notes).toBe(updateData.notes);
       expect(res.body.data.items).toHaveLength(2);
-      expect(res.body.data.items.find((item: any) => item.productId === 1).quantityRequested).toBe(
-        2,
-      );
-      expect(res.body.data.items.find((item: any) => item.productId === 2).quantityRequested).toBe(
-        3,
-      );
+      const items = res.body.data.items as Array<{ productId: number; quantityRequested: number }>;
+      const item1 = items.find((item) => item.productId === 1);
+      expect(item1).toBeDefined();
+      expect(item1?.quantityRequested).toBe(2);
+      expect(
+        (res.body.data.items as Array<{ productId: number; quantityRequested: number }>).find(
+          (item) => item.productId === 2,
+        )?.quantityRequested,
+      ).toBe(3);
     });
 
     it('should return 403 if trying to update a non-pending transfer', async () => {
@@ -304,13 +308,12 @@ describe('StockTransfers API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.status).toBe('in_transit');
       expect(dayjs(res.body.data.shipDate).format('YYYY-MM-DD')).toBe(dayjs().format('YYYY-MM-DD'));
+      const items: Array<{ id: number; quantityShipped: number }> = res.body.data.items;
       expect(
-        res.body.data.items.find((item: any) => item.id === shipInput.items[0].stockTransferItemId)
-          .quantityShipped,
+        items.find((item) => item.id === shipInput.items[0].stockTransferItemId)?.quantityShipped,
       ).toBe(5);
       expect(
-        res.body.data.items.find((item: any) => item.id === shipInput.items[1].stockTransferItemId)
-          .quantityShipped,
+        items.find((item) => item.id === shipInput.items[1].stockTransferItemId)?.quantityShipped,
       ).toBe(8);
     });
 
@@ -420,14 +423,14 @@ describe('StockTransfers API', () => {
         dayjs().format('YYYY-MM-DD'),
       );
       expect(
-        res.body.data.items.find(
-          (item: any) => item.id === receiveInput.items[0].stockTransferItemId,
-        ).quantityReceived,
+        (res.body.data.items as Array<{ id: number; quantityReceived: number }>).find(
+          (item) => item.id === receiveInput.items[0].stockTransferItemId,
+        )!.quantityReceived,
       ).toBe(5);
       expect(
-        res.body.data.items.find(
-          (item: any) => item.id === receiveInput.items[1].stockTransferItemId,
-        ).quantityReceived,
+        (res.body.data.items as Array<{ id: number; quantityReceived: number }>).find(
+          (item) => item.id === receiveInput.items[1].stockTransferItemId,
+        )!.quantityReceived,
       ).toBe(10);
     });
 
@@ -452,9 +455,9 @@ describe('StockTransfers API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.status).toBe('partially_received');
       expect(
-        res.body.data.items.find(
-          (item: any) => item.id === receiveInput.items[0].stockTransferItemId,
-        ).quantityReceived,
+        (res.body.data.items as Array<{ id: number; quantityReceived: number }>).find(
+          (item) => item.id === receiveInput.items[0].stockTransferItemId,
+        )!.quantityReceived,
       ).toBe(3);
     });
 
