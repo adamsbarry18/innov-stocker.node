@@ -11,7 +11,7 @@ import { CustomerGroup } from '@/modules/customer-groups';
 import { Supplier } from '@/modules/suppliers';
 import { Customer, CustomerShippingAddress } from '@/modules/customers';
 import { PaymentMethod } from '@/modules/payment-methods';
-import { Warehouse,} from '@/modules/warehouses';
+import { Warehouse } from '@/modules/warehouses';
 import { Product, CompositeProductItem } from '@/modules/products';
 import { Quote, QuoteItem } from '@/modules/quotes';
 import { PurchaseOrder, PurchaseOrderItem } from '@/modules/purchase-orders';
@@ -19,8 +19,16 @@ import { PurchaseReception, PurchaseReceptionItem } from '@/modules/purchase-rec
 import { StockMovement } from '@/modules/stock-movements';
 import { SalesOrder, SalesOrderItem } from '@/modules/sales-orders';
 import { Delivery, DeliveryItem } from '@/modules/deliveries';
-import { SupplierInvoice, SupplierInvoiceItem, SupplierInvoicePurchaseOrderLink } from '@/modules/supplier-invoices';
-import { CustomerInvoice, CustomerInvoiceItem, CustomerInvoiceSalesOrderLink } from '@/modules/customer-invoices';
+import {
+  SupplierInvoice,
+  SupplierInvoiceItem,
+  SupplierInvoicePurchaseOrderLink,
+} from '@/modules/supplier-invoices';
+import {
+  CustomerInvoice,
+  CustomerInvoiceItem,
+  CustomerInvoiceSalesOrderLink,
+} from '@/modules/customer-invoices';
 import { CustomerReturn, CustomerReturnItem } from '@/modules/customer-returns';
 import { InventorySession, InventorySessionItem } from '@/modules/inventory-sessions';
 import { StockTransfer, StockTransferItem } from '@/modules/stock-transfers';
@@ -36,6 +44,7 @@ import { CashRegisterSession } from '@/modules/cash-register-sessions';
 import { ProductImage } from '@/modules/product-images';
 import { ProductVariant } from '@/modules/product-variants';
 import { ProductSupplier } from '@/modules/product-suppliers';
+import { ImportBatch } from '@/modules/imports/models/import.entity';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,
@@ -96,6 +105,7 @@ export const appDataSourceOptions: DataSourceOptions = {
     SupplierReturnItem,
     UserActivityLog,
     Notification,
+    ImportBatch,
   ],
   migrations: [],
   subscribers: [],
