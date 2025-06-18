@@ -21,7 +21,7 @@ const testSalesOrderInput = () => ({
   billingAddressId: 4,
   dispatchWarehouseId: 1,
   notes: 'Test sales order for items management',
-  items: [], // Start with no items
+  items: [],
 });
 
 const testSalesOrderItemInput = (productId: number = 1) => ({
@@ -34,13 +34,13 @@ const testSalesOrderItemInput = (productId: number = 1) => ({
 });
 
 // Helper to create a new sales order in DRAFT status for tests that require it
-const createDraftSalesOrder = async () => {
+const createDraftSalesOrder = async (): Promise<number> => {
   const res = await request(app)
     .post('/api/v1/sales-orders')
     .set('Authorization', `Bearer ${adminToken}`)
     .send(testSalesOrderInput());
   expect(res.status).toBe(201);
-  return res.body.data.id;
+  return res.body.data.id as number;
 };
 
 describe('SalesOrderItems API', () => {

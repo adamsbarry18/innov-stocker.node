@@ -17,7 +17,7 @@ export const createSupplierInvoiceItemSchema = z.object({
 });
 
 export const updateSupplierInvoiceItemSchema = createSupplierInvoiceItemSchema.partial().omit({
-  productId: true, // Usually not changed for an existing line
+  productId: true,
   productVariantId: true,
   purchaseReceptionItemId: true,
 });
@@ -68,7 +68,7 @@ export class SupplierInvoiceItem extends Model {
   @JoinColumn({ name: 'product_variant_id' })
   productVariant: ProductVariant | null = null;
 
-  @Column({ type: 'text' }) // Description from supplier invoice, can differ from product name
+  @Column({ type: 'text' })
   description!: string;
 
   @Column({ type: 'decimal', precision: 15, scale: 3 })
@@ -85,8 +85,6 @@ export class SupplierInvoiceItem extends Model {
     precision: 15,
     scale: 4,
     name: 'total_line_amount_ht',
-    // SQL schema indicates application calculates this (default 0.0)
-    // If DB generated: generatedType: 'STORED', asExpression: '`quantity` * `unit_price_ht`', insert: false, update: false
   })
   totalLineAmountHt!: number;
 
@@ -132,7 +130,7 @@ export class SupplierInvoiceItem extends Model {
       supplierInvoiceItemValidationInputErrors.push(
         ...result.error.issues.map(
           (issue) =>
-            `Item(ProdID:${this.productId || 'N/A'}): ${issue.path.join('.')}: ${issue.message}`,
+            `Item(ProdID:${this.productId ?? 'N/A'}): ${issue.path.join('.')}: ${issue.message}`,
         ),
       );
       return false;

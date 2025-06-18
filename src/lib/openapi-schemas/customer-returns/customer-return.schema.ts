@@ -5,15 +5,15 @@ import {
 import { CustomerReturnStatus } from '@/modules/customer-returns/models/customer-return.entity';
 
 // Assuming these are defined globally or imported
-const EmbeddedCustomerDTORef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
-const EmbeddedSalesOrderDTORef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' };
-const EmbeddedCustomerInvoiceDTORef = { $ref: '#/components/schemas/EmbeddedCustomerInvoiceDTO' }; // Définir ce DTO
-const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
-const EmbeddedShopDTORef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const embeddedCustomerDtoRef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
+const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' };
+const _embeddedCustomerInvoiceDtoRef = { $ref: '#/components/schemas/EmbeddedCustomerInvoiceDTO' }; // Définir ce DTO
+const _embeddedWarehouseDtoRef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
+const _embeddedShopDtoRef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
+const embeddedUserDtoRef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
 
 // --- CustomerReturnItem Schemas ---
-const CreateCustomerReturnItemInputSchema = {
+const createCustomerReturnItemInputSchema = {
   type: 'object',
   required: ['productId', 'quantity'],
   properties: {
@@ -56,7 +56,7 @@ const CreateCustomerReturnItemInputSchema = {
   },
 };
 
-const UpdateCustomerReturnItemInputSchema = {
+const updateCustomerReturnItemInputSchema = {
   type: 'object',
   properties: {
     quantity: { type: 'number', format: 'double', minimum: 0.001 },
@@ -69,7 +69,7 @@ const UpdateCustomerReturnItemInputSchema = {
     'Updates details of an item in a return, typically its condition or action after inspection.',
 };
 
-const CustomerReturnItemApiResponseSchema = {
+const customerReturnItemApiResponseSchema = {
   type: 'object',
   properties: {
     id: { type: 'string', description: 'BIGINT as string' },
@@ -91,9 +91,9 @@ const CustomerReturnItemApiResponseSchema = {
 
 // --- CustomerReturn Schemas ---
 export const customerReturnSchemas = {
-  CreateCustomerReturnItemInput: CreateCustomerReturnItemInputSchema,
-  UpdateCustomerReturnItemInput: UpdateCustomerReturnItemInputSchema,
-  CustomerReturnItemApiResponse: CustomerReturnItemApiResponseSchema,
+  CreateCustomerReturnItemInput: createCustomerReturnItemInputSchema,
+  UpdateCustomerReturnItemInput: updateCustomerReturnItemInputSchema,
+  CustomerReturnItemApiResponse: customerReturnItemApiResponseSchema,
 
   CreateCustomerReturnInput: {
     type: 'object',
@@ -245,7 +245,7 @@ export const customerReturnSchemas = {
     },
   },
   // Define Embedded DTOs if not already global
-  _EmbeddedCustomerInvoiceDTO_example: {
+  embeddedCustomerInvoiceDtoExample: {
     type: 'object',
     properties: { id: { type: 'integer' }, invoiceNumber: { type: 'string' } },
   },
@@ -256,9 +256,9 @@ export const customerReturnSchemas = {
       id: { type: 'integer', example: 1 },
       returnNumber: { type: 'string', example: 'RMA-20250720-0001' },
       customerId: { type: 'integer', example: 1 },
-      customer: { allOf: [EmbeddedCustomerDTORef], nullable: true },
+      customer: { allOf: [embeddedCustomerDtoRef], nullable: true },
       salesOrderId: { type: 'integer', nullable: true, example: 101 },
-      salesOrder: { allOf: [EmbeddedSalesOrderDTORef], nullable: true },
+      salesOrder: { allOf: [embeddedSalesOrderDtoRef], nullable: true },
       customerInvoiceId: { type: 'integer', nullable: true, example: 201 },
       customerInvoice: {
         allOf: [{ $ref: '#/components/schemas/EmbeddedCustomerInvoiceDTO' }],
@@ -274,13 +274,13 @@ export const customerReturnSchemas = {
         nullable: true,
       },
       createdByUserId: { type: 'integer', nullable: true },
-      createdByUser: { allOf: [EmbeddedUserDTORef], nullable: true },
+      createdByUser: { allOf: [embeddedUserDtoRef], nullable: true },
       validatedByUserId: {
         type: 'integer',
         nullable: true,
         description: 'User who approved/validated the return outcome.',
       },
-      validatedByUser: { allOf: [EmbeddedUserDTORef], nullable: true },
+      validatedByUser: { allOf: [embeddedUserDtoRef], nullable: true },
       updatedByUserId: { type: 'integer', nullable: true },
       createdAt: { type: 'string', format: 'date-time', nullable: true },
       updatedAt: { type: 'string', format: 'date-time', nullable: true },

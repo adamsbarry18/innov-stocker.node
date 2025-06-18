@@ -100,11 +100,14 @@ export class ShopRepository {
     try {
       return await this.repository.save(shop);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_shop_name')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('uq_shop_name')) {
           throw new BadRequestError(`Shop with name '${shop.name}' already exists.`);
         }
-        if (shop.code && error.message?.includes('uq_shop_code')) {
+        if (shop.code && (error.message as string).includes('uq_shop_code')) {
           throw new BadRequestError(`Shop with code '${shop.code}' already exists.`);
         }
       }
@@ -120,13 +123,16 @@ export class ShopRepository {
     try {
       return await this.repository.update({ id, deletedAt: IsNull() }, dto);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (dto.name && error.message?.includes('uq_shop_name')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if (dto.name && (error.message as string).includes('uq_shop_name')) {
           throw new BadRequestError(
             `Cannot update: Shop with name '${dto.name}' may already exist.`,
           );
         }
-        if (dto.code && error.message?.includes('uq_shop_code')) {
+        if (dto.code && (error.message as string).includes('uq_shop_code')) {
           throw new BadRequestError(
             `Cannot update: Shop with code '${dto.code}' may already exist.`,
           );

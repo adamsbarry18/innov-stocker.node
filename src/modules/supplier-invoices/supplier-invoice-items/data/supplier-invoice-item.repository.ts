@@ -37,9 +37,8 @@ export class SupplierInvoiceItemRepository {
         ? options.transactionalEntityManager.getRepository(SupplierInvoiceItem)
         : this.repository;
       return await repo.findOne({
-        where: { id }, // Assuming soft delete handled by Model or not applicable if items are hard deleted with invoice
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        where: { id },
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding supplier invoice item by id ${id}`, error });
@@ -53,12 +52,11 @@ export class SupplierInvoiceItemRepository {
   ): Promise<SupplierInvoiceItem[]> {
     try {
       return await this.repository.find({
-        where: { supplierInvoiceId, ...(options?.where || {}) },
-        relations:
-          options?.relations === undefined
-            ? ['product', 'productVariant', 'purchaseReceptionItem']
-            : options.relations,
-        order: options?.order || { createdAt: 'ASC' }, // Ou un autre ordre logique
+        where: { supplierInvoiceId, ...(options?.where ?? {}) },
+        relations: options?.relations
+          ? ['product', 'productVariant', 'purchaseReceptionItem']
+          : options?.relations,
+        order: options?.order ?? { createdAt: 'ASC' },
       });
     } catch (error) {
       logger.error({
@@ -174,7 +172,6 @@ export class SupplierInvoiceItemRepository {
   }
 
   async deleteById(id: number, transactionalEntityManager?: EntityManager): Promise<DeleteResult> {
-    // Hard delete by ID
     try {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(SupplierInvoiceItem)

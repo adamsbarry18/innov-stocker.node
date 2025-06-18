@@ -142,7 +142,8 @@ describe('Purchase Reception Items API (nested)', () => {
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data)).toBe(true);
       expect(res.body.data.length).toBeGreaterThanOrEqual(1);
-      expect(res.body.data.some((item: any) => item.id === initialReceptionItemId)).toBe(true);
+      const items: { id: number }[] = res.body.data;
+      expect(items.some((item) => item.id === initialReceptionItemId)).toBe(true);
     });
 
     it('should return 404 if reception does not exist', async () => {

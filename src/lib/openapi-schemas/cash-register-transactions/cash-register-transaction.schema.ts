@@ -1,12 +1,12 @@
 import { CashRegisterTransactionType } from '@/modules/cash-register-transactions/models/cash-register-transaction.entity';
 
 // Assuming these are defined globally or imported
-const EmbeddedCashRegisterSessionDTORef = {
+const embeddedCashRegisterSessionDtoRef = {
   $ref: '#/components/schemas/EmbeddedCashRegisterSessionDTO',
 };
-const EmbeddedPaymentMethodDTORef = { $ref: '#/components/schemas/EmbeddedPaymentMethodDTO' };
-const EmbeddedSalesOrderDTORef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' };
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const embeddedPaymentMethodDtoRef = { $ref: '#/components/schemas/EmbeddedPaymentMethodDTO' };
+const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' };
+const embeddedUserDtoRef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
 
 export const cashRegisterTransactionSchemas = {
   CreateCashRegisterTransactionInput: {
@@ -69,7 +69,7 @@ export const cashRegisterTransactionSchemas = {
     properties: {
       id: { type: 'string', example: '1', description: 'Transaction ID (BIGINT as string)' },
       cashRegisterSessionId: { type: 'integer' },
-      cashRegisterSession: { allOf: [EmbeddedCashRegisterSessionDTORef], nullable: true },
+      cashRegisterSession: { allOf: [embeddedCashRegisterSessionDtoRef], nullable: true },
       transactionTimestamp: { type: 'string', format: 'date-time', nullable: true },
       type: { type: 'string', enum: Object.values(CashRegisterTransactionType) },
       amount: {
@@ -79,11 +79,11 @@ export const cashRegisterTransactionSchemas = {
       },
       description: { type: 'string' },
       paymentMethodId: { type: 'integer', nullable: true },
-      paymentMethod: { allOf: [EmbeddedPaymentMethodDTORef], nullable: true },
+      paymentMethod: { allOf: [embeddedPaymentMethodDtoRef], nullable: true },
       relatedSalesOrderId: { type: 'integer', nullable: true },
-      relatedSalesOrder: { allOf: [EmbeddedSalesOrderDTORef], nullable: true },
+      relatedSalesOrder: { allOf: [embeddedSalesOrderDtoRef], nullable: true },
       userId: { type: 'integer' },
-      user: { allOf: [EmbeddedUserDTORef], nullable: true },
+      user: { allOf: [embeddedUserDtoRef], nullable: true },
       createdAt: { type: 'string', format: 'date-time', nullable: true },
       // updatedAt: { type: 'string', format: 'date-time', nullable: true }, // Less relevant
     },

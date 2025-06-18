@@ -182,9 +182,9 @@ describe('Quotes API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(res.body.data.items).toHaveLength(2);
-      expect(
-        res.body.data.items.find((item: any) => item.description === 'Item modifié').quantity,
-      ).toBe(3);
+      const items: Array<{ description: string; quantity: number }> = res.body.data.items;
+      const foundItem = items.find((item) => item.description === 'Item modifié');
+      expect(foundItem?.quantity).toBe(3);
       // Recalculate expected total based on updated items
       const expectedTotalHt = 3 * 95 * (1 - 5 / 100) + 1 * 50; // 3 * 95 * 0.95 + 50 = 270.75 + 50 = 320.75
       expect(res.body.data.totalAmountHt).toBeCloseTo(expectedTotalHt);

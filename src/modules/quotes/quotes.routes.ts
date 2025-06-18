@@ -318,7 +318,8 @@ export default class QuoteRouter extends BaseRouter {
     if (!status || !Object.values(QuoteStatus).includes(status as QuoteStatus)) {
       return next(new BadRequestError('Invalid or missing status.'));
     }
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     await this.pipe(res, req, next, () =>
       this.service.updateQuoteStatus(id, status as QuoteStatus, userId),
     );

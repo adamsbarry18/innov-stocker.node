@@ -153,7 +153,7 @@ export function passportAuthenticationMiddleware(): void {
               const userEntityInstance: UserEntity =
                 await userService.findOrCreateByGoogleProfile(profile);
 
-              if (!userEntityInstance || !userEntityInstance.id) {
+              if (!userEntityInstance?.id) {
                 logger.error(
                   'findOrCreateByGoogleProfile did not return a valid user entity with an ID.',
                 );
@@ -195,6 +195,7 @@ export function passportAuthenticationMiddleware(): void {
  * Ensures the request is authenticated via JWT. Attaches the user object to `req.user`.
  */
 export const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
+  // eslint-disable-next-line
   passport.authenticate(
     'jwt',
     { session: false },
@@ -205,7 +206,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction): vo
         return next(new ServerError('Authentication processing error.'));
       }
       if (!user) {
-        const message = info?.message || 'Unauthorized access';
+        const message = info?.message ?? 'Unauthorized access';
         logger.warn(`JWT Authentication failed: ${message}. URL: ${req.originalUrl}`);
         return next(new UnauthorizedError(message));
       }

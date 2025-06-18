@@ -101,12 +101,13 @@ export class WarehouseRepository {
   async save(warehouse: Warehouse): Promise<Warehouse> {
     try {
       return await this.repository.save(warehouse);
-    } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_warehouse_name')) {
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === 'ER_DUP_ENTRY' || err.message?.includes('UNIQUE constraint failed')) {
+        if (err.message?.includes('uq_warehouse_name')) {
           throw new BadRequestError(`Warehouse with name '${warehouse.name}' already exists.`);
         }
-        if (warehouse.code && error.message?.includes('uq_warehouse_code')) {
+        if (warehouse.code && err.message?.includes('uq_warehouse_code')) {
           throw new BadRequestError(`Warehouse with code '${warehouse.code}' already exists.`);
         }
       }
@@ -121,14 +122,15 @@ export class WarehouseRepository {
   async update(id: number, dto: Partial<Warehouse>): Promise<UpdateResult> {
     try {
       return await this.repository.update({ id, deletedAt: IsNull() }, dto);
-    } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (dto.name && error.message?.includes('uq_warehouse_name')) {
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === 'ER_DUP_ENTRY' || err.message?.includes('UNIQUE constraint failed')) {
+        if (dto.name && err.message?.includes('uq_warehouse_name')) {
           throw new BadRequestError(
             `Cannot update: Warehouse with name '${dto.name}' may already exist.`,
           );
         }
-        if (dto.code && error.message?.includes('uq_warehouse_code')) {
+        if (dto.code && err.message?.includes('uq_warehouse_code')) {
           throw new BadRequestError(
             `Cannot update: Warehouse with code '${dto.code}' may already exist.`,
           );

@@ -2,14 +2,14 @@
 import { DeliveryStatus } from '../../../modules/deliveries/models/delivery.entity';
 
 // Références globales (à définir si ce n'est pas déjà fait)
-const EmbeddedSalesOrderDTORef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' }; // Définir ce DTO
-const EmbeddedAddressDTORef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
-const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
-const EmbeddedShopDTORef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' }; // Définir ce DTO
+const embeddedAddressDtoRef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
+const embeddedWarehouseDtoRef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
+const embeddedShopDtoRef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
+const embeddedUserDtoRef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
 
 // --- DeliveryItem Schemas ---
-const CreateDeliveryItemInputSchema = {
+const createDeliveryItemInputSchema = {
   type: 'object',
   required: ['salesOrderItemId', 'quantityShipped'],
   properties: {
@@ -28,7 +28,7 @@ const CreateDeliveryItemInputSchema = {
   },
 };
 
-const UpdateDeliveryItemInputSchema = {
+const updateDeliveryItemInputSchema = {
   type: 'object',
   properties: {
     // Usually only quantity is updatable if delivery is not shipped
@@ -38,7 +38,7 @@ const UpdateDeliveryItemInputSchema = {
     'Updates the quantity shipped for a delivery item. Only allowed if delivery is in an editable state.',
 };
 
-const DeliveryItemApiResponseSchema = {
+const deliveryItemApiResponseSchema = {
   type: 'object',
   properties: {
     id: { type: 'integer' },
@@ -64,9 +64,9 @@ const DeliveryItemApiResponseSchema = {
 
 // --- Delivery Schemas ---
 export const deliverySchemas = {
-  CreateDeliveryItemInput: CreateDeliveryItemInputSchema,
-  UpdateDeliveryItemInput: UpdateDeliveryItemInputSchema,
-  DeliveryItemApiResponse: DeliveryItemApiResponseSchema,
+  CreateDeliveryItemInput: createDeliveryItemInputSchema,
+  UpdateDeliveryItemInput: updateDeliveryItemInputSchema,
+  DeliveryItemApiResponse: deliveryItemApiResponseSchema,
 
   CreateDeliveryInput: {
     type: 'object',
@@ -144,7 +144,7 @@ export const deliverySchemas = {
   // No specific input for PATCH /deliver, action itself is sufficient.
 
   // Simplified Embedded Sales Order DTO for DeliveryApiResponse
-  _EmbeddedSalesOrderDTO_example: {
+  embeddedSalesOrderDtoExample: {
     // Define this globally
     type: 'object',
     properties: {
@@ -159,17 +159,17 @@ export const deliverySchemas = {
       id: { type: 'integer', example: 1 },
       deliveryNumber: { type: 'string', example: 'DL-20250701-00001' },
       salesOrderId: { type: 'integer', example: 1 },
-      salesOrder: { allOf: [EmbeddedSalesOrderDTORef], nullable: true },
+      salesOrder: { allOf: [embeddedSalesOrderDtoRef], nullable: true },
       deliveryDate: { type: 'string', format: 'date-time', nullable: true },
       status: { type: 'string', enum: Object.values(DeliveryStatus), example: 'shipped' },
       shippingAddressId: { type: 'integer' },
-      shippingAddress: { allOf: [EmbeddedAddressDTORef], nullable: true },
+      shippingAddress: { allOf: [embeddedAddressDtoRef], nullable: true },
       carrierName: { type: 'string', nullable: true },
       trackingNumber: { type: 'string', nullable: true },
       dispatchWarehouseId: { type: 'integer', nullable: true },
-      dispatchWarehouse: { allOf: [EmbeddedWarehouseDTORef], nullable: true },
+      dispatchWarehouse: { allOf: [embeddedWarehouseDtoRef], nullable: true },
       dispatchShopId: { type: 'integer', nullable: true },
-      dispatchShop: { allOf: [EmbeddedShopDTORef], nullable: true },
+      dispatchShop: { allOf: [embeddedShopDtoRef], nullable: true },
       notes: { type: 'string', nullable: true },
       items: {
         type: 'array',
@@ -177,7 +177,7 @@ export const deliverySchemas = {
         nullable: true,
       },
       shippedByUserId: { type: 'integer', nullable: true },
-      shippedByUser: { allOf: [EmbeddedUserDTORef], nullable: true },
+      shippedByUser: { allOf: [embeddedUserDtoRef], nullable: true },
       createdByUserId: { type: 'integer', nullable: true }, // If added to entity
       // createdByUser: { allOf: [EmbeddedUserDTORef], nullable: true },
       updatedByUserId: { type: 'integer', nullable: true },

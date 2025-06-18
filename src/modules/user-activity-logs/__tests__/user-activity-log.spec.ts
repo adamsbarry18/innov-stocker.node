@@ -17,7 +17,6 @@ dayjs.extend(isSameOrBefore);
 
 describe('UserActivityLogs API', () => {
   let createdLogId: number;
-  let paginationTotal = 0;
   const userIds = [1, 2, 3, 4, 5];
   const entityIds = [uuidv4(), uuidv4(), uuidv4(), uuidv4(), uuidv4()];
 
@@ -105,7 +104,6 @@ describe('UserActivityLogs API', () => {
       expect(res.body.data).toHaveProperty('logs');
       expect(Array.isArray(res.body.data.logs)).toBe(true);
       expect(res.body.data).toHaveProperty('total');
-      paginationTotal = res.body.data.total;
       expect(res.body.meta).toHaveProperty('pagination'); // Ensure meta is present
       expect(res.body.meta.pagination).toHaveProperty('limit', 50);
     });
@@ -128,7 +126,9 @@ describe('UserActivityLogs API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(
-        res.body.data.logs.every((log: UserActivityLogApiResponse) => log.userId === filterUserId),
+        (res.body.data.logs as UserActivityLogApiResponse[]).every(
+          (log: UserActivityLogApiResponse) => log.userId === filterUserId,
+        ),
       ).toBe(true);
     });
 
@@ -139,7 +139,7 @@ describe('UserActivityLogs API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(
-        res.body.data.logs.every(
+        (res.body.data.logs as UserActivityLogApiResponse[]).every(
           (log: UserActivityLogApiResponse) => log.entityType === filterEntityType,
         ),
       ).toBe(true);
@@ -152,7 +152,7 @@ describe('UserActivityLogs API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(
-        res.body.data.logs.every(
+        (res.body.data.logs as UserActivityLogApiResponse[]).every(
           (log: UserActivityLogApiResponse) => log.entityId === filterEntityId,
         ),
       ).toBe(true);
@@ -167,8 +167,9 @@ describe('UserActivityLogs API', () => {
       let lastUserId = -1;
 
       // Check if userIds are in ascending order
+      const logs: UserActivityLogApiResponse[] = res.body.data.logs;
       expect(
-        res.body.data.logs.every((log: UserActivityLogApiResponse) => {
+        logs.every((log: UserActivityLogApiResponse) => {
           const currentUserId = log.userId;
           const isOrdered = currentUserId >= lastUserId;
           lastUserId = currentUserId;

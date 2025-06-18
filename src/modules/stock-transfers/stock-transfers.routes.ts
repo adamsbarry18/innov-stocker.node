@@ -266,11 +266,12 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Patch('/stock-transfers/:id/ship')
-  @authorize({ level: SecurityLevel.USER }) // User at source location
+  @authorize({ level: SecurityLevel.USER })
   async shipStockTransferAction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found.'));
     const input: ShipStockTransferInput = req.body;
     await this.pipe(res, req, next, () => this.service.shipStockTransfer(id, input, userId));
   }
@@ -310,7 +311,8 @@ export default class StockTransferRouter extends BaseRouter {
   async receiveStockTransferAction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found.'));
     const input: ReceiveStockTransferInput = req.body;
     await this.pipe(res, req, next, () => this.service.receiveStockTransfer(id, input, userId));
   }
@@ -343,7 +345,8 @@ export default class StockTransferRouter extends BaseRouter {
   async cancelStockTransfer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found.'));
     await this.pipe(res, req, next, () => this.service.cancelStockTransfer(id, userId));
   }
 

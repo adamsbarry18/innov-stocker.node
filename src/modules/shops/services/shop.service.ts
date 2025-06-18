@@ -239,6 +239,7 @@ export class ShopService {
 
       let hasChanges = false;
       for (const key in input) {
+        // eslint-disable-next-line
         if (input.hasOwnProperty(key) && (input as any)[key] !== (shopToUpdate as any)[key]) {
           hasChanges = true;
           break;

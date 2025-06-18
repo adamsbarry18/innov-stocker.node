@@ -234,7 +234,7 @@ export class QuoteService {
           }
         }
 
-        const itemEntity: any = itemRepoTx.create({
+        const itemEntity = itemRepoTx.create({
           ...itemInput,
           quoteId: savedQuote.id,
           description:
@@ -247,6 +247,7 @@ export class QuoteService {
               ? itemInput.vatRatePercentage
               : product.defaultVatRatePercentage,
         });
+
         if (!itemEntity.isValid()) {
           throw new BadRequestError(
             `Invalid data for quote item (Product ID: ${itemInput.productId}). Errors: ${quoteItemValidationInputErrors.join(', ')}`,

@@ -33,8 +33,8 @@ export class SupplierInvoicePurchaseOrderLinkRepository {
     } catch (error: any) {
       if (
         error.code === 'ER_DUP_ENTRY' ||
-        error.message?.includes('UNIQUE constraint failed') ||
-        error.message?.includes('PRIMARY')
+        (error.message as string).includes('UNIQUE constraint failed') ||
+        (error.message as string).includes('PRIMARY')
       ) {
         throw new BadRequestError(
           `Link between Supplier Invoice ID ${link.supplierInvoiceId} and Purchase Order ID ${link.purchaseOrderId} already exists.`,

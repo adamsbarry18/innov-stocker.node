@@ -63,7 +63,6 @@ export class SupplierInvoiceItemService {
     let invoice: SupplierInvoice | null;
 
     if (transactionalEntityManager) {
-      // Utilise findOne du repo natif TypeORM
       const repo = transactionalEntityManager.getRepository(SupplierInvoice);
       invoice = await repo.findOne({
         where: { id: invoiceId },
@@ -75,7 +74,6 @@ export class SupplierInvoiceItemService {
         ],
       });
     } else {
-      // Utilise la méthode custom de ton repository
       invoice = await this.invoiceRepository.findById(invoiceId, {
         relations: [
           'items',
@@ -131,7 +129,6 @@ export class SupplierInvoiceItemService {
           `Purchase Reception Item ID ${input.purchaseReceptionItemId} not found.`,
         );
       }
-      // Optionally, check if product/variant matches if also provided in input
       if (input.productId && receptionItem.productId !== input.productId) {
         throw new BadRequestError(
           `Product ID ${input.productId} in item does not match product ID ${receptionItem.productId} of linked reception item ${input.purchaseReceptionItemId}.`,
@@ -141,7 +138,6 @@ export class SupplierInvoiceItemService {
         input.productVariantId !== undefined &&
         receptionItem.productVariantId !== input.productVariantId
       ) {
-        // handles null
         throw new BadRequestError(
           `Product Variant ID ${input.productVariantId} in item does not match variant ID ${receptionItem.productVariantId} of linked reception item ${input.purchaseReceptionItemId}.`,
         );
@@ -169,7 +165,7 @@ export class SupplierInvoiceItemService {
 
       const invoice = await this.getInvoiceAndCheckStatus(
         supplierInvoiceId,
-        [SupplierInvoiceStatus.DRAFT], // Only allow adding items to DRAFT invoices
+        [SupplierInvoiceStatus.DRAFT],
         transactionalEntityManager,
       );
 
@@ -181,8 +177,7 @@ export class SupplierInvoiceItemService {
         supplierInvoiceId,
         totalLineAmountHt: parseFloat(
           (Number(validatedInput.quantity) * Number(validatedInput.unitPriceHt)).toFixed(4),
-        ), // Calculate here
-        // createdByUserId: createdByUserId, // If audit on item
+        ),
       });
 
       if (!itemEntity.isValid()) {
@@ -196,11 +191,11 @@ export class SupplierInvoiceItemService {
       const itemsForTotal = await itemRepoTx.find({ where: { supplierInvoiceId } });
       invoice.items = itemsForTotal;
       invoice.calculateTotals();
-      invoice.updatedByUserId = createdByUserId; // Audit for invoice update
+      invoice.updatedByUserId = createdByUserId;
       await invoiceRepoTx.save(invoice);
 
       logger.info(
-        `Item (Product ID: ${validatedInput.productId || 'N/A'}) added to Supplier Invoice ${supplierInvoiceId}. Item ID: ${savedItem.id}.`,
+        `Item (Product ID: ${validatedInput.productId ?? 'N/A'}) added to Supplier Invoice ${supplierInvoiceId}. Item ID: ${savedItem.id}.`,
       );
 
       const populatedItem = await this.itemRepository.findById(savedItem.id, {
@@ -256,7 +251,7 @@ export class SupplierInvoiceItemService {
 
       const invoice = await this.getInvoiceAndCheckStatus(
         supplierInvoiceId,
-        [SupplierInvoiceStatus.DRAFT], // Only allow updates if DRAFT
+        [SupplierInvoiceStatus.DRAFT],
         transactionalEntityManager,
       );
       const item = await itemRepoTx.findOne({
@@ -269,15 +264,11 @@ export class SupplierInvoiceItemService {
         );
       }
 
-      // ProductId, ProductVariantId, purchaseReceptionItemId are not updatable for an existing item
       if (validatedInput.description !== undefined) item.description = validatedInput.description;
       if (validatedInput.quantity !== undefined) item.quantity = validatedInput.quantity;
       if (validatedInput.unitPriceHt !== undefined) item.unitPriceHt = validatedInput.unitPriceHt;
       if (validatedInput.vatRatePercentage !== undefined)
         item.vatRatePercentage = validatedInput.vatRatePercentage;
-      // item.updatedByUserId = updatedByUserId; // If audit on item
-
-      // Recalculate totalLineAmountHt before validation if it's application managed
       item.totalLineAmountHt = parseFloat(
         (Number(item.quantity) * Number(item.unitPriceHt)).toFixed(4),
       );
@@ -319,7 +310,7 @@ export class SupplierInvoiceItemService {
 
       const invoice = await this.getInvoiceAndCheckStatus(
         supplierInvoiceId,
-        [SupplierInvoiceStatus.DRAFT], // Only allow removal if DRAFT
+        [SupplierInvoiceStatus.DRAFT],
         transactionalEntityManager,
       );
       const item = await itemRepoTx.findOneBy({ id: itemId, supplierInvoiceId });
@@ -329,7 +320,7 @@ export class SupplierInvoiceItemService {
         );
       }
 
-      await itemRepoTx.remove(item); // Hard delete the item
+      await itemRepoTx.remove(item);
 
       const itemsForTotal = await itemRepoTx.find({ where: { supplierInvoiceId } });
       invoice.items = itemsForTotal;
@@ -342,9 +333,7 @@ export class SupplierInvoiceItemService {
   }
 
   static getInstance(): SupplierInvoiceItemService {
-    if (!instance) {
-      instance = new SupplierInvoiceItemService();
-    }
+    instance ??= new SupplierInvoiceItemService();
     return instance;
   }
 }

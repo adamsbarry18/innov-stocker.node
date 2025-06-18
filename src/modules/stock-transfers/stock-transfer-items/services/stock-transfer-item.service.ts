@@ -114,7 +114,6 @@ export class StockTransferItemService {
   async addItemToTransfer(
     stockTransferId: number,
     input: CreateStockTransferItemInput,
-    createdByUserId: number,
   ): Promise<StockTransferItemApiResponse> {
     const validationResult = createStockTransferItemSchema.safeParse(input);
     if (!validationResult.success) {
@@ -142,13 +141,13 @@ export class StockTransferItemService {
         where: {
           stockTransferId,
           productId: validatedInput.productId,
-          productVariantId: validatedInput.productVariantId || IsNull(),
+          productVariantId: validatedInput.productVariantId ?? IsNull(),
           deletedAt: IsNull(),
         },
       });
       if (existingItem) {
         throw new BadRequestError(
-          `Product/Variant (ID: ${validatedInput.productId}/${validatedInput.productVariantId || 'N/A'}) already exists in this transfer (Item ID: ${existingItem.id}). Update its quantity instead.`,
+          `Product/Variant (ID: ${validatedInput.productId}/${validatedInput.productVariantId ?? 'N/A'}) already exists in this transfer (Item ID: ${existingItem.id}). Update its quantity instead.`,
         );
       }
 

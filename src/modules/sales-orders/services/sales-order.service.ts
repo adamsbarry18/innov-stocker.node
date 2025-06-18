@@ -398,9 +398,16 @@ export class SalesOrderService {
   ): Promise<void> {
     if (!('items' in input) || !input.items) return;
 
-    const isDraft = isUpdate
-      ? (await this.orderRepository.findById(orderId!))?.status === SalesOrderStatus.DRAFT
-      : (input as CreateSalesOrderInput).status === SalesOrderStatus.DRAFT;
+    let isDraft: boolean;
+    if (isUpdate) {
+      if (orderId === undefined) {
+        throw new BadRequestError('Order ID is required for update validation.');
+      }
+      const order = await this.orderRepository.findById(orderId);
+      isDraft = order?.status === SalesOrderStatus.DRAFT;
+    } else {
+      isDraft = (input as CreateSalesOrderInput).status === SalesOrderStatus.DRAFT;
+    }
 
     if (!isDraft && input.items.length === 0) {
       throw new BadRequestError(
@@ -713,7 +720,7 @@ export class SalesOrderService {
     return itemRepo.create({
       ...itemInput,
       salesOrderId: orderId,
-      description: itemInput.description || variantName || product?.name,
+      description: itemInput.description ?? variantName ?? product?.name,
       vatRatePercentage: itemInput.vatRatePercentage ?? product?.defaultVatRatePercentage,
     });
   }
@@ -898,18 +905,20 @@ export class SalesOrderService {
       dispatchWarehouseId: null,
       dispatchShopId: null,
       notes: `Converted from Quote ${quote.quoteNumber}. ${quote.notes ?? ''}`.trim(),
-      items: quote.items.map((item: any) => ({
-        productId: item.productId,
-        productVariantId: item.productVariantId,
-        description: item.description ?? item.productVariant?.nameVariant ?? item.product?.name,
-        quantity: Number(item.quantity),
-        unitPriceHt: Number(item.unitPriceHt),
-        discountPercentage: Number(item.discountPercentage ?? 0),
-        vatRatePercentage:
-          item.vatRatePercentage !== null
-            ? Number(item.vatRatePercentage)
-            : item.product?.defaultVatRatePercentage,
-      })),
+      items: Array.isArray(quote.items)
+        ? (quote.items as Array<any>).map((item) => ({
+            productId: item.productId,
+            productVariantId: item.productVariantId,
+            description: item.description ?? item.productVariant?.nameVariant ?? item.product?.name,
+            quantity: Number(item.quantity),
+            unitPriceHt: Number(item.unitPriceHt),
+            discountPercentage: Number(item.discountPercentage ?? 0),
+            vatRatePercentage:
+              item.vatRatePercentage !== null
+                ? Number(item.vatRatePercentage)
+                : item.product?.defaultVatRatePercentage,
+          }))
+        : [],
     };
   }
 

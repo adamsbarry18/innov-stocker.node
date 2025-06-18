@@ -48,7 +48,6 @@ const testSupplierReturnInputNoItems = {
 
 describe('SupplierReturns API', () => {
   let createdReturnId: number;
-  let createdReturnIdNoItems: number;
 
   describe('POST /supplier-returns', () => {
     it('should create a new supplier return with items', async () => {
@@ -91,8 +90,8 @@ describe('SupplierReturns API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(
-        res.body.data.returns.every(
-          (r: any) => r.supplierId === testSupplierReturnInputWithItems.supplierId,
+        (res.body.data.returns as Array<{ supplierId: number }>).every(
+          (r) => r.supplierId === testSupplierReturnInputWithItems.supplierId,
         ),
       ).toBe(true);
     });
@@ -103,7 +102,9 @@ describe('SupplierReturns API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(
-        res.body.data.returns.every((r: any) => r.status === SupplierReturnStatus.REQUESTED),
+        (res.body.data.returns as Array<{ status: SupplierReturnStatus }>).every(
+          (r) => r.status === SupplierReturnStatus.REQUESTED,
+        ),
       ).toBe(true);
     });
   });

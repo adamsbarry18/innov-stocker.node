@@ -14,7 +14,6 @@ import { StockMovementService } from './services/stock-movement.service';
 import { CreateStockMovementInput, StockMovementType } from './models/stock-movement.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
-import logger from '@/lib/logger';
 
 export default class StockMovementRouter extends BaseRouter {
   service = StockMovementService.getInstance();

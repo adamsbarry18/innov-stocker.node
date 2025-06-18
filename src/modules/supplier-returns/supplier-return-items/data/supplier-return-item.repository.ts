@@ -7,6 +7,7 @@ import {
   type DeleteResult,
   type EntityManager,
   type UpdateResult,
+  type DeepPartial,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
 import { SupplierReturnItem } from '../models/supplier-return-item.entity';
@@ -34,8 +35,7 @@ export class SupplierReturnItemRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ?? this.getDefaultRelations(),
       });
     } catch (error) {
       logger.error({ message: `Error finding supplier return item by id ${id}`, error });
@@ -49,12 +49,9 @@ export class SupplierReturnItemRepository {
   ): Promise<SupplierReturnItem[]> {
     try {
       return await this.repository.find({
-        where: { supplierReturnId, deletedAt: IsNull(), ...(options?.where || {}) },
-        relations:
-          options?.relations === undefined
-            ? ['product', 'productVariant', 'purchaseReceptionItem']
-            : options.relations,
-        order: options?.order || { createdAt: 'ASC' },
+        where: { supplierReturnId, deletedAt: IsNull(), ...(options?.where ?? {}) },
+        relations: options?.relations ?? ['product', 'productVariant', 'purchaseReceptionItem'],
+        order: options?.order ?? { createdAt: 'ASC' },
       });
     } catch (error) {
       logger.error({
@@ -90,7 +87,7 @@ export class SupplierReturnItemRepository {
     const repo = transactionalEntityManager
       ? transactionalEntityManager.getRepository(SupplierReturnItem)
       : this.repository;
-    return repo.create(dto as any); // TypeORM's create method is overloaded, 'as any' is a workaround
+    return repo.create(dto as unknown as DeepPartial<SupplierReturnItem>[]);
   }
 
   async save(
@@ -103,11 +100,13 @@ export class SupplierReturnItemRepository {
         : this.repository;
       return await repo.save(item);
     } catch (error: any) {
-      // Assuming a unique constraint 'uq_supplier_return_item_product_variant_reception' on (supplierReturnId, productId, productVariantId, purchaseReceptionItemId)
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_supplier_return_item_unique')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('uq_supplier_return_item_unique')) {
           throw new BadRequestError(
-            `This product/variant (from reception item ${item.purchaseReceptionItemId || 'N/A'}) is already part of this supplier return.`,
+            `This product/variant (from reception item ${item.purchaseReceptionItemId ?? 'N/A'}) is already part of this supplier return.`,
           );
         }
       }
@@ -167,8 +166,6 @@ export class SupplierReturnItemRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(SupplierReturnItem)
         : this.repository;
-      // If using soft delete via Model, this should be a softDelete call with where clause.
-      // For hard delete as per cascade in entity:
       return await repo.delete({ supplierReturnId });
     } catch (error) {
       logger.error({

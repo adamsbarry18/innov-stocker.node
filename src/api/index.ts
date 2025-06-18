@@ -53,10 +53,10 @@ async function initializeApiRouter(): Promise<Router> {
 
       // Prefer default export, otherwise take the first named export
       const controllerClass =
-        importedModule.default || importedModule[Object.keys(importedModule)[0]];
+        importedModule.default ?? importedModule[Object.keys(importedModule)[0]];
 
       if (typeof controllerClass === 'function' && controllerClass.prototype) {
-        controllerClass.name || '[Anonymous Controller]';
+        controllerClass.name ?? '[Anonymous Controller]';
         registerRoutes(apiRouter, controllerClass);
       } else {
         logger.warn(

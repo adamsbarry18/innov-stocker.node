@@ -145,15 +145,7 @@ export class UsersService {
    * @returns The created or reactivated user API response.
    */
   async create(input: CreateUserInput): Promise<UserApiResponse> {
-    const {
-      password,
-      email,
-      permissions,
-      permissionsExpireAt,
-      isActive,
-      level: inputLevel,
-      ...restData
-    } = input;
+    const { password, email, permissions, permissionsExpireAt, isActive, ...restData } = input;
     if (!email) {
       throw new BadRequestError('Email is required.');
     }
@@ -507,10 +499,13 @@ export class UsersService {
       const user = await this.userRepository.findById(userId);
       if (!user) throw new NotFoundError(`User with id ${userId} not found.`);
 
-      const currentPreferences = user.preferences || {};
-      currentPreferences[key] = value;
+      const currentPreferences = user.preferences ?? {};
+      const updatedPreferences = {
+        ...currentPreferences,
+        [key.toString()]: value,
+      };
 
-      return await this.updatePreferences(userId, currentPreferences);
+      return await this.updatePreferences(userId, updatedPreferences);
     } catch (error) {
       if (error instanceof NotFoundError) {
         throw error;
@@ -640,7 +635,12 @@ export class UsersService {
       const savedUser = await this.userRepository.save(newUser);
       return savedUser;
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('unique constraint')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (typeof error === 'object' &&
+          error?.message &&
+          (error.message as string).includes('unique constraint'))
+      ) {
         const existingByGoogleId = await this.userRepository.findByGoogleId(googleId);
         if (existingByGoogleId) return existingByGoogleId;
         const existingByEmail = await this.userRepository.findByEmailWithGoogleId(

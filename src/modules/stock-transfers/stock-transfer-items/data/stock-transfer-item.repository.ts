@@ -34,8 +34,7 @@ export class StockTransferItemRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined ? this.getDefaultRelations() : options.relations,
+        relations: options?.relations ? this.getDefaultRelations() : options?.relations,
       });
     } catch (error) {
       logger.error({ message: `Error finding stock transfer item by id ${id}`, error });
@@ -49,10 +48,9 @@ export class StockTransferItemRepository {
   ): Promise<StockTransferItem[]> {
     try {
       return await this.repository.find({
-        where: { stockTransferId, deletedAt: IsNull(), ...(options?.where || {}) },
-        relations:
-          options?.relations === undefined ? ['product', 'productVariant'] : options.relations,
-        order: options?.order || { createdAt: 'ASC' },
+        where: { stockTransferId, deletedAt: IsNull(), ...(options?.where ?? {}) },
+        relations: options?.relations ? ['product', 'productVariant'] : options?.relations,
+        order: options?.order ?? { createdAt: 'ASC' },
       });
     } catch (error) {
       logger.error({ message: `Error finding items for stock transfer ${stockTransferId}`, error });
@@ -98,9 +96,11 @@ export class StockTransferItemRepository {
         : this.repository;
       return await repo.save(item);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_stock_transfer_item_product')) {
-          // Assuming this unique key name
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string)?.includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('uq_stock_transfer_item_product')) {
           throw new BadRequestError(`This product/variant is already part of this stock transfer.`);
         }
       }

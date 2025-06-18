@@ -39,7 +39,8 @@ const createAndLoginUser = async (
     userId = userRes.body.data.id;
   } else if (
     userRes.status === 400 &&
-    userRes.body?.data?.includes('Email address is already in use by an active user')
+    typeof userRes.body?.data === 'string' &&
+    (userRes.body.data as string).includes('Email address is already in use by an active user')
   ) {
     const getUserRes = await request(app)
       .get(`/api/v1/users/${email}`)
@@ -95,7 +96,8 @@ describe('Users API', () => {
       createdUserId = mainUserRes.body.data.id;
     } else if (
       mainUserRes.status === 400 &&
-      mainUserRes.body?.message?.includes('already in use by an active user') // Message d'erreur mis à jour
+      typeof mainUserRes.body?.message === 'string' &&
+      (mainUserRes.body.message as string).includes('already in use by an active user') // Message d'erreur mis à jour
     ) {
       const getMainUserRes = await request(app)
         .get(`/api/v1/users/${userMail}`)

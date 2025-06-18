@@ -1,13 +1,13 @@
 import { CustomerInvoiceStatus } from '@/modules/customer-invoices/models/customer-invoice.entity';
 
 // Assuming these are defined globally or imported
-const EmbeddedCustomerDTORef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
-const EmbeddedAddressDTORef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
-const EmbeddedSalesOrderDTORef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' }; // Define this
+const embeddedCustomerDtoRef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
+const embeddedCurrencyDtoRef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
+const embeddedAddressDtoRef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
+const embeddedUserDtoRef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const _embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' }; // Define this
 
-const CreateCustomerInvoiceItemInputSchema = {
+const createCustomerInvoiceItemInputSchema = {
   type: 'object',
   required: ['description', 'quantity', 'unitPriceHt'], // productId is optional if description is very specific
   properties: {
@@ -58,7 +58,7 @@ const CreateCustomerInvoiceItemInputSchema = {
   },
 };
 
-const UpdateCustomerInvoiceItemInputSchema = {
+const updateCustomerInvoiceItemInputSchema = {
   type: 'object',
   properties: {
     // Product/Variant/Source links are not changed on an existing invoice line
@@ -77,7 +77,7 @@ const UpdateCustomerInvoiceItemInputSchema = {
   description: 'At least one field should be provided for update.',
 };
 
-const CustomerInvoiceItemApiResponseSchema = {
+const customerInvoiceItemApiResponseSchema = {
   type: 'object',
   properties: {
     id: { type: 'integer' },
@@ -101,7 +101,7 @@ const CustomerInvoiceItemApiResponseSchema = {
   },
 };
 
-const UpdateCustomerInvoiceItemsArrayInputSchema = {
+const updateCustomerInvoiceItemsArrayInputSchema = {
   type: 'object',
   properties: {
     id: { type: 'integer', description: 'ID of existing item to update. Omit for new items.' },
@@ -126,9 +126,9 @@ const UpdateCustomerInvoiceItemsArrayInputSchema = {
 };
 
 export const customerInvoiceSchemas = {
-  CreateCustomerInvoiceItemInput: CreateCustomerInvoiceItemInputSchema,
-  UpdateCustomerInvoiceItemInput: UpdateCustomerInvoiceItemInputSchema,
-  CustomerInvoiceItemApiResponse: CustomerInvoiceItemApiResponseSchema,
+  CreateCustomerInvoiceItemInput: createCustomerInvoiceItemInputSchema,
+  UpdateCustomerInvoiceItemInput: updateCustomerInvoiceItemInputSchema,
+  CustomerInvoiceItemApiResponse: customerInvoiceItemApiResponseSchema,
 
   CreateCustomerInvoiceInput: {
     type: 'object',
@@ -181,7 +181,7 @@ export const customerInvoiceSchemas = {
       termsAndConditions: { type: 'string', nullable: true },
       items: {
         type: 'array',
-        items: UpdateCustomerInvoiceItemsArrayInputSchema,
+        items: updateCustomerInvoiceItemsArrayInputSchema,
         description:
           'Array of items. For updates, include item ID. For new items, omit ID. To delete, include ID and _delete:true. (Allowed only if DRAFT)',
       },
@@ -194,7 +194,7 @@ export const customerInvoiceSchemas = {
     },
   },
   // Define EmbeddedSalesOrderDTO if not globally available
-  _EmbeddedSalesOrderDTO_example: {
+  embeddedSalesOrderDtoExample: {
     type: 'object',
     properties: {
       salesOrderId: { type: 'integer', example: 101 },
@@ -207,20 +207,20 @@ export const customerInvoiceSchemas = {
       id: { type: 'integer', example: 1 },
       invoiceNumber: { type: 'string', example: 'INV-CUST-202507-0001' },
       customerId: { type: 'integer', example: 1 },
-      customer: { allOf: [EmbeddedCustomerDTORef], nullable: true },
+      customer: { allOf: [embeddedCustomerDtoRef], nullable: true },
       invoiceDate: { type: 'string', format: 'date-time', nullable: true },
       dueDate: { type: 'string', format: 'date-time', nullable: true },
       currencyId: { type: 'integer', example: 1 },
-      currency: { allOf: [EmbeddedCurrencyDTORef], nullable: true },
+      currency: { allOf: [embeddedCurrencyDtoRef], nullable: true },
       totalAmountHt: { type: 'number', format: 'double' },
       totalVatAmount: { type: 'number', format: 'double' },
       totalAmountTtc: { type: 'number', format: 'double' },
       amountPaid: { type: 'number', format: 'double', default: 0.0 },
       status: { type: 'string', enum: Object.values(CustomerInvoiceStatus), example: 'sent' },
       billingAddressId: { type: 'integer' },
-      billingAddress: { allOf: [EmbeddedAddressDTORef], nullable: true },
+      billingAddress: { allOf: [embeddedAddressDtoRef], nullable: true },
       shippingAddressId: { type: 'integer', nullable: true },
-      shippingAddress: { allOf: [EmbeddedAddressDTORef], nullable: true },
+      shippingAddress: { allOf: [embeddedAddressDtoRef], nullable: true },
       notes: { type: 'string', nullable: true },
       termsAndConditions: { type: 'string', nullable: true },
       items: {
@@ -234,7 +234,7 @@ export const customerInvoiceSchemas = {
         nullable: true,
       },
       createdByUserId: { type: 'integer', nullable: true },
-      createdByUser: { allOf: [EmbeddedUserDTORef], nullable: true },
+      createdByUser: { allOf: [embeddedUserDtoRef], nullable: true },
       updatedByUserId: { type: 'integer', nullable: true },
       createdAt: { type: 'string', format: 'date-time', nullable: true },
       updatedAt: { type: 'string', format: 'date-time', nullable: true },

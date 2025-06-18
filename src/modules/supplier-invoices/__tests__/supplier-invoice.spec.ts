@@ -45,7 +45,6 @@ const testSupplierInvoiceInputNoItems = {
 
 describe('SupplierInvoices API', () => {
   let createdInvoiceId: number;
-  let createdInvoiceId2: number;
 
   describe('POST /supplier-invoices', () => {
     it('should create a new supplier-invoice with items', async () => {
@@ -64,7 +63,6 @@ describe('SupplierInvoices API', () => {
         .post('/api/v1/supplier-invoices')
         .set('Authorization', `Bearer ${adminToken}`)
         .send(testSupplierInvoiceInputNoItems);
-      createdInvoiceId2 = res.body.data.id;
       expect(res.status).toBe(201);
       expect(res.body.data).toHaveProperty('id');
       expect(res.body.data.supplierId).toBe(testSupplierInvoiceInputNoItems.supplierId);

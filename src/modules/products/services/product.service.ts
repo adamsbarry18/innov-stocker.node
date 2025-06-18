@@ -541,7 +541,7 @@ export class ProductService extends Service {
    * @param options - Optional parameters.
    * @returns An array of stock movements.
    */
-  async getProductStockMovements(productId: number, options?: any): Promise<any[]> {
+  async getProductStockMovements(productId: number): Promise<any[]> {
     if (!(await this.productRepository.findById(productId))) {
       throw new NotFoundError(`Product with id ${productId} not found.`);
     }
@@ -572,7 +572,6 @@ export class ProductService extends Service {
    */
   static getInstance(): ProductService {
     instance ??= new ProductService();
-
     return instance;
   }
 }

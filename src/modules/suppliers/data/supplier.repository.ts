@@ -1,4 +1,3 @@
-// src/modules/suppliers/data/supplier.repository.ts
 import {
   type Repository,
   type DataSource,
@@ -115,10 +114,13 @@ export class SupplierRepository {
       }
       return await this.repository.save(supplier);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
         if (
-          error.message?.includes('email_unique_if_not_null') ||
-          error.message?.includes('suppliers.email')
+          (error.message as string).includes('email_unique_if_not_null') ||
+          (error.message as string).includes('suppliers.email')
         ) {
           throw new BadRequestError(`Supplier with email '${supplier.email}' already exists.`);
         }
@@ -138,11 +140,14 @@ export class SupplierRepository {
       }
       return await this.repository.update({ id, deletedAt: IsNull() }, dto);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
         if (
           dto.email &&
-          (error.message?.includes('email_unique_if_not_null') ||
-            error.message?.includes('suppliers.email'))
+          ((error.message as string).includes('email_unique_if_not_null') ||
+            (error.message as string).includes('suppliers.email'))
         ) {
           throw new BadRequestError(
             `Cannot update: Supplier with email '${dto.email}' may already exist for another record.`,

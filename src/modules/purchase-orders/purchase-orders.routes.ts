@@ -17,11 +17,9 @@ import { PurchaseOrderService } from './services/purchase-order.service';
 import {
   CreatePurchaseOrderInput,
   UpdatePurchaseOrderInput,
-  PurchaseOrder,
   PurchaseOrderStatus,
 } from './models/purchase-order.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
-import dayjs from 'dayjs';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 
 export default class PurchaseOrderRouter extends BaseRouter {
@@ -282,9 +280,10 @@ export default class PurchaseOrderRouter extends BaseRouter {
     if (!status || !Object.values(PurchaseOrderStatus).includes(status as PurchaseOrderStatus)) {
       return next(new BadRequestError('Invalid or missing status.'));
     }
-    const userId = req.user!.id; // User performing the update
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     const approvedBy =
-      status === PurchaseOrderStatus.APPROVED ? inputApprovedByUserId || userId : undefined;
+      status === PurchaseOrderStatus.APPROVED ? (inputApprovedByUserId ?? userId) : undefined;
 
     await this.pipe(res, req, next, () =>
       this.service.updatePurchaseOrderStatus(id, status as PurchaseOrderStatus, userId, approvedBy),
@@ -319,11 +318,12 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFoundError'
    */
   @Patch('/purchase-orders/:id/approve')
-  @authorize({ level: SecurityLevel.INTEGRATOR }) // Higher level for approval
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async approvePurchaseOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id; // User performing the action is the approver
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     await this.pipe(res, req, next, () =>
       this.service.updatePurchaseOrderStatus(id, PurchaseOrderStatus.APPROVED, userId, userId),
     );
@@ -361,7 +361,8 @@ export default class PurchaseOrderRouter extends BaseRouter {
   async sendPurchaseOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     await this.pipe(res, req, next, () =>
       this.service.updatePurchaseOrderStatus(id, PurchaseOrderStatus.SENT_TO_SUPPLIER, userId),
     );
@@ -399,7 +400,8 @@ export default class PurchaseOrderRouter extends BaseRouter {
   async cancelPurchaseOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     await this.pipe(res, req, next, () =>
       this.service.updatePurchaseOrderStatus(id, PurchaseOrderStatus.CANCELLED, userId),
     );

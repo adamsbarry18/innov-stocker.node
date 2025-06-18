@@ -5,7 +5,6 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  ILike,
   type EntityManager,
 } from 'typeorm';
 import { appDataSource } from '@/database/data-source';
@@ -19,7 +18,6 @@ interface FindAllSalesOrdersOptions {
   where?: FindOptionsWhere<SalesOrder> | FindOptionsWhere<SalesOrder>[];
   order?: FindManyOptions<SalesOrder>['order'];
   relations?: string[];
-  searchTerm?: string;
 }
 
 export class SalesOrderRepository {
@@ -50,13 +48,12 @@ export class SalesOrderRepository {
 
   private getDefaultRelationsForFindAll(): string[] {
     return [
-      // Lighter set for lists
       'customer',
       'currency',
       'createdByUser',
-      'items', // Added to load sales order items
-      'items.product', // Added to load product details for items
-      'items.productVariant', // Added to load product variant details for items
+      'items',
+      'items.product',
+      'items.productVariant',
     ];
   }
 
@@ -70,10 +67,7 @@ export class SalesOrderRepository {
         : this.repository;
       return await repo.findOne({
         where: { id, deletedAt: IsNull() },
-        relations:
-          options?.relations === undefined
-            ? this.getDefaultRelationsForFindOne()
-            : options.relations,
+        relations: options?.relations ?? this.getDefaultRelationsForFindOne(),
       });
     } catch (error) {
       logger.error(
@@ -101,12 +95,12 @@ export class SalesOrderRepository {
 
   async findLastOrderNumber(prefix: string): Promise<string | null> {
     try {
-      const lastOrder = await this.repository
+      const lastOrder: { maxOrderNumber?: string } | undefined = await this.repository
         .createQueryBuilder('so')
         .select('MAX(so.orderNumber)', 'maxOrderNumber')
         .where('so.orderNumber LIKE :prefix', { prefix: `${prefix}%` })
         .getRawOne();
-      return lastOrder?.maxOrderNumber || null;
+      return lastOrder?.maxOrderNumber ?? null;
     } catch (error) {
       logger.error({ message: 'Error fetching last sales order number', error, prefix });
       throw new ServerError('Could not fetch last sales order number.');
@@ -117,37 +111,14 @@ export class SalesOrderRepository {
     options: FindAllSalesOrdersOptions = {},
   ): Promise<{ orders: SalesOrder[]; count: number }> {
     try {
-      let whereConditions: FindOptionsWhere<SalesOrder> | FindOptionsWhere<SalesOrder>[] =
-        options.where
-          ? Array.isArray(options.where)
-            ? options.where.map((w) => ({ ...w, deletedAt: IsNull() }))
-            : { ...options.where, deletedAt: IsNull() }
-          : { deletedAt: IsNull() };
-
-      // Note: Searching on joined customer fields (customer.name, etc.) via options.searchTerm
-      // would require QueryBuilder for OR conditions.
-      if (options.searchTerm) {
-        const searchPattern = ILike(`%${options.searchTerm}%`);
-        const searchSpecific: FindOptionsWhere<SalesOrder> = {
-          orderNumber: searchPattern,
-          deletedAt: IsNull(),
-        };
-        if (Array.isArray(whereConditions)) {
-          whereConditions = whereConditions.map((wc) => ({ ...wc, ...searchSpecific }));
-        } else {
-          whereConditions = { ...whereConditions, ...searchSpecific };
-        }
-      }
+      const where = { ...options.where, deletedAt: IsNull() };
 
       const findOptions: FindManyOptions<SalesOrder> = {
-        where: whereConditions,
-        order: options.order || { orderDate: 'DESC', createdAt: 'DESC' },
+        where,
+        order: options.order ?? { orderDate: 'DESC', createdAt: 'DESC' },
         skip: options.skip,
         take: options.take,
-        relations:
-          options.relations === undefined
-            ? this.getDefaultRelationsForFindAll()
-            : options.relations,
+        relations: options.relations ?? this.getDefaultRelationsForFindAll(),
       };
       const [orders, count] = await this.repository.findAndCount(findOptions);
       return { orders, count };
@@ -177,9 +148,12 @@ export class SalesOrderRepository {
         ? transactionalEntityManager.getRepository(SalesOrder)
         : this.repository;
       return await repo.save(order);
-    } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_so_order_number')) {
+    } catch (error: unknown) {
+      if (
+        (error instanceof Error && 'code' in error && (error as any).code === 'ER_DUP_ENTRY') ||
+        (error instanceof Error && error.message?.includes('UNIQUE constraint failed'))
+      ) {
+        if (error instanceof Error && error.message?.includes('uq_so_order_number')) {
           throw new BadRequestError(
             `Sales order with number '${order.orderNumber}' already exists.`,
           );
@@ -203,12 +177,8 @@ export class SalesOrderRepository {
         ? transactionalEntityManager.getRepository(SalesOrder)
         : this.repository;
       return await repo.update({ id, deletedAt: IsNull() }, dto);
-    } catch (error: any) {
-      logger.error(
-        { message: `Error updating sales order with id ${id}`, error },
-        'SalesOrderRepository.update',
-      );
-      throw new ServerError(`Error updating sales order with id ${id}.`);
+    } catch (error) {
+      throw new ServerError(`Error updating sales order with id ${id}. ${error}`);
     }
   }
 

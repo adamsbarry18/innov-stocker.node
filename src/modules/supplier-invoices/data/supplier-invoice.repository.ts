@@ -146,8 +146,11 @@ export class SupplierInvoiceRepository {
       // Cascade will save items and links if configured
       return await repo.save(invoice);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_supplier_invoice_number')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('uq_supplier_invoice_number')) {
           throw new BadRequestError(
             `Supplier invoice with number '${invoice.invoiceNumber}' for supplier ID ${invoice.supplierId} already exists.`,
           );
@@ -170,14 +173,17 @@ export class SupplierInvoiceRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(SupplierInvoice)
         : this.repository;
-      const { items, purchaseOrderLinks, ...headerDto } = dto;
-      return await repo.update({ id, deletedAt: IsNull() }, headerDto);
+
+      return await repo.update({ id, deletedAt: IsNull() }, dto);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
         if (
           dto.invoiceNumber &&
           dto.supplierId &&
-          error.message?.includes('uq_supplier_invoice_number')
+          (error.message as string).includes('uq_supplier_invoice_number')
         ) {
           throw new BadRequestError(
             `Cannot update: Supplier invoice with number '${dto.invoiceNumber}' for supplier ID ${dto.supplierId} may already exist.`,

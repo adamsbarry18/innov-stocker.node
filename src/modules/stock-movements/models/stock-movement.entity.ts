@@ -39,14 +39,13 @@ export const createStockMovementSchema = z
     referenceDocumentId: z.union([z.string(), z.number()]).nullable().optional(),
     notes: z.string().max(1000).nullable().optional(),
   })
-  .refine((data) => data.warehouseId || data.shopId, {
+  .refine((data) => data.warehouseId ?? data.shopId, {
     message: 'Either warehouseId or shopId must be provided for stock movement location.',
     path: ['warehouseId'],
   });
 
 export type CreateStockMovementInput = z.infer<typeof createStockMovementSchema>;
 
-// Type for API response (DTO)
 export type StockMovementApiResponse = {
   id: number;
   productId: number;

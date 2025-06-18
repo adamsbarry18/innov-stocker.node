@@ -240,7 +240,7 @@ export class SupplierInvoice extends Model {
       for (const item of this.items) {
         if (!item.isValid()) {
           supplierInvoiceValidationInputErrors.push(
-            `Invalid item data for product ID ${item.productId || 'N/A'}.`,
+            `Invalid item data for product ID ${item.productId ?? 'N/A'}.`,
           );
           return false;
         }

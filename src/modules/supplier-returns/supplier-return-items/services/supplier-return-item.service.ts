@@ -137,7 +137,7 @@ export class SupplierReturnItemService {
       const existingItemQuery: FindOptionsWhere<SupplierReturnItem> = {
         supplierReturnId,
         productId: validatedInput.productId,
-        productVariantId: validatedInput.productVariantId || IsNull(),
+        productVariantId: validatedInput.productVariantId ?? IsNull(),
         deletedAt: IsNull(),
       };
       if (validatedInput.purchaseReceptionItemId) {
@@ -146,7 +146,7 @@ export class SupplierReturnItemService {
       const existingItem = await itemRepoTx.findOne({ where: existingItemQuery });
       if (existingItem) {
         throw new BadRequestError(
-          `This product/variant (from reception item ${validatedInput.purchaseReceptionItemId || 'N/A'}) is already part of this supplier return. Update its quantity instead.`,
+          `This product/variant (from reception item ${validatedInput.purchaseReceptionItemId ?? 'N/A'}) is already part of this supplier return. Update its quantity instead.`,
         );
       }
 

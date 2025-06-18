@@ -18,8 +18,6 @@ export enum StockTransferStatus {
   RECEIVED = 'received', // Totalement reçu au lieu de destination
   CANCELLED = 'cancelled', // Annulé avant expédition
 }
-
-// Zod Schema for validation
 const stockTransferSchemaValidation = z
   .object({
     sourceWarehouseId: z.number().int().positive().nullable().optional(),
@@ -32,7 +30,7 @@ const stockTransferSchemaValidation = z
     status: z.nativeEnum(StockTransferStatus).optional().default(StockTransferStatus.PENDING),
     notes: z.string().nullable().optional(),
   })
-  .refine((data) => data.sourceWarehouseId || data.sourceShopId, {
+  .refine((data) => data.sourceWarehouseId ?? data.sourceShopId, {
     message: 'Either sourceWarehouseId or sourceShopId must be provided.',
     path: ['sourceWarehouseId'],
   })
@@ -40,7 +38,7 @@ const stockTransferSchemaValidation = z
     message: 'Provide either sourceWarehouseId or sourceShopId, not both, for the source.',
     path: ['sourceWarehouseId'],
   })
-  .refine((data) => data.destinationWarehouseId || data.destinationShopId, {
+  .refine((data) => data.destinationWarehouseId ?? data.destinationShopId, {
     message: 'Either destinationWarehouseId or destinationShopId must be provided.',
     path: ['destinationWarehouseId'],
   })
@@ -136,7 +134,7 @@ export const stockTransferValidationInputErrors: string[] = [];
 @Index(['status', 'requestDate'])
 export class StockTransfer extends Model {
   @Column({ type: 'varchar', length: 50, name: 'transfer_number', unique: true })
-  transferNumber!: string; // Auto-généré
+  transferNumber!: string;
 
   @Column({ type: 'int', name: 'source_warehouse_id', nullable: true })
   sourceWarehouseId: number | null = null;
@@ -195,11 +193,6 @@ export class StockTransfer extends Model {
   @JoinColumn({ name: 'received_by_user_id' })
   receivedByUser: User | null = null;
 
-  // SQL has created_by_user_id, updated_by_user_id via Model
-  // The SQL DDL uses 'requested_by_user_id' instead of 'created_by_user_id' for this table.
-  // We'll map createdByUserId from Model to requested_by_user_id if necessary or have duplicate info.
-  // For now, Model handles its own audit fields (created_time, updated_time). Let's use SQL specific names.
-
   @Column({ type: 'date', name: 'request_date' })
   requestDate!: Date;
 
@@ -215,7 +208,7 @@ export class StockTransfer extends Model {
   @OneToMany(() => StockTransferItem, (item) => item.stockTransfer, {
     cascade: ['insert', 'update', 'remove'],
     eager: false,
-  }) // Eager false by default for items
+  })
   items!: StockTransferItem[];
 
   toApi(includeItems: boolean = false): StockTransferApiResponse {

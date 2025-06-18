@@ -99,7 +99,7 @@ export class QuoteItem extends Model {
       productVariantId: this.productVariantId,
       productVariantSku: this.productVariant?.skuVariant,
       productVariantName: this.productVariant?.nameVariant,
-      description: this.description || this.productVariant?.nameVariant || this.product?.name,
+      description: this.description ?? this.productVariant?.nameVariant ?? this.product?.name,
       quantity: Number(this.quantity),
       unitPriceHt: Number(this.unitPriceHt),
       discountPercentage: Number(this.discountPercentage),

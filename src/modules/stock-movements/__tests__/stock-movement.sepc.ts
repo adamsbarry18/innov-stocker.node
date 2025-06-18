@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import app from '@/app';
 import { adminToken } from '@/tests/globalSetup';
 import { StockMovementType } from '../models/stock-movement.entity';
@@ -13,12 +13,6 @@ describe('Stock Movements API', () => {
   const testUserId = 1; // Admin Test
 
   let createdAdjustmentId: string;
-  let createdMovementId: string; // For general movements
-
-  beforeAll(async () => {
-    // No specific setup needed here as the database is seeded before tests run
-    // and we are using existing IDs.
-  });
 
   describe('POST /stock-movements/adjustments', () => {
     it('should create a manual stock adjustment IN for a product in a warehouse', async () => {

@@ -39,8 +39,6 @@ export class StockTransferRepository {
       'requestedByUser',
       'shippedByUser',
       'receivedByUser',
-      // 'createdByUser', // From Model, overlaps with requestedByUser
-      // 'updatedByUser', // From Model
     ];
   }
 
@@ -92,12 +90,12 @@ export class StockTransferRepository {
 
   async findLastTransferNumber(prefix: string): Promise<string | null> {
     try {
-      const lastTransfer = await this.repository
+      const lastTransfer: { maxTransferNumber: string | null } | undefined = await this.repository
         .createQueryBuilder('st')
         .select('MAX(st.transferNumber)', 'maxTransferNumber')
         .where('st.transferNumber LIKE :prefix', { prefix: `${prefix}%` })
         .getRawOne();
-      return lastTransfer?.maxTransferNumber || null;
+      return lastTransfer?.maxTransferNumber ?? null;
     } catch (error) {
       logger.error({ message: 'Error fetching last stock transfer number', error, prefix });
       throw new ServerError('Could not fetch last stock transfer number.');
@@ -149,8 +147,11 @@ export class StockTransferRepository {
         : this.repository;
       return await repo.save(transfer);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_stock_transfer_number')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('uq_stock_transfer_number')) {
           throw new BadRequestError(
             `Stock transfer with number '${transfer.transferNumber}' already exists.`,
           );
@@ -173,8 +174,7 @@ export class StockTransferRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(StockTransfer)
         : this.repository;
-      const { items, ...headerDto } = dto;
-      return await repo.update({ id, deletedAt: IsNull() }, headerDto);
+      return await repo.update({ id, deletedAt: IsNull() }, dto);
     } catch (error: any) {
       logger.error(
         { message: `Error updating stock transfer with id ${id}`, error },
@@ -189,8 +189,6 @@ export class StockTransferRepository {
       const repo = transactionalEntityManager
         ? transactionalEntityManager.getRepository(StockTransfer)
         : this.repository;
-      // Service layer should check status before allowing soft delete / cancel.
-      // Cascading soft delete to items might be desired if items also extend Model with soft delete.
       return await repo.softDelete(id);
     } catch (error) {
       logger.error(

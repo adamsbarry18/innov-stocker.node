@@ -49,9 +49,9 @@ export class BaseError extends Error {
     message: string | null = 'An error occurred...', // Allow null for message in constructor
     data: string | string[] | object | null = null,
   ) {
-    super(message || 'An error occurred...'); // Pass a non-null string to super
+    super(message ?? 'An error occurred...'); // Pass a non-null string to super
     this.code = code;
-    this.message = message || 'An error occurred...'; // Ensure this.message is always a string
+    this.message = message ?? 'An error occurred...'; // Ensure this.message is always a string
     this.status = ErrorStatus.hasOwnProperty(code) ? ErrorStatus[code] : 500;
     this.data = data;
     this.name = this.constructor.name;

@@ -270,7 +270,8 @@ export default class SupplierInvoiceRouter extends BaseRouter {
     ) {
       return next(new BadRequestError('Invalid or missing status.'));
     }
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     await this.pipe(res, req, next, () =>
       this.service.updateSupplierInvoiceStatus(id, status as SupplierInvoiceStatus, userId),
     );
