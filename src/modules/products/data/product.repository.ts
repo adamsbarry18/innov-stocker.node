@@ -11,6 +11,18 @@ import { appDataSource } from '@/database/data-source';
 import { Product } from '../models/product.entity';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
+import { StockMovement } from '@/modules/stock-movements';
+import { InventorySessionItem } from '@/modules/inventory-sessions';
+import { StockTransferItem } from '@/modules/stock-transfers';
+import { PurchaseOrderItem } from '@/modules/purchase-orders';
+import { PurchaseReceptionItem } from '@/modules/purchase-receptions';
+import { SupplierReturnItem } from '@/modules/supplier-returns';
+import { QuoteItem } from '@/modules/quotes';
+import { SalesOrderItem } from '@/modules/sales-orders';
+import { CompositeProductItem } from '../composite-product-items/models/composite-product-item.entity';
+import { DeliveryItem } from '@/modules/deliveries/delivery-items';
+import { CustomerReturnItem } from '@/modules/customer-returns/customer-return-items/models/customer-return-item.entity';
+
 interface FindAllProductsOptions {
   skip?: number;
   take?: number;
@@ -162,14 +174,17 @@ export class ProductRepository {
     try {
       return await this.repository.save(product);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('uq_product_sku')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if ((error.message as string).includes('uq_product_sku')) {
           throw new BadRequestError(`Product with SKU '${product.sku}' already exists.`);
         }
         if (
           product.barcodeQrCode &&
-          (error.message?.includes('barcode_qr_code') ||
-            error.message?.includes('barcodeQrCode_unique_if_not_null'))
+          ((error.message as string).includes('barcode_qr_code') ||
+            (error.message as string).includes('barcodeQrCode_unique_if_not_null'))
         ) {
           throw new BadRequestError(
             `Product with Barcode/QR Code '${product.barcodeQrCode}' already exists.`,
@@ -188,16 +203,18 @@ export class ProductRepository {
     try {
       return await this.repository.update({ id, deletedAt: IsNull() }, dto);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (dto.sku && error.message?.includes('uq_product_sku')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if (dto.sku && (error.message as string).includes('uq_product_sku')) {
           throw new BadRequestError(
             `Cannot update: Product with SKU '${dto.sku}' may already exist.`,
           );
         }
         if (
-          dto.barcodeQrCode &&
-          (error.message?.includes('barcode_qr_code') ||
-            error.message?.includes('barcodeQrCode_unique_if_not_null'))
+          (dto.barcodeQrCode && (error.message as string).includes('barcode_qr_code')) ||
+          (error.message as string).includes('barcodeQrCode_unique_if_not_null')
         ) {
           throw new BadRequestError(
             `Cannot update: Product with Barcode/QR Code '${dto.barcodeQrCode}' may already exist.`,
@@ -224,9 +241,75 @@ export class ProductRepository {
     }
   }
 
-  /* TODO
   async isProductInUse(productId: number): Promise<boolean> {
-    logger.warn('ProductRepository.isProductInUse is a placeholder.');
+    const manager = this.repository.manager;
+
+    // Check CompositeProductItems (as component_product_id)
+    const compositeItemCount = await manager
+      .getRepository(CompositeProductItem)
+      .count({ where: { componentProductId: productId, deletedAt: IsNull() } });
+    if (compositeItemCount > 0) return true;
+
+    // Check StockMovements
+    const stockMovementCount = await manager
+      .getRepository(StockMovement)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (stockMovementCount > 0) return true;
+
+    // Check InventorySessionItems
+    const inventorySessionItemCount = await manager
+      .getRepository(InventorySessionItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (inventorySessionItemCount > 0) return true;
+
+    // Check StockTransferItems
+    const stockTransferItemCount = await manager
+      .getRepository(StockTransferItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (stockTransferItemCount > 0) return true;
+
+    // Check PurchaseOrderItems
+    const purchaseOrderItemCount = await manager
+      .getRepository(PurchaseOrderItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (purchaseOrderItemCount > 0) return true;
+
+    // Check PurchaseReceptionItems
+    const purchaseReceptionItemCount = await manager
+      .getRepository(PurchaseReceptionItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (purchaseReceptionItemCount > 0) return true;
+
+    // Check SupplierReturnItems
+    const supplierReturnItemCount = await manager
+      .getRepository(SupplierReturnItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (supplierReturnItemCount > 0) return true;
+
+    // Check QuoteItems
+    const quoteItemCount = await manager
+      .getRepository(QuoteItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (quoteItemCount > 0) return true;
+
+    // Check SalesOrderItems
+    const salesOrderItemCount = await manager
+      .getRepository(SalesOrderItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (salesOrderItemCount > 0) return true;
+
+    // Check DeliveryItems
+    const deliveryItemCount = await manager
+      .getRepository(DeliveryItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (deliveryItemCount > 0) return true;
+
+    // Check CustomerReturnItems
+    const customerReturnItemCount = await manager
+      .getRepository(CustomerReturnItem)
+      .count({ where: { productId, deletedAt: IsNull() } });
+    if (customerReturnItemCount > 0) return true;
+
     return false;
-  }*/
+  }
 }

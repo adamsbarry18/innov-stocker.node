@@ -1,16 +1,15 @@
 import { Address, CreateAddressInput } from '@/modules/addresses/models/address.entity';
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany, Index } from 'typeorm';
 import { z } from 'zod';
-import {
-  CreateCustomerShippingAddressInput,
-  CustomerShippingAddress,
-  CustomerShippingAddressApiResponse,
-} from './customer-shipping-addresses.entity';
 import { Model } from '@/common/models/Model';
 import { Currency } from '@/modules/currencies/models/currency.entity';
 import { CustomerGroup } from '@/modules/customer-groups/models/customer-group.entity';
 import { User } from '@/modules/users';
-
+import {
+  CreateCustomerShippingAddressInput,
+  CustomerShippingAddress,
+  CustomerShippingAddressApiResponse,
+} from '@/modules/customer-shipping-address';
 // Zod Schema for validation
 const customerSchemaValidation = z
   .object({
@@ -61,14 +60,11 @@ export type CreateCustomerInput = {
   defaultPaymentTermsDays?: number | null;
   creditLimit?: number | null;
   customerGroupId?: number | null;
-  billingAddressId: number; // ID of an existing address
-  // Option to create billing address on the fly
-  newBillingAddress?: CreateAddressInput; // Type from address module
-  // For default shipping address, can be ID or new address
-  defaultShippingAddressId?: number | null; // ID of an existing address
+  billingAddressId: number;
+  newBillingAddress?: CreateAddressInput;
+  defaultShippingAddressId?: number | null;
   newDefaultShippingAddress?: CreateAddressInput;
   notes?: string | null;
-  // Initial shipping addresses can be added too
   shippingAddresses?: Array<Omit<CreateCustomerShippingAddressInput, 'customerId'>>;
 };
 
@@ -76,7 +72,6 @@ export type UpdateCustomerInput = Partial<
   Omit<CreateCustomerInput, 'newBillingAddress' | 'newDefaultShippingAddress' | 'shippingAddresses'>
 >;
 
-// Simplified DTOs for embedded relations in CustomerApiResponse
 type EmbeddedCurrencyApiResponse = { id: number; code: string; symbol: string; name: string };
 type EmbeddedAddressApiResponse = {
   id: number;
@@ -100,7 +95,7 @@ export type CustomerApiResponse = {
   firstName: string | null;
   lastName: string | null;
   companyName: string | null;
-  displayName: string; // Concatenated name for display
+  displayName: string;
   phoneNumber: string | null;
   vatNumber: string | null;
   siretNumber: string | null;
@@ -113,8 +108,8 @@ export type CustomerApiResponse = {
   billingAddressId: number;
   billingAddress?: EmbeddedAddressApiResponse | null;
   defaultShippingAddressId: number | null;
-  defaultShippingAddress?: EmbeddedAddressApiResponse | null; // Populated if ID exists
-  shippingAddresses?: CustomerShippingAddressApiResponse[]; // List of all associated shipping addresses
+  defaultShippingAddress?: EmbeddedAddressApiResponse | null;
+  shippingAddresses?: CustomerShippingAddressApiResponse[];
   notes: string | null;
   createdByUserId?: number | null;
   updatedByUserId?: number | null;
@@ -184,7 +179,7 @@ export class Customer extends Model {
 
   @OneToMany(() => CustomerShippingAddress, (shippingAddress) => shippingAddress.customer, {
     cascade: ['insert', 'update'],
-  }) // Cascade for convenience
+  })
   shippingAddresses?: CustomerShippingAddress[];
 
   @Column({ type: 'text', nullable: true })
@@ -217,7 +212,7 @@ export class Customer extends Model {
     if (this.lastName) {
       return this.lastName;
     }
-    return this.email; // Fallback
+    return this.email;
   }
 
   toApi(): CustomerApiResponse {
@@ -238,7 +233,7 @@ export class Customer extends Model {
         ? {
             id: this.defaultCurrency.id,
             code: this.defaultCurrency.code,
-            name: this.defaultCurrency.name, // Assurez-vous que Currency.entity.ts expose 'name'
+            name: this.defaultCurrency.name,
             symbol: this.defaultCurrency.symbol,
           }
         : null,
@@ -256,10 +251,11 @@ export class Customer extends Model {
           }
         : null,
       billingAddressId: this.billingAddressId,
-      billingAddress: this.billingAddress ? this.billingAddress : null, // Assuming Address.toApi() is not used or maps directly
+      billingAddress: this.billingAddress ? this.billingAddress : null,
       defaultShippingAddressId: this.defaultShippingAddressId,
-      defaultShippingAddress: this.defaultShippingAddress ? this.defaultShippingAddress : null,
-      shippingAddresses: this.shippingAddresses?.map((sa) => sa.toApi()), // Utilise le toApi de CustomerShippingAddress
+      shippingAddresses: this.shippingAddresses
+        ? this.shippingAddresses.map((sa) => sa.toApi())
+        : [],
       notes: this.notes,
       createdByUserId: this.createdByUserId,
       updatedByUserId: this.updatedByUserId,

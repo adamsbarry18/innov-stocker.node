@@ -9,16 +9,12 @@ import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere, IsNull, type EntityManager } from 'typeorm';
 import {
   CustomerInvoice,
-  CustomerInvoiceSalesOrderLink,
   CustomerInvoiceRepository,
   CustomerInvoiceStatus,
   type CreateCustomerInvoiceInput,
   type UpdateCustomerInvoiceInput,
   type CustomerInvoiceApiResponse,
   customerInvoiceValidationInputErrors,
-  type CreateCustomerInvoiceItemInput,
-  CustomerInvoiceItem,
-  customerInvoiceItemValidationInputErrors,
 } from '../index';
 
 import { CustomerRepository, Customer } from '@/modules/customers/index';
@@ -34,6 +30,12 @@ import { CurrencyRepository, Currency } from '@/modules/currencies';
 import dayjs from 'dayjs';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 import { appDataSource } from '@/database/data-source';
+import {
+  CreateCustomerInvoiceItemInput,
+  CustomerInvoiceItem,
+  customerInvoiceItemValidationInputErrors,
+} from '../customer-invoice-items/models/customer-invoice-item.entity';
+import { CustomerInvoiceSalesOrderLink } from '../models/customer-invoice-sales-order-link.entity';
 
 interface ValidationContext {
   isUpdate: boolean;

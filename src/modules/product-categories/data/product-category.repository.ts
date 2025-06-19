@@ -50,7 +50,7 @@ export class ProductCategoryRepository {
       const whereCondition: FindOptionsWhere<ProductCategory> = {
         name,
         deletedAt: IsNull(),
-        parentCategoryId: parentCategoryId === null ? IsNull() : parentCategoryId,
+        parentCategoryId: parentCategoryId ?? IsNull(),
       };
       return await this.repository.findOne({ where: whereCondition });
     } catch (error) {
@@ -111,8 +111,8 @@ export class ProductCategoryRepository {
     } catch (error: any) {
       if (
         error.code === 'ER_DUP_ENTRY' ||
-        error.message?.includes('UNIQUE constraint failed') ||
-        error.message?.includes('name_unique_by_parent')
+        (error.message as string).includes('UNIQUE constraint failed') ||
+        (error.message as string).includes('name_unique_by_parent')
       ) {
         throw new BadRequestError(
           `Product category with name '${category.name}' already exists under the specified parent.`,
@@ -129,8 +129,8 @@ export class ProductCategoryRepository {
     } catch (error: any) {
       if (
         error.code === 'ER_DUP_ENTRY' ||
-        error.message?.includes('UNIQUE constraint failed') ||
-        error.message?.includes('name_unique_by_parent')
+        (error.message as string).includes('UNIQUE constraint failed') ||
+        (error.message as string).includes('name_unique_by_parent')
       ) {
         throw new BadRequestError(
           `Cannot update: product category with name '${dto.name}' may already exist under the specified parent.`,
@@ -150,7 +150,7 @@ export class ProductCategoryRepository {
     }
   }
 
-  async isCategoryUsedByProducts(categoryId: number): Promise<boolean> {
+  async isProductCategoryInUse(categoryId: number): Promise<boolean> {
     const productRepository = this.repository.manager.getRepository(Product);
     const count = await productRepository.count({
       where: { productCategoryId: categoryId, deletedAt: IsNull() },

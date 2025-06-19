@@ -1,8 +1,5 @@
 import { type User } from '@/modules/users/models/users.entity';
-import { DependencyManager } from './DependencyManager';
 import { type DataSource } from 'typeorm';
-import { ReadyManager } from './ReaderManager';
-import * as Errors from '@/common/errors/httpErrors';
 
 const DS_SERVICE = new WeakMap<Service, DataSource | object>();
 
@@ -58,10 +55,6 @@ export enum ResourcesKeys {
   NOTIFICATIONS = 'notifications',
   NA = 'n/a',
 }
-interface ICanDelete {
-  result: boolean;
-  dependents: DependentWrapper[];
-}
 
 /**
  * Classe de base des services
@@ -76,12 +69,6 @@ export class Service {
     if (dataSourceService) {
       DS_SERVICE.set(this, dataSourceService);
     }
-    DependencyManager.getInstance().registerDependencies(
-      this,
-      this.constructor.resourceKey(),
-      this.constructor.dependencies(),
-    );
-    ReadyManager.getInstance().registerService(this);
   }
 
   /**
@@ -102,53 +89,6 @@ export class Service {
     return this.name as ResourcesKeys;
   }
 
-  static dependencies(): ResourcesKeys[] {
-    return [];
-  }
-
-  async getDependents(id: number): Promise<DependentWrapper[]> {
-    return await DependencyManager.getInstance().getDependents(this.constructor.resourceKey(), id);
-  }
-
-  /**
-   * Méthode à implémenter par les services concrets pour vérifier si leurs propres entités
-   * dépendent de la ressource donnée (celle que l'on tente de supprimer).
-   * @param dependentResourceKey La clé de la ressource que l'on tente de supprimer (ex: ResourcesKeys.ADDRESSES)
-   * @param dependentResourceId L'ID de la ressource que l'on tente de supprimer
-   * @returns Une promesse résolue avec un tableau de DependentWrapper pour les entités dépendantes.
-   */
-  //eslint-disable-next-line @typescript-eslint/require-await
-  async getDependentEntities(
-    dependentResourceKey: ResourcesKeys,
-    dependentResourceId: number,
-  ): Promise<DependentWrapper[]> {
-    // Par défaut, retourne un tableau vide. Chaque service concret
-    // qui a des dépendances RESTRICT doit implémenter cette méthode.
-    return [];
-  }
-
-  async canDelete(id: number): Promise<ICanDelete> {
-    const dependents = (await this.getDependents(id)).filter((dep) => dep.preventDeletion);
-    return {
-      result: dependents.length === 0,
-      dependents,
-    };
-  }
-
-  async checkAndDelete(id: number, deleteFn: (id: number) => Promise<void>): Promise<void> {
-    const canDelete = await this.canDelete(id);
-    if (!canDelete.result) {
-      if (canDelete.dependents && canDelete.dependents.length > 0) {
-        throw new Errors.DependencyError(canDelete.dependents);
-      } else {
-        throw new Errors.BadRequestError(
-          `Unknown dependencies for ${this.constructor.resourceKey()} with id ${id}`,
-        );
-      }
-    }
-    await deleteFn(id);
-  }
-
   static setUser(user: User): void {
     Service._currentUser = user;
   }
@@ -165,20 +105,6 @@ export class Service {
 export function service(registry: { entity: string }): ClassDecorator {
   return function (target: any): void {
     target.prototype.entity = registry.entity;
-  };
-}
-
-// Entity dependency declaration decorator
-export function dependency(
-  resourceKey: ResourcesKeys,
-  dependencies: ResourcesKeys[] = [],
-): ClassDecorator {
-  if (!resourceKey) throw new Error('RessourceKey not defined');
-  if (!Object.values(ResourcesKeys).includes(resourceKey))
-    throw new Error(`RessourceKey ${resourceKey} not found`);
-  return function (target: any): void {
-    target.resourceKey = (): ResourcesKeys => resourceKey;
-    target.dependencies = (): ResourcesKeys[] => dependencies;
   };
 }
 

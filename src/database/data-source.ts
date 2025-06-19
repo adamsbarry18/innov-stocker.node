@@ -9,7 +9,7 @@ import { Currency } from '@/modules/currencies';
 import { ProductCategory } from '@/modules/product-categories';
 import { CustomerGroup } from '@/modules/customer-groups';
 import { Supplier } from '@/modules/suppliers';
-import { Customer, CustomerShippingAddress } from '@/modules/customers';
+import { Customer } from '@/modules/customers';
 import { PaymentMethod } from '@/modules/payment-methods';
 import { Warehouse } from '@/modules/warehouses';
 import { Product, CompositeProductItem } from '@/modules/products';
@@ -18,18 +18,13 @@ import { PurchaseOrder, PurchaseOrderItem } from '@/modules/purchase-orders';
 import { PurchaseReception, PurchaseReceptionItem } from '@/modules/purchase-receptions';
 import { StockMovement } from '@/modules/stock-movements';
 import { SalesOrder, SalesOrderItem } from '@/modules/sales-orders';
-import { Delivery, DeliveryItem } from '@/modules/deliveries';
+import { Delivery } from '@/modules/deliveries';
 import {
   SupplierInvoice,
   SupplierInvoiceItem,
   SupplierInvoicePurchaseOrderLink,
 } from '@/modules/supplier-invoices';
-import {
-  CustomerInvoice,
-  CustomerInvoiceItem,
-  CustomerInvoiceSalesOrderLink,
-} from '@/modules/customer-invoices';
-import { CustomerReturn, CustomerReturnItem } from '@/modules/customer-returns';
+import { CustomerInvoice } from '@/modules/customer-invoices';
 import { InventorySession, InventorySessionItem } from '@/modules/inventory-sessions';
 import { StockTransfer, StockTransferItem } from '@/modules/stock-transfers';
 import { Payment } from '@/modules/payments';
@@ -45,6 +40,12 @@ import { ProductImage } from '@/modules/product-images';
 import { ProductVariant } from '@/modules/product-variants';
 import { ProductSupplier } from '@/modules/product-suppliers';
 import { ImportBatch } from '@/modules/imports/models/import.entity';
+import { DeliveryItem } from '@/modules/deliveries/delivery-items';
+import { CustomerInvoiceItem } from '@/modules/customer-invoices/customer-invoice-items/models/customer-invoice-item.entity';
+import { CustomerInvoiceSalesOrderLink } from '@/modules/customer-invoices/models/customer-invoice-sales-order-link.entity';
+import { CustomerReturn } from '@/modules/customer-returns';
+import { CustomerReturnItem } from '@/modules/customer-returns/customer-return-items/models/customer-return-item.entity';
+import { CustomerShippingAddress } from '@/modules/customer-shipping-address';
 
 export const appDataSourceOptions: DataSourceOptions = {
   type: config.DB_TYPE,

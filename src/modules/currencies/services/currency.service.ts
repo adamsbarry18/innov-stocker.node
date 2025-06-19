@@ -1,5 +1,5 @@
 import { CompanyRepository } from '@/modules/compagnies';
-import { CurrencyRepository, Currency } from '../index';
+import { CurrencyRepository, type Currency } from '../index';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import type {
   CurrencyApiResponse,
@@ -7,17 +7,14 @@ import type {
   UpdateCurrencyInput,
 } from '../models/currency.entity';
 import { currencyValidationInputErrors } from '../models/currency.entity';
-import { BadRequestError, DependencyError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
+import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type CompanyApiResponse } from '@/modules/compagnies/models/company.entity';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 
 let instance: CurrencyService | null = null;
 
-import { dependency, ResourcesKeys, Service } from '@/common/utils/Service';
-
-@dependency(ResourcesKeys.CURRENCIES)
-export class CurrencyService extends Service {
+export class CurrencyService {
   private readonly currencyRepository: CurrencyRepository;
   private readonly companyRepository: CompanyRepository;
 
@@ -25,7 +22,6 @@ export class CurrencyService extends Service {
     currencyRepository: CurrencyRepository = new CurrencyRepository(),
     companyRepository: CompanyRepository = new CompanyRepository(),
   ) {
-    super();
     this.currencyRepository = currencyRepository;
     this.companyRepository = companyRepository;
   }
@@ -141,7 +137,7 @@ export class CurrencyService extends Service {
       if (!currency) throw new NotFoundError(`Currency with id ${id} not found.`);
 
       const tempCurrency = this.currencyRepository.create({ ...currency, ...input });
-      if (input.code) tempCurrency.code = input.code.toUpperCase(); 
+      if (input.code) tempCurrency.code = input.code.toUpperCase();
 
       if (!tempCurrency.isValid()) {
         throw new BadRequestError(
@@ -193,10 +189,15 @@ export class CurrencyService extends Service {
     try {
       const currency = await this.currencyRepository.findById(id);
       if (!currency) throw new NotFoundError(`Currency with id ${id} not found.`);
-      
-      await this.checkAndDelete(id, async () => {
-        await this.currencyRepository.softDelete(id);
-      });
+
+      const isUsed = await this.currencyRepository.isCurrencyInUse(id);
+      if (isUsed) {
+        throw new BadRequestError(
+          `Currency '${currency.code}' is currently in use by other entities and cannot be deleted.`,
+        );
+      }
+
+      await this.currencyRepository.softDelete(id);
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -205,15 +206,10 @@ export class CurrencyService extends Service {
       );
     } catch (error) {
       logger.error(`Error deleting currency ${id}: ${error}`);
-      if (
-        error instanceof BadRequestError ||
-        error instanceof NotFoundError ||
-        error instanceof DependencyError
-      ) throw error;
+      if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
       throw new ServerError(`Error deleting currency ${id}.`);
     }
   }
-
 
   async setDefaultCompanyCurrency(currencyId: number): Promise<CompanyApiResponse> {
     const currencyToSetDefault = await this.currencyRepository.findById(currencyId);

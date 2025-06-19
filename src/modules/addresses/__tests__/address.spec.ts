@@ -258,7 +258,7 @@ describe('Address API', () => {
       expect(res.body.status).toBe('fail');
     });
 
-    it('should return 409 if address is in use by another entity (e.g., Company)', async () => {
+    it('should return 400 if address is in use by another entity (e.g., Company)', async () => {
       // Address ID 1 is used by the company in 2-datas.sql
       const addressInUseId = 1; // Adresse 1 est utilisée par la compagnie 1
 
@@ -266,10 +266,8 @@ describe('Address API', () => {
         .delete(`/api/v1/addresses/${addressInUseId}`)
         .set('Authorization', `Bearer ${adminToken}`);
 
-      expect(res.status).toBe(409);
+      expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
-      expect(res.body.message).toContain('dependencies');
-      expect(res.body.data[0].resourceKey).toBe('company');
     });
   });
 });

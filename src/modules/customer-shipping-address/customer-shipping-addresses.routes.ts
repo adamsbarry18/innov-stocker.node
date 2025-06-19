@@ -1,4 +1,4 @@
-import { BaseRouter } from '../../common/routing/BaseRouter';
+import { BaseRouter } from '@/common/routing/BaseRouter';
 import {
   Get,
   Post,
@@ -12,7 +12,7 @@ import {
 } from '@/common/routing/decorators';
 import { Request, Response, NextFunction } from '@/config/http';
 import { SecurityLevel } from '@/modules/users/models/users.entity';
-import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
+import { BadRequestError } from '@/common/errors/httpErrors';
 import { CustomerShippingAddressService } from './services/csa.service';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 import {
@@ -75,7 +75,7 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/ForbiddenError'
    */
   @Get('/customer-shipping-addresses')
-  @authorize({ level: SecurityLevel.USER }) // Admin or Integrator level
+  @authorize({ level: SecurityLevel.USER })
   @paginate()
   @sortable(['id', 'customerId', 'addressLabel', 'isDefault', 'createdAt'])
   @filterable(['customerId', 'addressLabel', 'isDefault'])

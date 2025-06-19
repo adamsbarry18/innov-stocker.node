@@ -45,7 +45,7 @@ export class CustomerRepository {
     try {
       return await this.repository.findOne({
         where: { id, deletedAt: IsNull() },
-        relations: options?.relations || this.getDefaultRelations(),
+        relations: options?.relations ?? this.getDefaultRelations(),
       });
     } catch (error) {
       logger.error(
@@ -126,11 +126,16 @@ export class CustomerRepository {
       if (customer.email) {
         customer.email = customer.email.toLowerCase().trim();
       }
-      // TypeORM will handle saving cascaded shippingAddresses if cascade is set on relation
       return await this.repository.save(customer);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
-        if (error.message?.includes('email_unique') || error.message?.includes('customers.email')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
+        if (
+          (error.message as string).includes('email_unique') ||
+          (error.message as string).includes('customers.email')
+        ) {
           throw new BadRequestError(`Customer with email '${customer.email}' already exists.`);
         }
       }
@@ -149,10 +154,14 @@ export class CustomerRepository {
       }
       return await this.repository.update({ id, deletedAt: IsNull() }, dto);
     } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('UNIQUE constraint failed')) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message as string).includes('UNIQUE constraint failed')
+      ) {
         if (
           dto.email &&
-          (error.message?.includes('email_unique') || error.message?.includes('customers.email'))
+          ((error.message as string).includes('email_unique') ||
+            (error.message as string).includes('customers.email'))
         ) {
           throw new BadRequestError(
             `Cannot update: Customer with email '${dto.email}' may already exist for another record.`,
