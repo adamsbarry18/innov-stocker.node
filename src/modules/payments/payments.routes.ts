@@ -119,8 +119,7 @@ export default class PaymentRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/PaymentApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
    *         $ref: '#/components/responses/Unauthorized'
    *       403:

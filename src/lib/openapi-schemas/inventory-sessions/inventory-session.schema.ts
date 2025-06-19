@@ -1,9 +1,9 @@
 import { InventorySessionStatus } from '@/modules/inventory-sessions/models/inventory-session.entity';
 
 // Assuming these are defined globally or imported
-const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
-const EmbeddedShopDTORef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/CreateWarehouseInput' };
+const EmbeddedShopDTORef = { $ref: '#/components/schemas/CreateShopInput' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 // --- InventorySessionItem Schemas ---
 const CreateOrUpdateInventorySessionItemInputSchema = {

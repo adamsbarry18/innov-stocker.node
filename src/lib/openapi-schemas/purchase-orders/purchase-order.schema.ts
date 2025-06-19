@@ -4,16 +4,16 @@ import { PurchaseOrderStatus } from '@/modules/purchase-orders/models/purchase-o
 // eslint-disable-next-line @typescript-eslint/naming-convention
 // Assuming these are defined globally or imported
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/EmbeddedSupplierDTO' };
+const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/CreateSupplierInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
+const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/CreateCurrencyInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedAddressDTORef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
+const EmbeddedAddressDTORef = { $ref: '#/components/schemas/CreateAddressInput' };
 
-const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
-const EmbeddedShopDTORef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
+const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/CreateWarehouseInput' };
+const EmbeddedShopDTORef = { $ref: '#/components/schemas/CreateShopInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const CreatePurchaseOrderItemInputSchema = {
@@ -197,12 +197,12 @@ export const purchaseOrderSchemas = {
       shippingAddress: { allOf: [EmbeddedAddressDTORef], nullable: true },
       warehouseIdForDelivery: { type: 'integer', nullable: true },
       warehouseForDelivery: {
-        allOf: [{ $ref: '#/components/schemas/EmbeddedWarehouseDTO' }],
+        allOf: [{ $ref: '#/components/schemas/CreateWarehouseInput' }],
         nullable: true,
       },
       shopIdForDelivery: { type: 'integer', nullable: true },
       shopForDelivery: {
-        allOf: [{ $ref: '#/components/schemas/EmbeddedShopDTO' }],
+        allOf: [{ $ref: '#/components/schemas/CreateShopInput' }],
         nullable: true,
       },
       notes: { type: 'string', nullable: true },

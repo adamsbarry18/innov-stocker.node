@@ -63,10 +63,9 @@ export default class WarehouseRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/WarehouseApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/warehouses')
   @authorize({ level: SecurityLevel.USER })
@@ -111,11 +110,11 @@ export default class WarehouseRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/WarehouseApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/warehouses/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -150,11 +149,11 @@ export default class WarehouseRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/WarehouseApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/warehouses')
   @authorize({ level: SecurityLevel.USER })
@@ -198,13 +197,13 @@ export default class WarehouseRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/WarehouseApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/warehouses/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -244,13 +243,13 @@ export default class WarehouseRouter extends BaseRouter {
    *       204:
    *         description: Warehouse deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/warehouses/:id')
   @authorize({ level: SecurityLevel.USER })

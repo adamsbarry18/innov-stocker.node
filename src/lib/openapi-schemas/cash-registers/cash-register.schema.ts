@@ -1,22 +1,7 @@
-// src/libs/openapi-schemas/cash-registers/cash_register.schema.ts
-
-// Assuming EmbeddedShopDTO and EmbeddedCurrencyDTO are defined globally or imported
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedShopDTORef = { $ref: '#/components/schemas/EmbeddedShopDTO' }; // Define this if not already
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
+const embeddedShopDTORef = { $ref: '#/components/schemas/CreateShopInput' };
+const embeddedCurrencyDTORef = { $ref: '#/components/schemas/CreateCurrencyInput' };
 
 export const cashRegisterSchemas = {
-  // Example for EmbeddedShopDTO (define globally or import from shops.schema.ts)
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  _EmbeddedShopDTO_example: {
-    type: 'object',
-    properties: {
-      id: { type: 'integer', example: 1 },
-      name: { type: 'string', example: 'Boutique du Centre' },
-      code: { type: 'string', nullable: true, example: 'SHOP-CTR' },
-    },
-  },
   CreateCashRegisterInput: {
     type: 'object',
     required: ['name', 'currencyId'],
@@ -62,12 +47,12 @@ export const cashRegisterSchemas = {
       name: { type: 'string', example: 'Caisse Principale - Boutique Centre' },
       shopId: { type: 'integer', nullable: true, example: 1 },
       shop: {
-        allOf: [EmbeddedShopDTORef],
+        allOf: [embeddedShopDTORef],
         nullable: true,
       },
       currencyId: { type: 'integer', example: 1 },
       currency: {
-        allOf: [EmbeddedCurrencyDTORef],
+        allOf: [embeddedCurrencyDTORef],
         nullable: true,
       },
       currentBalance: {

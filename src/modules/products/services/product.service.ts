@@ -1,6 +1,3 @@
-import { appDataSource } from '@/database/data-source';
-import { IsNull, type FindManyOptions, type FindOptionsWhere, Not } from 'typeorm';
-
 import {
   type Product,
   type CreateProductInput,
@@ -14,27 +11,12 @@ import logger from '@/lib/logger';
 import { ProductRepository } from '../data/product.repository';
 import { ProductImageRepository } from '@/modules/product-images/data/product-image.repository';
 import { ProductCategoryRepository } from '@/modules/product-categories/data/product-category.repository';
-import {
-  ProductImage,
-  productImageValidationInputErrors,
-  type CreateProductImageInput,
-  type ProductImageApiResponse,
-  type UpdateProductImageInput,
-} from '@/modules/product-images/models/product-image.entity';
-import {
-  type ProductVariant,
-  type ProductVariantApiResponse,
-} from '@/modules/product-variants/models/product-variant.entity';
-import {
-  type ProductSupplier,
-  type ProductSupplierApiResponse,
-} from '@/modules/product-suppliers/models/product-supplier.entity';
-import { type CompositeProductItem } from '../composite-product-items/models/composite-product-item.entity';
 import { UserActivityLogService } from '@/modules/user-activity-logs/services/user-activity-log.service';
 import {
   ActionType,
   EntityType,
 } from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 
 let instance: ProductService | null = null;
 
@@ -71,50 +53,6 @@ export class ProductService {
   ): ProductApiResponse | null {
     if (!product) return null;
     return product.toApi(options);
-  }
-
-  /**
-   * Maps a ProductImage entity to a ProductImageApiResponse.
-   * @param image - The product image entity.
-   * @returns The API response for the product image, or null if the image is null.
-   */
-  mapImageToApiResponse(image: ProductImage | null): ProductImageApiResponse | null {
-    if (!image) return null;
-    return image.toApi();
-  }
-
-  /**
-   * Maps a ProductVariant entity to a ProductVariantApiResponse.
-   * @param variant - The product variant entity.
-   * @param options - Options for including product suppliers.
-   * @returns The API response for the product variant, or null if the variant is null.
-   */
-  mapVariantToApiResponse(
-    variant: ProductVariant | null,
-    options?: { includeProductSuppliers?: boolean },
-  ): ProductVariantApiResponse | null {
-    if (!variant) return null;
-    return variant.toApi(options);
-  }
-
-  /**
-   * Maps a ProductSupplier entity to a ProductSupplierApiResponse.
-   * @param ps - The product supplier entity.
-   * @returns The API response for the product supplier, or null if the product supplier is null.
-   */
-  mapProductSupplierToApiResponse(ps: ProductSupplier | null): ProductSupplierApiResponse | null {
-    if (!ps) return null;
-    return ps.toApi();
-  }
-
-  /**
-   * Maps a CompositeProductItem entity to its API response.
-   * @param item - The composite product item entity.
-   * @returns The API response for the composite product item, or null if the item is null.
-   */
-  mapCompositeItemToApiResponse(item: CompositeProductItem | null): any {
-    if (!item) return null;
-    return item.toApi();
   }
 
   /**
@@ -365,152 +303,6 @@ export class ProductService {
       }
       throw new ServerError(`Error deleting product ${productId}.`);
     }
-  }
-
-  /**
-   * Adds an image to a product.
-   * @param productId - The ID of the product to add the image to.
-   * @param input - The input data for creating the product image.
-   * @returns The API response for the created product image.
-   */
-  async addProductImage(
-    productId: number,
-    input: CreateProductImageInput,
-  ): Promise<ProductImageApiResponse> {
-    const product = await this.productRepository.findById(productId);
-    if (!product) throw new NotFoundError(`Product with ID ${productId} not found.`);
-
-    if (input.isPrimary) {
-      await this.imageRepository.unsetPrimaryForOtherImages(productId, -1);
-    }
-
-    const imageEntity = this.imageRepository.create({ ...input, productId });
-    if (!imageEntity.isValid()) {
-      throw new BadRequestError(
-        `Product image data invalid: ${productImageValidationInputErrors.join(', ')}`,
-      );
-    }
-    const savedImage = await this.imageRepository.save(imageEntity);
-
-    await UserActivityLogService.getInstance().insertEntry(
-      ActionType.CREATE,
-      EntityType.PRODUCT_MANAGEMENT,
-      savedImage.id.toString(),
-      { productId: productId, imageUrl: savedImage.imageUrl, isPrimary: savedImage.isPrimary },
-    );
-
-    return this.mapImageToApiResponse(savedImage) as ProductImageApiResponse;
-  }
-
-  /**
-   * Retrieves all images for a specific product.
-   * @param productId - The ID of the product.
-   * @returns An array of API responses for the product images.
-   */
-  async getProductImages(productId: number): Promise<ProductImageApiResponse[]> {
-    const product = await this.productRepository.findById(productId);
-    if (!product) throw new NotFoundError(`Product with ID ${productId} not found.`);
-    const images = await this.imageRepository.findByProductId(productId);
-    return images
-      .map((img) => this.mapImageToApiResponse(img))
-      .filter(Boolean) as ProductImageApiResponse[];
-  }
-
-  /**
-   * Updates an existing product image.
-   * @param productId - The ID of the product the image belongs to.
-   * @param imageId - The ID of the image to update.
-   * @param input - The input data for updating the product image.
-   * @returns The API response for the updated product image.
-   */
-  async updateProductImage(
-    productId: number,
-    imageId: number,
-    input: UpdateProductImageInput,
-  ): Promise<ProductImageApiResponse> {
-    const image = await this.imageRepository.findById(imageId);
-    if (!image || image.productId !== productId) {
-      throw new NotFoundError(`Image with ID ${imageId} not found for product ${productId}.`);
-    }
-    if (input.isPrimary && input.isPrimary === true) {
-      await this.imageRepository.unsetPrimaryForOtherImages(productId, imageId);
-    }
-
-    await this.imageRepository.update(imageId, input);
-    const updatedImage = await this.imageRepository.findById(imageId);
-
-    await UserActivityLogService.getInstance().insertEntry(
-      ActionType.UPDATE,
-      EntityType.PRODUCT_MANAGEMENT,
-      imageId.toString(),
-      { productId: productId, updatedFields: Object.keys(input) },
-    );
-
-    return this.mapImageToApiResponse(updatedImage) as ProductImageApiResponse;
-  }
-
-  /**
-   * Deletes a product image.
-   * @param productId - The ID of the product the image belongs to.
-   * @param imageId - The ID of the image to delete.
-   */
-  async deleteProductImage(productId: number, imageId: number): Promise<void> {
-    const image = await this.imageRepository.findById(imageId);
-    if (!image || image.productId !== productId) {
-      throw new NotFoundError(`Image with ID ${imageId} not found for product ${productId}.`);
-    }
-    if (image.isPrimary) {
-      throw new BadRequestError(
-        'Cannot delete the primary image. Set another image as primary first.',
-      );
-    }
-    await this.imageRepository.softDelete(imageId);
-
-    await UserActivityLogService.getInstance().insertEntry(
-      ActionType.DELETE,
-      EntityType.PRODUCT_MANAGEMENT,
-      imageId.toString(),
-      { productId: productId },
-    );
-  }
-
-  /**
-   * Sets a specific product image as the primary image for a product.
-   * @param productId - The ID of the product.
-   * @param imageId - The ID of the image to set as primary.
-   * @returns The API response for the updated primary product image.
-   */
-  async setPrimaryProductImage(
-    productId: number,
-    imageId: number,
-  ): Promise<ProductImageApiResponse> {
-    const product = await this.productRepository.findById(productId);
-    if (!product) throw new NotFoundError(`Product with ID ${productId} not found.`);
-
-    const imageToSetPrimary = await this.imageRepository.findById(imageId);
-    if (!imageToSetPrimary || imageToSetPrimary.productId !== productId) {
-      throw new NotFoundError(`Image with ID ${imageId} not found for product ${productId}.`);
-    }
-
-    await appDataSource.transaction(async (transactionalEntityManager) => {
-      const imageRepoTx = transactionalEntityManager.getRepository(ProductImage);
-      await imageRepoTx.update(
-        { productId: productId, isPrimary: true, deletedAt: IsNull(), id: Not(imageId) },
-        { isPrimary: false },
-      );
-      await imageRepoTx.update(imageId, { isPrimary: true });
-    });
-
-    const updatedImage = await this.imageRepository.findById(imageId);
-
-    await UserActivityLogService.getInstance().insertEntry(
-      ActionType.UPDATE,
-      EntityType.PRODUCT_MANAGEMENT,
-      imageId.toString(),
-      { productId: productId, action: 'set_primary_image' },
-    );
-
-    return this.mapImageToApiResponse(updatedImage) as ProductImageApiResponse;
   }
 
   /**

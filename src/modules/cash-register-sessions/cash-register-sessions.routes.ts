@@ -77,12 +77,11 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/CashRegisterSessionApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/cash-register-sessions')
   @authorize({ level: SecurityLevel.USER })
@@ -111,7 +110,11 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *     security:
    *       - bearerAuth: []
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Cash register session found
@@ -120,13 +123,13 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterSessionApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/cash-register-sessions/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -161,11 +164,11 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterSessionApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/cash-registers/:cashRegisterId/sessions/active')
   @authorize({ level: SecurityLevel.USER })
@@ -204,11 +207,11 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterSessionApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/cash-register-sessions/open')
   @authorize({ level: SecurityLevel.USER })
@@ -230,7 +233,11 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *     security:
    *       - bearerAuth: []
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -245,13 +252,13 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterSessionApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/cash-register-sessions/:id/close')
   @authorize({ level: SecurityLevel.USER })

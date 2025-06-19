@@ -73,12 +73,11 @@ export default class CashRegisterRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/CashRegisterApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/cash-registers')
   @authorize({ level: SecurityLevel.USER })
@@ -123,13 +122,13 @@ export default class CashRegisterRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/cash-registers/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -162,11 +161,11 @@ export default class CashRegisterRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/cash-registers')
   @authorize({ level: SecurityLevel.USER })
@@ -207,13 +206,13 @@ export default class CashRegisterRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/cash-registers/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -247,13 +246,13 @@ export default class CashRegisterRouter extends BaseRouter {
    *       204:
    *         description: Cash register deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/cash-registers/:id')
   @authorize({ level: SecurityLevel.USER })

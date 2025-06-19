@@ -1,7 +1,7 @@
 import { UserActionType } from '@/modules/users/models/users.entity';
 
 // Assuming EmbeddedUserDTO is defined globally
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 export const userActivityLogSchemas = {
   CreateUserActivityLogInput: {

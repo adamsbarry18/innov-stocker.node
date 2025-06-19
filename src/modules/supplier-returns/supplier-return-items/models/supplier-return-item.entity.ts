@@ -6,7 +6,6 @@ import { Product } from '@/modules/products/models/product.entity';
 import { ProductVariant } from '@/modules/product-variants/models/product-variant.entity';
 import { PurchaseReceptionItem } from '@/modules/purchase-receptions/purchase-reception-items/models/purchase-reception-item.entity';
 
-// Zod Schema for input DTOs
 export const createSupplierReturnItemSchema = z.object({
   productId: z.number().int().positive({ message: 'Product ID is required.' }),
   productVariantId: z.number().int().positive().nullable().optional(),

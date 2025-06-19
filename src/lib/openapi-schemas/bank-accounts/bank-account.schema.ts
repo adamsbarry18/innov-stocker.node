@@ -1,8 +1,4 @@
-// src/libs/openapi-schemas/bank-accounts/bank_account.schema.ts
-
-// Assuming EmbeddedCurrencyDTO is defined globally or imported
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
+const embeddedCurrencyDTORef = { $ref: '#/components/schemas/CreateCurrencyInput' };
 
 export const bankAccountSchemas = {
   CreateBankAccountInput: {
@@ -55,7 +51,7 @@ export const bankAccountSchemas = {
       swiftBic: { type: 'string', nullable: true, example: 'SOGEFRPP' },
       currencyId: { type: 'integer', example: 1 },
       currency: {
-        allOf: [EmbeddedCurrencyDTORef],
+        allOf: [embeddedCurrencyDTORef],
         nullable: true,
       },
       initialBalance: { type: 'number', format: 'double', example: 10000.5 },

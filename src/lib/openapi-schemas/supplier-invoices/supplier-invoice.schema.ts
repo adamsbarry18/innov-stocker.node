@@ -1,9 +1,9 @@
 import { SupplierInvoiceStatus } from '@/modules/supplier-invoices/models/supplier-invoice.entity';
 
 // Assuming these are defined globally or imported
-const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/EmbeddedSupplierDTO' };
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/CreateSupplierInput' };
+const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/CreateCurrencyInput' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 const CreateSupplierInvoiceItemInputSchema = {
   type: 'object',

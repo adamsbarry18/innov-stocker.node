@@ -72,12 +72,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/SupplierReturnApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/supplier-returns')
   @authorize({ level: SecurityLevel.USER })
@@ -106,7 +105,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *     tags: [Supplier Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *       - name: includeItems
    *         in: query
    *         schema: { type: boolean, default: true }
@@ -119,13 +122,13 @@ export default class SupplierReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-returns/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -156,11 +159,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/supplier-returns')
   @authorize({ level: SecurityLevel.USER })
@@ -179,7 +182,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *     tags: [Supplier Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -194,13 +201,13 @@ export default class SupplierReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/supplier-returns/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -221,7 +228,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *     tags: [Supplier Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: false
    *       content:
@@ -239,11 +250,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-returns/:id/approve')
   @authorize({ level: SecurityLevel.USER })
@@ -267,7 +278,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *     tags: [Supplier Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -282,11 +297,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-returns/:id/ship')
   @authorize({ level: SecurityLevel.USER })
@@ -308,7 +323,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *     tags: [Supplier Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: false
    *       content:
@@ -323,11 +342,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-returns/:id/complete')
   @authorize({ level: SecurityLevel.USER })
@@ -351,7 +370,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *     tags: [Supplier Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Return cancelled
@@ -360,11 +383,11 @@ export default class SupplierReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-returns/:id/cancel')
   @authorize({ level: SecurityLevel.USER })
@@ -385,18 +408,22 @@ export default class SupplierReturnRouter extends BaseRouter {
    *     tags: [Supplier Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       204:
    *         description: Supplier return deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/supplier-returns/:id')
   @authorize({ level: SecurityLevel.USER })

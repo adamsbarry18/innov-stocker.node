@@ -3,9 +3,9 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const CreateAddressInputRef = { $ref: '#/components/schemas/CreateAddressInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedAddressDTORef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
+const EmbeddedAddressDTORef = { $ref: '#/components/schemas/CreateAddressInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 export const shopSchemas = {
   CreateShopInput: {

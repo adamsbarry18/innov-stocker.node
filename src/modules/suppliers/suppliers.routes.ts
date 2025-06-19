@@ -64,10 +64,9 @@ export default class SupplierRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/SupplierApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/suppliers')
   @authorize({ level: SecurityLevel.USER })
@@ -112,11 +111,11 @@ export default class SupplierRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/suppliers/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -151,11 +150,11 @@ export default class SupplierRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/suppliers')
   @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
@@ -197,13 +196,13 @@ export default class SupplierRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/suppliers/:id')
   @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
@@ -242,13 +241,13 @@ export default class SupplierRouter extends BaseRouter {
    *       204:
    *         description: Supplier deleted successfully (No Content)
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/suppliers/:id')
   @authorize({ level: SecurityLevel.USER })

@@ -67,12 +67,11 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/CustomerShippingAddressApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/customer-shipping-addresses')
   @authorize({ level: SecurityLevel.USER })
@@ -115,13 +114,13 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerShippingAddressApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-shipping-addresses/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -156,13 +155,13 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerShippingAddressApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/customer-shipping-addresses')
   @authorize({ level: SecurityLevel.USER })
@@ -202,13 +201,13 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerShippingAddressApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-shipping-addresses/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -241,11 +240,11 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *       204:
    *         description: Link deleted successfully
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-shipping-addresses/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -288,13 +287,13 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerShippingAddressApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-shipping-addresses/:id/set-default')
   @authorize({ level: SecurityLevel.USER })

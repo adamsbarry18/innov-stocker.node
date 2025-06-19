@@ -77,12 +77,11 @@ export default class StockTransferRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/StockTransferApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/stock-transfers')
   @authorize({ level: SecurityLevel.USER })
@@ -127,7 +126,11 @@ export default class StockTransferRouter extends BaseRouter {
    *     tags: [Stock Transfers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *       - name: includeItems
    *         in: query
    *         schema: { type: boolean, default: true }
@@ -140,13 +143,13 @@ export default class StockTransferRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/StockTransferApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/stock-transfers/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -178,11 +181,11 @@ export default class StockTransferRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/StockTransferApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/stock-transfers')
   @authorize({ level: SecurityLevel.USER })
@@ -201,7 +204,11 @@ export default class StockTransferRouter extends BaseRouter {
    *     tags: [Stock Transfers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -216,13 +223,13 @@ export default class StockTransferRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/StockTransferApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/stock-transfers/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -244,7 +251,11 @@ export default class StockTransferRouter extends BaseRouter {
    *     tags: [Stock Transfers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -259,11 +270,11 @@ export default class StockTransferRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/StockTransferApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/stock-transfers/:id/ship')
   @authorize({ level: SecurityLevel.USER })
@@ -285,7 +296,11 @@ export default class StockTransferRouter extends BaseRouter {
    *     tags: [Stock Transfers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -300,11 +315,11 @@ export default class StockTransferRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/StockTransferApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/stock-transfers/:id/receive')
   @authorize({ level: SecurityLevel.USER }) // User at destination location
@@ -325,7 +340,11 @@ export default class StockTransferRouter extends BaseRouter {
    *     tags: [Stock Transfers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Stock transfer cancelled
@@ -334,11 +353,11 @@ export default class StockTransferRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/StockTransferApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/stock-transfers/:id/cancel')
   @authorize({ level: SecurityLevel.USER })
@@ -359,18 +378,22 @@ export default class StockTransferRouter extends BaseRouter {
    *     tags: [Stock Transfers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       204:
    *         description: Stock transfer deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/stock-transfers/:id')
   @authorize({ level: SecurityLevel.USER })

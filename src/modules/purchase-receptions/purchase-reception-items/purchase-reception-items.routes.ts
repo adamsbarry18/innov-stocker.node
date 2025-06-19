@@ -44,13 +44,13 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseReceptionItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/purchase-receptions/:receptionId/items')
   @authorize({ level: SecurityLevel.USER })
@@ -97,11 +97,11 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/PurchaseReceptionItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/purchase-receptions/:receptionId/items')
   @authorize({ level: SecurityLevel.USER })
@@ -138,11 +138,11 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseReceptionItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/purchase-receptions/:receptionId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -187,13 +187,13 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseReceptionItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/purchase-receptions/:receptionId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -241,11 +241,11 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *       204:
    *         description: Item removed successfully (No Content)
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/purchase-receptions/:receptionId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })

@@ -40,13 +40,13 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierInvoiceItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/supplier-invoices/:invoiceId/items')
   @authorize({ level: SecurityLevel.USER }) // Or specific accounting role
@@ -90,11 +90,11 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/SupplierInvoiceItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-invoices/:invoiceId/items')
   @authorize({ level: SecurityLevel.USER }) // User with rights to view supplier invoices
@@ -127,11 +127,11 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierInvoiceItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-invoices/:invoiceId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -174,13 +174,13 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierInvoiceItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/supplier-invoices/:invoiceId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -220,11 +220,11 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *       204:
    *         description: Item removed successfully (No Content)
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/supplier-invoices/:invoiceId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })

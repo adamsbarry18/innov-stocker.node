@@ -43,13 +43,13 @@ export default class CashRegisterTransactionRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterTransactionApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/cash-register-transactions')
   @authorize({ level: SecurityLevel.USER })
@@ -131,12 +131,11 @@ export default class CashRegisterTransactionRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/CashRegisterTransactionApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/cash-register-transactions')
   @authorize({ level: SecurityLevel.USER })
@@ -178,13 +177,13 @@ export default class CashRegisterTransactionRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CashRegisterTransactionApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/cash-register-transactions/:id')
   @authorize({ level: SecurityLevel.USER })

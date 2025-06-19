@@ -80,12 +80,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/CustomerReturnApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/customer-returns')
   @authorize({ level: SecurityLevel.USER })
@@ -122,7 +121,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *     tags: [Customer Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *       - name: includeItems
    *         in: query
    *         schema: { type: boolean, default: true }
@@ -135,13 +138,13 @@ export default class CustomerReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-returns/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -172,11 +175,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/customer-returns')
   @authorize({ level: SecurityLevel.USER })
@@ -195,7 +198,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *     tags: [Customer Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -210,13 +217,13 @@ export default class CustomerReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-returns/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -237,7 +244,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *     tags: [Customer Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: false
    *       content:
@@ -252,11 +263,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-returns/:id/approve')
   @authorize({ level: SecurityLevel.USER })
@@ -278,7 +289,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *     tags: [Customer Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -293,11 +308,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-returns/:id/receive')
   @authorize({ level: SecurityLevel.USER })
@@ -319,7 +334,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *     tags: [Customer Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: false
    *       content:
@@ -334,11 +353,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/customer-returns/:id/complete')
   @authorize({ level: SecurityLevel.USER })
@@ -360,7 +379,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *     tags: [Customer Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Return cancelled
@@ -369,11 +392,11 @@ export default class CustomerReturnRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerReturnApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-returns/:id/cancel')
   @authorize({ level: SecurityLevel.USER })
@@ -394,18 +417,22 @@ export default class CustomerReturnRouter extends BaseRouter {
    *     tags: [Customer Returns]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       204:
    *         description: Customer return deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-returns/:id')
   @authorize({ level: SecurityLevel.USER })

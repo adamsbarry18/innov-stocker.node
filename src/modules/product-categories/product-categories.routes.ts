@@ -73,7 +73,7 @@ export default class ProductCategoryRouter extends BaseRouter {
    *                   items:
    *                     $ref: '#/components/schemas/ProductCategoryTreeApiResponse' # Define this if different (includes children)
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/product-categories')
   @authorize({ level: SecurityLevel.USER })
@@ -134,9 +134,9 @@ export default class ProductCategoryRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductCategoryApiResponse' # Schema should support optional children
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/product-categories/:id')
   @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
@@ -174,11 +174,11 @@ export default class ProductCategoryRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductCategoryApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/product-categories')
   @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
@@ -217,13 +217,13 @@ export default class ProductCategoryRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductCategoryApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/product-categories/:id')
   @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
@@ -257,13 +257,13 @@ export default class ProductCategoryRouter extends BaseRouter {
    *       204:
    *         description: Product category deleted successfully (No Content)
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/product-categories/:id')
   @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR

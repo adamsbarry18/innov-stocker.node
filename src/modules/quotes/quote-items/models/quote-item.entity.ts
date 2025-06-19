@@ -5,7 +5,6 @@ import { Quote } from '@/modules/quotes/models/quote.entity';
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { z } from 'zod';
 
-// Zod Schema for validation of input DTOs
 export const createQuoteItemSchema = z.object({
   productId: z.number().int().positive({ message: 'Product ID is required.' }),
   productVariantId: z.number().int().positive().nullable().optional(),

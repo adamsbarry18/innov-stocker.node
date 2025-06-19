@@ -17,7 +17,7 @@ export default class ProductImageRouter extends BaseRouter {
    *   post:
    *     summary: Add an image to a product
    *     description: Uploads an image file (via multipart/form-data typically handled by middleware before this controller) and links its URL to the product. If it's the first image or `isPrimary` is true, it becomes the primary image.
-   *     tags: [Products, Product Images]
+   *     tags: [Product Images]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -39,13 +39,13 @@ export default class ProductImageRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductImageApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/products/:productId/images')
   @authorize({ level: SecurityLevel.USER })
@@ -68,7 +68,7 @@ export default class ProductImageRouter extends BaseRouter {
    * /products/{productId}/images:
    *   get:
    *     summary: Get all images for a product
-   *     tags: [Products, Product Images]
+   *     tags: [Product Images]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -86,9 +86,9 @@ export default class ProductImageRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/ProductImageApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/images')
   @authorize({ level: SecurityLevel.USER })
@@ -103,7 +103,7 @@ export default class ProductImageRouter extends BaseRouter {
    * /products/{productId}/images/{imageId}:
    *   get:
    *     summary: Get a specific product image by its ID
-   *     tags: [Products, Product Images]
+   *     tags: [Product Images]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -124,7 +124,7 @@ export default class ProductImageRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductImageApiResponse'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/images/:imageId')
   @authorize({ level: SecurityLevel.USER })
@@ -142,7 +142,7 @@ export default class ProductImageRouter extends BaseRouter {
    * /products/{productId}/images/{imageId}:
    *   put:
    *     summary: Update product image details (e.g., alt text, primary status)
-   *     tags: [Products, Product Images]
+   *     tags: [Product Images]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -169,13 +169,13 @@ export default class ProductImageRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductImageApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/products/:productId/images/:imageId')
   @authorize({ level: SecurityLevel.USER })
@@ -196,7 +196,7 @@ export default class ProductImageRouter extends BaseRouter {
    * /products/{productId}/images/{imageId}/set-primary:
    *   patch:
    *     summary: Set an image as the primary image for the product
-   *     tags: [Products, Product Images]
+   *     tags: [Product Images]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -217,13 +217,13 @@ export default class ProductImageRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductImageApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/products/:productId/images/:imageId/set-primary')
   @authorize({ level: SecurityLevel.USER })
@@ -242,7 +242,7 @@ export default class ProductImageRouter extends BaseRouter {
    * /products/{productId}/images/{imageId}:
    *   delete:
    *     summary: Delete a product image
-   *     tags: [Products, Product Images]
+   *     tags: [Product Images]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -259,13 +259,13 @@ export default class ProductImageRouter extends BaseRouter {
    *       204:
    *         description: Image deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/products/:productId/images/:imageId')
   @authorize({ level: SecurityLevel.USER })

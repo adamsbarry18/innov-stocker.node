@@ -4,15 +4,11 @@ import {
 } from '@/modules/customer-returns/customer-return-items/models/customer-return-item.entity';
 import { CustomerReturnStatus } from '@/modules/customer-returns/models/customer-return.entity';
 
-// Assuming these are defined globally or imported
-const embeddedCustomerDtoRef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
-const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' };
-const _embeddedCustomerInvoiceDtoRef = { $ref: '#/components/schemas/EmbeddedCustomerInvoiceDTO' }; // Définir ce DTO
-const _embeddedWarehouseDtoRef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
-const _embeddedShopDtoRef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
-const embeddedUserDtoRef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const embeddedCustomerDtoRef = { $ref: '#/components/schemas/CreateCustomerInput' };
+const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/CreateSalesOrderInput' };
 
-// --- CustomerReturnItem Schemas ---
+const embeddedUserDtoRef = { $ref: '#/components/schemas/UserInput' };
+
 const createCustomerReturnItemInputSchema = {
   type: 'object',
   required: ['productId', 'quantity'],
@@ -51,8 +47,6 @@ const createCustomerReturnItemInputSchema = {
       default: 'pending_inspection',
       example: 'pending_inspection',
     },
-    // salesOrderItemId: { type: 'integer', nullable: true, description: "Original SO item ID for traceability" },
-    // deliveryItemId: { type: 'integer', nullable: true, description: "Original Delivery item ID for traceability" },
   },
 };
 
@@ -244,7 +238,7 @@ export const customerReturnSchemas = {
       },
     },
   },
-  // Define Embedded DTOs if not already global
+
   embeddedCustomerInvoiceDtoExample: {
     type: 'object',
     properties: { id: { type: 'integer' }, invoiceNumber: { type: 'string' } },
@@ -261,7 +255,7 @@ export const customerReturnSchemas = {
       salesOrder: { allOf: [embeddedSalesOrderDtoRef], nullable: true },
       customerInvoiceId: { type: 'integer', nullable: true, example: 201 },
       customerInvoice: {
-        allOf: [{ $ref: '#/components/schemas/EmbeddedCustomerInvoiceDTO' }],
+        allOf: [{ $ref: '#/components/schemas/CreateCustomerInvoiceInput' }],
         nullable: true,
       },
       returnDate: { type: 'string', format: 'date-time', nullable: true },

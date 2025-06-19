@@ -17,7 +17,7 @@ export default class ProductVariantRouter extends BaseRouter {
    * /products/{productId}/variants:
    *   post:
    *     summary: Create a new variant for a product
-   *     tags: [Products, Product Variants]
+   *     tags: [Product Variants]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -39,11 +39,11 @@ export default class ProductVariantRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductVariantApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/products/:productId/variants')
   @authorize({ level: SecurityLevel.USER }) // Ou ADMIN
@@ -69,7 +69,7 @@ export default class ProductVariantRouter extends BaseRouter {
    * /products/{productId}/variants:
    *   get:
    *     summary: Get all variants for a specific product
-   *     tags: [Products, Product Variants]
+   *     tags: [Product Variants]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -87,9 +87,9 @@ export default class ProductVariantRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/ProductVariantApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/variants')
   @authorize({ level: SecurityLevel.USER })
@@ -104,7 +104,7 @@ export default class ProductVariantRouter extends BaseRouter {
    * /products/{productId}/variants/{variantId}:
    *   get:
    *     summary: Get a specific product variant by its ID and parent product ID
-   *     tags: [Products, Product Variants]
+   *     tags: [Product Variants]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -125,11 +125,11 @@ export default class ProductVariantRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductVariantApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/variants/:variantId')
   @authorize({ level: SecurityLevel.USER })
@@ -148,7 +148,7 @@ export default class ProductVariantRouter extends BaseRouter {
    * /products/{productId}/variants/{variantId}:
    *   put:
    *     summary: Update a specific product variant
-   *     tags: [Products, Product Variants]
+   *     tags: [Product Variants]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -175,13 +175,13 @@ export default class ProductVariantRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductVariantApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/products/:productId/variants/:variantId')
   @authorize({ level: SecurityLevel.USER }) // Ou ADMIN
@@ -205,7 +205,7 @@ export default class ProductVariantRouter extends BaseRouter {
    * /products/{productId}/variants/{variantId}:
    *   delete:
    *     summary: Delete a product variant (soft delete)
-   *     tags: [Products, Product Variants]
+   *     tags: [Product Variants]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -222,13 +222,13 @@ export default class ProductVariantRouter extends BaseRouter {
    *       204:
    *         description: Product variant deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/products/:productId/variants/:variantId')
   @authorize({ level: SecurityLevel.USER })

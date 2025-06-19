@@ -18,7 +18,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/suppliers:
    *   post:
    *     summary: Add a supplier to a base product
-   *     tags: [Products, Product Suppliers]
+   *     tags: [Product Suppliers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -40,11 +40,11 @@ export default class ProductRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductSupplierApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/products/:productId/suppliers')
   @authorize({ level: SecurityLevel.USER })
@@ -68,7 +68,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/suppliers:
    *   get:
    *     summary: Get all suppliers for a base product
-   *     tags: [Products, Product Suppliers]
+   *     tags: [Product Suppliers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -86,7 +86,7 @@ export default class ProductRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/ProductSupplierApiResponse'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/suppliers')
   @authorize({ level: SecurityLevel.USER })
@@ -105,7 +105,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/variants/{variantId}/suppliers:
    *   post:
    *     summary: Add a supplier to a specific product variant
-   *     tags: [Products, Product Variants, Product Suppliers]
+   *     tags: [Product Variants, Product Suppliers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -132,11 +132,11 @@ export default class ProductRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductSupplierApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/products/:productId/variants/:variantId/suppliers')
   @authorize({ level: SecurityLevel.USER })
@@ -163,7 +163,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/variants/{variantId}/suppliers:
    *   get:
    *     summary: Get all suppliers for a specific product variant
-   *     tags: [Products, Product Variants, Product Suppliers]
+   *     tags: [Product Variants, Product Suppliers]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -186,7 +186,7 @@ export default class ProductRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/ProductSupplierApiResponse'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/variants/:variantId/suppliers')
   @authorize({ level: SecurityLevel.USER })
@@ -227,7 +227,7 @@ export default class ProductRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductSupplierApiResponse'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/product-suppliers/:linkId')
   @authorize({ level: SecurityLevel.USER })
@@ -267,11 +267,11 @@ export default class ProductRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ProductSupplierApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/product-suppliers/:linkId')
   @authorize({ level: SecurityLevel.USER })
@@ -303,9 +303,9 @@ export default class ProductRouter extends BaseRouter {
    *       204:
    *         description: Link deleted successfully
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/product-suppliers/:linkId')
   @authorize({ level: SecurityLevel.USER })

@@ -1,10 +1,10 @@
 import { SupplierReturnStatus } from '@/modules/supplier-returns/models/supplier-return.entity';
 
 // Assuming these are defined globally or imported
-const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/EmbeddedSupplierDTO' };
-const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
-const EmbeddedShopDTORef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/CreateSupplierInput' };
+const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/CreateWarehouseInput' };
+const EmbeddedShopDTORef = { $ref: '#/components/schemas/CreateShopInput' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 const ProductApiResponseRef = { $ref: '#/components/schemas/ProductApiResponse' }; // Or a simplified version
 const ProductVariantApiResponseRef = { $ref: '#/components/schemas/ProductVariantApiResponse' }; // Or a simplified version
 

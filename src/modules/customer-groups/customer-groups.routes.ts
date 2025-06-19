@@ -58,10 +58,9 @@ export default class CustomerGroupRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/CustomerGroupApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/customer-groups')
   @authorize({ level: SecurityLevel.USER })
@@ -106,11 +105,11 @@ export default class CustomerGroupRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerGroupApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-groups/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -145,11 +144,11 @@ export default class CustomerGroupRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerGroupApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/customer-groups')
   @authorize({ level: SecurityLevel.USER }) // Typically an admin task
@@ -189,13 +188,13 @@ export default class CustomerGroupRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerGroupApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-groups/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -230,13 +229,13 @@ export default class CustomerGroupRouter extends BaseRouter {
    *       204:
    *         description: Customer group deleted successfully (No Content)
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-groups/:id')
   @authorize({ level: SecurityLevel.USER })

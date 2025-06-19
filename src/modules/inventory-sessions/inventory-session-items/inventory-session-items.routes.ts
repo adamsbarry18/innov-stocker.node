@@ -43,13 +43,13 @@ export default class InventorySessionItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/InventorySessionItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/inventory-sessions/:sessionId/items')
   @authorize({ level: SecurityLevel.USER })
@@ -84,11 +84,11 @@ export default class InventorySessionItemRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/InventorySessionItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/inventory-sessions/:sessionId/items')
   @authorize({ level: SecurityLevel.USER })
@@ -124,11 +124,11 @@ export default class InventorySessionItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/InventorySessionItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/inventory-sessions/:sessionId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -167,11 +167,11 @@ export default class InventorySessionItemRouter extends BaseRouter {
    *       204:
    *         description: Item removed successfully (No Content)
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/inventory-sessions/:sessionId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })

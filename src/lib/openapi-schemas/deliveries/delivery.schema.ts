@@ -2,11 +2,11 @@
 import { DeliveryStatus } from '../../../modules/deliveries/models/delivery.entity';
 
 // Références globales (à définir si ce n'est pas déjà fait)
-const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' }; // Définir ce DTO
-const embeddedAddressDtoRef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
-const embeddedWarehouseDtoRef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
-const embeddedShopDtoRef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
-const embeddedUserDtoRef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/CreateSalesOrderInput' }; // Définir ce DTO
+const embeddedAddressDtoRef = { $ref: '#/components/schemas/CreateAddressInput' };
+const embeddedWarehouseDtoRef = { $ref: '#/components/schemas/CreateWarehouseInput' };
+const embeddedShopDtoRef = { $ref: '#/components/schemas/CreateShopInput' };
+const embeddedUserDtoRef = { $ref: '#/components/schemas/UserInput' };
 
 // --- DeliveryItem Schemas ---
 const createDeliveryItemInputSchema = {

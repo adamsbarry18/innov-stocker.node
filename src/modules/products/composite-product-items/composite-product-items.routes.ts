@@ -17,7 +17,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/components:
    *   post:
    *     summary: Add a component to a composite product (kit)
-   *     tags: [Products, Product Components]
+   *     tags: [Product Components]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -39,11 +39,11 @@ export default class ProductRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CompositeProductItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/products/:productId/components')
   @authorize({ level: SecurityLevel.USER })
@@ -70,7 +70,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/components:
    *   get:
    *     summary: Get all components for a composite product (kit)
-   *     tags: [Products, Product Components]
+   *     tags: [Product Components]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -88,9 +88,9 @@ export default class ProductRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/CompositeProductItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/components')
   @authorize({ level: SecurityLevel.USER })
@@ -108,7 +108,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/components/{itemId}:
    *   get:
    *     summary: Get a specific component link by its ID for a composite product
-   *     tags: [Products, Product Components]
+   *     tags: [Product Components]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -129,7 +129,7 @@ export default class ProductRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CompositeProductItemApiResponse'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/components/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -148,7 +148,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/components/{itemId}:
    *   put:
    *     summary: Update a component's quantity in a composite product
-   *     tags: [Products, Product Components]
+   *     tags: [Product Components]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -175,11 +175,11 @@ export default class ProductRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CompositeProductItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/products/:productId/components/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -203,7 +203,7 @@ export default class ProductRouter extends BaseRouter {
    * /products/{productId}/components/{itemId}:
    *   delete:
    *     summary: Remove a component from a composite product
-   *     tags: [Products, Product Components]
+   *     tags: [Product Components]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
    *       - name: productId
@@ -220,9 +220,9 @@ export default class ProductRouter extends BaseRouter {
    *       204:
    *         description: Component removed successfully
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/products/:productId/components/:itemId')
   @authorize({ level: SecurityLevel.USER })

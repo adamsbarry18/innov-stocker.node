@@ -2,13 +2,13 @@ import { PurchaseReceptionStatus } from '@/modules/purchase-receptions/models/pu
 
 // Assuming these are defined globally or imported
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/EmbeddedSupplierDTO' };
+const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/CreateSupplierInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
+const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/CreateWarehouseInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedShopDTORef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
+const EmbeddedShopDTORef = { $ref: '#/components/schemas/CreateShopInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 // const CreateAddressInputRef = { '$ref': '#/components/schemas/CreateAddressInput' };
 
