@@ -63,10 +63,9 @@ export default class PaymentMethodRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/PaymentMethodApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/payment-methods')
   @authorize({ level: SecurityLevel.USER }) // Users might need to list these
@@ -109,11 +108,11 @@ export default class PaymentMethodRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PaymentMethodApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/payment-methods/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -146,11 +145,11 @@ export default class PaymentMethodRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PaymentMethodApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/payment-methods')
   @authorize({ level: SecurityLevel.USER })
@@ -190,13 +189,13 @@ export default class PaymentMethodRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PaymentMethodApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/payment-methods/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -230,13 +229,13 @@ export default class PaymentMethodRouter extends BaseRouter {
    *       204:
    *         description: Payment method deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/payment-methods/:id')
   @authorize({ level: SecurityLevel.USER })

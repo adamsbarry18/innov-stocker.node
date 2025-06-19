@@ -40,13 +40,13 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/supplier-returns/:returnId/items')
   @authorize({ level: SecurityLevel.USER })
@@ -90,11 +90,11 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *               items:
    *                 $ref: '#/components/schemas/SupplierReturnItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-returns/:returnId/items')
   @authorize({ level: SecurityLevel.USER })
@@ -129,11 +129,11 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnItemApiResponse'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-returns/:returnId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -177,13 +177,13 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierReturnItemApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/supplier-returns/:returnId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })
@@ -224,11 +224,11 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *       204:
    *         description: Item removed successfully (No Content)
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/supplier-returns/:returnId/items/:itemId')
   @authorize({ level: SecurityLevel.USER })

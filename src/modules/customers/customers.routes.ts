@@ -68,10 +68,9 @@ export default class CustomerRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/CustomerApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/customers')
   @authorize({ level: SecurityLevel.USER })
@@ -116,11 +115,11 @@ export default class CustomerRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customers/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -155,11 +154,11 @@ export default class CustomerRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/customers')
   @authorize({ level: SecurityLevel.USER })
@@ -201,13 +200,13 @@ export default class CustomerRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customers/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -246,13 +245,13 @@ export default class CustomerRouter extends BaseRouter {
    *       204:
    *         description: Customer deleted successfully (No Content)
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customers/:id')
   @authorize({ level: SecurityLevel.USER })

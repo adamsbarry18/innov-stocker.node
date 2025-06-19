@@ -73,12 +73,11 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/SupplierInvoiceApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/supplier-invoices')
   @authorize({ level: SecurityLevel.USER })
@@ -116,7 +115,11 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *     tags: [Supplier Invoices]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Supplier invoice found
@@ -125,13 +128,13 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-invoices/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -163,11 +166,11 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/supplier-invoices')
   @authorize({ level: SecurityLevel.USER })
@@ -186,7 +189,11 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *     tags: [Supplier Invoices]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -201,13 +208,13 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/supplier-invoices/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -228,7 +235,11 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *     tags: [Supplier Invoices]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -248,11 +259,11 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SupplierInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-invoices/:id/status')
   @authorize({ level: SecurityLevel.USER })
@@ -285,18 +296,22 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *     tags: [Supplier Invoices]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       204:
    *         description: Supplier invoice deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/supplier-invoices/:id')
   @authorize({ level: SecurityLevel.USER })

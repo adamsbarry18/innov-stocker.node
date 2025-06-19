@@ -50,7 +50,7 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: `${config.API_URL || `http://localhost:${config.PORT}`}/api/v1`,
+      url: `${config.API_URL ?? `http://localhost:${config.PORT}`}/api/v1`,
       description: `Serveur ${config.NODE_ENV}`,
     },
   ],

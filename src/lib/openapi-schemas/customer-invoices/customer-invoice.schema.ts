@@ -1,15 +1,12 @@
 import { CustomerInvoiceStatus } from '@/modules/customer-invoices/models/customer-invoice.entity';
-
-// Assuming these are defined globally or imported
-const embeddedCustomerDtoRef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
-const embeddedCurrencyDtoRef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
-const embeddedAddressDtoRef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
-const embeddedUserDtoRef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
-const _embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' }; // Define this
+const embeddedCustomerDtoRef = { $ref: '#/components/schemas/CreateCustomerInput' };
+const embeddedCurrencyDtoRef = { $ref: '#/components/schemas/CreateCurrencyInput' };
+const embeddedAddressDtoRef = { $ref: '#/components/schemas/CreateAddressInput' };
+const embeddedUserDtoRef = { $ref: '#/components/schemas/UserInput' };
 
 const createCustomerInvoiceItemInputSchema = {
   type: 'object',
-  required: ['description', 'quantity', 'unitPriceHt'], // productId is optional if description is very specific
+  required: ['description', 'quantity', 'unitPriceHt'],
   properties: {
     productId: {
       type: 'integer',
@@ -230,7 +227,7 @@ export const customerInvoiceSchemas = {
       },
       salesOrderLinks: {
         type: 'array',
-        items: { $ref: '#/components/schemas/_EmbeddedSalesOrderDTO_example' }, // Use the example or the actual reference
+        items: { $ref: '#/components/schemas/CreateSalesOrderInput' },
         nullable: true,
       },
       createdByUserId: { type: 'integer', nullable: true },

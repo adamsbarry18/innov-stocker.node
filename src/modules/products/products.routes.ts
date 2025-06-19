@@ -4,7 +4,6 @@ import {
   Post,
   Put,
   Delete,
-  Patch,
   authorize,
   paginate,
   sortable,
@@ -17,10 +16,6 @@ import { ProductService } from './services/product.service';
 import { CreateProductInput, UpdateProductInput } from './models/product.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
-import {
-  CreateProductImageInput,
-  UpdateProductImageInput,
-} from '../product-images/models/product-image.entity';
 
 export default class ProductRouter extends BaseRouter {
   service = ProductService.getInstance();
@@ -71,8 +66,7 @@ export default class ProductRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/ProductApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
    *         $ref: '#/components/responses/Unauthorized'
    */
@@ -257,207 +251,6 @@ export default class ProductRouter extends BaseRouter {
       204,
     );
   }
-
-  // --- Product Image Sub-Routes ---
-
-  /**
-   * @openapi
-   * /products/{productId}/images:
-   *   post:
-   *     summary: Add an image to a product
-   *     tags: [Products, Product Images]
-   *     security: [{ bearerAuth: [] }]
-   *     parameters:
-   *       - name: productId
-   *         in: path
-   *         required: true
-   *         schema: { type: integer }
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/CreateProductImageInput'
-   *     responses:
-   *       201:
-   *         description: Image added
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ProductImageApiResponse'
-   *       400:
-   *         $ref: '#/components/responses/BadRequest'
-   *       403:
-   *         $ref: '#/components/responses/Forbidden'
-   *       404:
-   *         $ref: '#/components/responses/NotFound'
-   */
-  @Post('/products/:productId/images')
-  @authorize({ level: SecurityLevel.USER })
-  async addProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const productId = parseInt(req.params.productId, 10);
-    if (isNaN(productId)) return next(new BadRequestError('Invalid Product ID.'));
-    const input: CreateProductImageInput = req.body;
-
-    await this.pipe(res, req, next, () => this.service.addProductImage(productId, input), 201);
-  }
-
-  /**
-   * @openapi
-   * /products/{productId}/images:
-   *   get:
-   *     summary: Get all images for a product
-   *     tags: [Products, Product Images]
-   *     security: [{ bearerAuth: [] }]
-   *     parameters:
-   *       - name: productId
-   *         in: path
-   *         required: true
-   *         schema: { type: integer }
-   *     responses:
-   *       200:
-   *         description: List of product images
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/ProductImageApiResponse'
-   *       404:
-   *         $ref: '#/components/responses/NotFound'
-   */
-  @Get('/products/:productId/images')
-  @authorize({ level: SecurityLevel.USER })
-  async getProductImages(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const productId = parseInt(req.params.productId, 10);
-    if (isNaN(productId)) return next(new BadRequestError('Invalid Product ID.'));
-    await this.pipe(res, req, next, () => this.service.getProductImages(productId));
-  }
-
-  /**
-   * @openapi
-   * /products/{productId}/images/{imageId}:
-   *   put:
-   *     summary: Update product image details (e.g., alt text, primary status)
-   *     tags: [Products, Product Images]
-   *     security: [{ bearerAuth: [] }]
-   *     parameters:
-   *       - name: productId
-   *         in: path
-   *         required: true
-   *         schema: { type: integer }
-   *       - name: imageId
-   *         in: path
-   *         required: true
-   *         schema: { type: integer }
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/UpdateProductImageInput'
-   *     responses:
-   *       200:
-   *         description: Image updated
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ProductImageApiResponse'
-   *       404:
-   *         $ref: '#/components/responses/NotFound'
-   */
-  @Put('/products/:productId/images/:imageId')
-  @authorize({ level: SecurityLevel.USER })
-  async updateProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const productId = parseInt(req.params.productId, 10);
-    const imageId = parseInt(req.params.imageId, 10);
-    if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
-    const input: UpdateProductImageInput = req.body;
-
-    await this.pipe(res, req, next, () =>
-      this.service.updateProductImage(productId, imageId, input),
-    );
-  }
-
-  /**
-   * @openapi
-   * /products/{productId}/images/{imageId}/set-primary:
-   *   patch:
-   *     summary: Set an image as the primary image for the product
-   *     tags: [Products, Product Images]
-   *     security: [{ bearerAuth: [] }]
-   *     parameters:
-   *       - name: productId
-   *         in: path
-   *         required: true
-   *         schema: { type: integer }
-   *       - name: imageId
-   *         in: path
-   *         required: true
-   *         schema: { type: integer }
-   *     responses:
-   *       200:
-   *         description: Primary image set
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/ProductImageApiResponse'
-   *       404:
-   *         $ref: '#/components/responses/NotFound'
-   */
-  @Patch('/products/:productId/images/:imageId/set-primary')
-  @authorize({ level: SecurityLevel.INTEGRATOR })
-  async setPrimaryProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const productId = parseInt(req.params.productId, 10);
-    const imageId = parseInt(req.params.imageId, 10);
-    if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
-
-    await this.pipe(res, req, next, () => this.service.setPrimaryProductImage(productId, imageId));
-  }
-
-  /**
-   * @openapi
-   * /products/{productId}/images/{imageId}:
-   *   delete:
-   *     summary: Delete a product image
-   *     tags: [Products, Product Images]
-   *     security: [{ bearerAuth: [] }]
-   *     parameters:
-   *       - name: productId
-   *         in: path
-   *         required: true
-   *         schema: { type: integer }
-   *       - name: imageId
-   *         in: path
-   *         required: true
-   *         schema: { type: integer }
-   *     responses:
-   *       204:
-   *         description: Image deleted
-   *       400:
-   *         $ref: '#/components/responses/BadRequest'
-   *       404:
-   *         $ref: '#/components/responses/NotFound'
-   */
-  @Delete('/products/:productId/images/:imageId')
-  @authorize({ level: SecurityLevel.INTEGRATOR })
-  async deleteProductImage(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const productId = parseInt(req.params.productId, 10);
-    const imageId = parseInt(req.params.imageId, 10);
-    if (isNaN(productId) || isNaN(imageId)) return next(new BadRequestError('Invalid ID(s).'));
-
-    await this.pipe(
-      res,
-      req,
-      next,
-      async () => {
-        await this.service.deleteProductImage(productId, imageId);
-      },
-      204,
-    );
-  }
-
-  // --- Product Specific Info Routes ---
 
   /**
    * @openapi

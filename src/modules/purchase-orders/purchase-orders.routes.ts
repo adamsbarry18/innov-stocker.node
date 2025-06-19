@@ -71,12 +71,11 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/PurchaseOrderApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/purchase-orders')
   @authorize({ level: SecurityLevel.USER })
@@ -127,13 +126,13 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/purchase-orders/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -165,11 +164,11 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/purchase-orders')
   @authorize({ level: SecurityLevel.USER })
@@ -209,13 +208,13 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/purchase-orders/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -265,11 +264,11 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/purchase-orders/:id/status')
   @authorize({ level: SecurityLevel.USER })
@@ -311,11 +310,11 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/purchase-orders/:id/approve')
   @authorize({ level: SecurityLevel.INTEGRATOR })
@@ -350,11 +349,11 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/purchase-orders/:id/send')
   @authorize({ level: SecurityLevel.USER }) // User who manages POs
@@ -389,11 +388,11 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/PurchaseOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/purchase-orders/:id/cancel')
   @authorize({ level: SecurityLevel.INTEGRATOR }) // Or Admin, or user if draft
@@ -425,13 +424,13 @@ export default class PurchaseOrderRouter extends BaseRouter {
    *       204:
    *         description: Purchase order deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/purchase-orders/:id')
   @authorize({ level: SecurityLevel.USER })

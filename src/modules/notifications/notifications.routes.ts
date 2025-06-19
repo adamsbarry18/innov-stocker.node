@@ -94,8 +94,7 @@ export default class NotificationRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/NotificationApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
    *         $ref: '#/components/responses/Unauthorized'
    */

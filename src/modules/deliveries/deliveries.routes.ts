@@ -63,8 +63,7 @@ export default class DeliveryRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/DeliveryApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
    *         $ref: '#/components/responses/Unauthorized'
    *       403:
@@ -103,7 +102,11 @@ export default class DeliveryRouter extends BaseRouter {
    *     tags: [Deliveries]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Delivery found
@@ -173,7 +176,11 @@ export default class DeliveryRouter extends BaseRouter {
    *     tags: [Deliveries]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -216,7 +223,11 @@ export default class DeliveryRouter extends BaseRouter {
    *     tags: [Deliveries]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: false # Ou true si actualShipDate est obligatoire
    *       content:
@@ -266,7 +277,11 @@ export default class DeliveryRouter extends BaseRouter {
    *     tags: [Deliveries]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     # requestBody: (Peut-être une date de livraison effective si différente de la date d'expédition)
    *     responses:
    *       200:
@@ -301,7 +316,11 @@ export default class DeliveryRouter extends BaseRouter {
    *     tags: [Deliveries]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       204:
    *         description: Delivery deleted successfully

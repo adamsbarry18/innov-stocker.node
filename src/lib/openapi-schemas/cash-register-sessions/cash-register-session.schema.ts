@@ -1,8 +1,6 @@
 import { CashRegisterSessionStatus } from '@/modules/cash-register-sessions/models/cash-register-session.entity';
 
-// Assumes EmbeddedUserDTO is defined globally
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const embeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 export const cashRegisterSessionSchemas = {
   OpenCashRegisterSessionInput: {
@@ -49,9 +47,9 @@ export const cashRegisterSessionSchemas = {
       cashRegisterId: { type: 'integer', example: 1 },
       cashRegisterName: { type: 'string', example: 'Caisse Principale', nullable: true },
       openedByUserId: { type: 'integer', example: 1 },
-      openedByUser: { allOf: [EmbeddedUserDTORef], nullable: true },
+      openedByUser: { allOf: [embeddedUserDTORef], nullable: true },
       closedByUserId: { type: 'integer', nullable: true, example: 1 },
-      closedByUser: { allOf: [EmbeddedUserDTORef], nullable: true },
+      closedByUser: { allOf: [embeddedUserDTORef], nullable: true },
       openingTimestamp: { type: 'string', format: 'date-time', example: '2025-05-21T09:00:00Z' },
       closingTimestamp: {
         type: 'string',

@@ -6,7 +6,7 @@ const CreateCustomerInputRef = { $ref: '#/components/schemas/CreateCustomerInput
 const CreateSupplierInputRef = { $ref: '#/components/schemas/CreateSupplierInput' };
 const CreateSalesOrderInputRef = { $ref: '#/components/schemas/CreateSalesOrderInput' };
 const CreatePurchaseOrderInputRef = { $ref: '#/components/schemas/CreatePurchaseOrderInput' };
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 // ===== SCHÉMAS D'INPUT =====
 const BaseImportInputSchema = {

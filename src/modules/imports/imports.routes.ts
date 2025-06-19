@@ -276,7 +276,11 @@ export default class ImportRouter extends BaseRouter {
    *     tags: [Import]
    *     security: [{ bearerAuth: [] }]
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: The current status and summary of the import batch.

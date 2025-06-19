@@ -89,12 +89,11 @@ export default class StockMovementRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/StockMovementApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/stock-movements')
   @authorize({ level: SecurityLevel.USER })
@@ -145,11 +144,11 @@ export default class StockMovementRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/StockMovementApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/stock-movements/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -184,11 +183,11 @@ export default class StockMovementRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/StockMovementApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/stock-movements/adjustments')
   @authorize({ level: SecurityLevel.USER })
@@ -261,11 +260,11 @@ export default class StockMovementRouter extends BaseRouter {
    *                 locationType: { type: string, enum: [warehouse, shop] }
    *                 quantity: { type: number }
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/stock-movements/current-stock')
   @authorize({ level: SecurityLevel.USER })

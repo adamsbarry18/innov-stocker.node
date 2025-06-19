@@ -1,59 +1,11 @@
 import { PaymentDirection } from '@/modules/payments/models/payment.entity';
 
-// Assuming these DTOs are defined globally or imported
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
-const EmbeddedPaymentMethodDTORef = { $ref: '#/components/schemas/EmbeddedPaymentMethodDTO' }; // Define this
-const EmbeddedCustomerDTORef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
-const EmbeddedSupplierDTORef = { $ref: '#/components/schemas/EmbeddedSupplierDTO' };
-const EmbeddedInvoiceDTORef = { $ref: '#/components/schemas/EmbeddedInvoiceDTO' }; // Define a generic one
-const EmbeddedOrderDTORef = { $ref: '#/components/schemas/EmbeddedOrderDTO' }; // Define a generic one
-const EmbeddedBankAccountDTORef = { $ref: '#/components/schemas/EmbeddedBankAccountDTO' }; // Define this
-const EmbeddedCashRegisterSessionDTORef = {
-  $ref: '#/components/schemas/EmbeddedCashRegisterSessionDTO',
-}; // Define this
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const embeddedCurrencyDTORef = { $ref: '#/components/schemas/CreateCurrencyInput' };
+const embeddedCustomerDTORef = { $ref: '#/components/schemas/CreateCustomerInput' };
+const embeddedSupplierDTORef = { $ref: '#/components/schemas/CreateSupplierInput' };
+const embeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 export const paymentSchemas = {
-  // Example for EmbeddedPaymentMethodDTO (define globally or import)
-  _EmbeddedPaymentMethodDTO_example: {
-    type: 'object',
-    properties: {
-      id: { type: 'integer' },
-      name: { type: 'string' },
-      type: { type: 'string', enum: ['cash', 'card', 'bank_transfer', 'check', 'other'] },
-    },
-  },
-  _EmbeddedBankAccountDTO_example: {
-    type: 'object',
-    properties: {
-      id: { type: 'integer' },
-      accountName: { type: 'string' },
-      bankName: { type: 'string' },
-    },
-  },
-  _EmbeddedCashRegisterSessionDTO_example: {
-    type: 'object',
-    properties: {
-      id: { type: 'integer' },
-      openingTimestamp: { type: 'string', format: 'date-time', nullable: true },
-      // Potentially cashRegisterId or cashRegisterName
-    },
-  },
-  _EmbeddedInvoiceDTO_example: {
-    type: 'object',
-    properties: {
-      id: { type: 'integer' },
-      invoiceNumber: { type: 'string' },
-    },
-  },
-  _EmbeddedOrderDTO_example: {
-    type: 'object',
-    properties: {
-      id: { type: 'integer' },
-      orderNumber: { type: 'string' },
-    },
-  },
-
   CreatePaymentInput: {
     type: 'object',
     required: ['paymentDate', 'amount', 'currencyId', 'paymentMethodId', 'direction'],
@@ -159,7 +111,6 @@ export const paymentSchemas = {
     description:
       'One of (bankAccountId or cashRegisterSessionId) must be provided. Also, relevant link (customerId, supplierId, invoiceId, orderId) based on direction must be provided.',
   },
-  // No UpdatePaymentInput schema as payments are typically immutable.
   PaymentApiResponse: {
     type: 'object',
     properties: {
@@ -167,50 +118,53 @@ export const paymentSchemas = {
       paymentDate: { type: 'string', format: 'date-time', nullable: true },
       amount: { type: 'number', format: 'double' },
       currencyId: { type: 'integer' },
-      currency: { allOf: [EmbeddedCurrencyDTORef], nullable: true },
+      currency: { allOf: [embeddedCurrencyDTORef], nullable: true },
       paymentMethodId: { type: 'integer' },
       paymentMethod: {
-        allOf: [{ $ref: '#/components/schemas/EmbeddedPaymentMethodDTO' }],
+        allOf: [{ $ref: '#/components/schemas/CreatePaymentInput' }],
         nullable: true,
       },
       direction: { type: 'string', enum: Object.values(PaymentDirection) },
       customerId: { type: 'integer', nullable: true },
-      customer: { allOf: [EmbeddedCustomerDTORef], nullable: true },
+      customer: { allOf: [embeddedCustomerDTORef], nullable: true },
       supplierId: { type: 'integer', nullable: true },
-      supplier: { allOf: [EmbeddedSupplierDTORef], nullable: true },
+      supplier: { allOf: [embeddedSupplierDTORef], nullable: true },
       customerInvoiceId: { type: 'integer', nullable: true },
       customerInvoice: {
-        allOf: [{ $ref: '#/components/schemas/EmbeddedInvoiceDTO' }],
+        allOf: [{ $ref: '#/components/schemas/CreateCustomerInvoiceInput' }],
         nullable: true,
       },
       supplierInvoiceId: { type: 'integer', nullable: true },
       supplierInvoice: {
-        allOf: [{ $ref: '#/components/schemas/EmbeddedInvoiceDTO' }],
+        allOf: [{ $ref: '#/components/schemas/CreateCustomerInvoiceInput' }],
         nullable: true,
       },
       salesOrderId: { type: 'integer', nullable: true },
-      salesOrder: { allOf: [{ $ref: '#/components/schemas/EmbeddedOrderDTO' }], nullable: true },
+      salesOrder: {
+        allOf: [{ $ref: '#/components/schemas/CreatePurchaseOrderInput' }],
+        nullable: true,
+      },
       purchaseOrderId: { type: 'integer', nullable: true },
-      purchaseOrder: { allOf: [{ $ref: '#/components/schemas/EmbeddedOrderDTO' }], nullable: true },
+      purchaseOrder: {
+        allOf: [{ $ref: '#/components/schemas/CreatePurchaseOrderInput' }],
+        nullable: true,
+      },
       bankAccountId: { type: 'integer', nullable: true },
       bankAccount: {
-        allOf: [{ $ref: '#/components/schemas/EmbeddedBankAccountDTO' }],
+        allOf: [{ $ref: '#/components/schemas/CreateBankAccountInput' }],
         nullable: true,
       },
       cashRegisterSessionId: { type: 'integer', nullable: true },
       cashRegisterSession: {
-        allOf: [{ $ref: '#/components/schemas/EmbeddedCashRegisterSessionDTO' }],
+        allOf: [{ $ref: '#/components/schemas/CreateCashRegisterTransactionInput' }],
         nullable: true,
       },
       referenceNumber: { type: 'string', nullable: true },
       notes: { type: 'string', nullable: true },
       recordedByUserId: { type: 'integer' },
-      recordedByUser: { allOf: [EmbeddedUserDTORef], nullable: true },
+      recordedByUser: { allOf: [embeddedUserDTORef], nullable: true },
       createdAt: { type: 'string', format: 'date-time', nullable: true },
       updatedAt: { type: 'string', format: 'date-time', nullable: true },
     },
   },
 };
-
-// N'oubliez pas d'ajouter `paymentSchemas` et les schémas référencés
-// à votre configuration OpenAPI globale `components.schemas`.

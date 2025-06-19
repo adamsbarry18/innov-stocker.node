@@ -70,12 +70,11 @@ export default class QuoteRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/QuoteApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/quotes')
   @authorize({ level: SecurityLevel.USER })
@@ -165,13 +164,13 @@ export default class QuoteRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/QuoteApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/quotes/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -204,11 +203,11 @@ export default class QuoteRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/QuoteApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/quotes')
   @authorize({ level: SecurityLevel.USER }) // Sales role or similar
@@ -249,13 +248,13 @@ export default class QuoteRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/QuoteApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/quotes/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -303,11 +302,11 @@ export default class QuoteRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/QuoteApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/quotes/:id/status')
   @authorize({ level: SecurityLevel.USER })
@@ -347,11 +346,11 @@ export default class QuoteRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SalesOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    *       501:
    *         description: Not Implemented Yet
    */
@@ -383,13 +382,13 @@ export default class QuoteRouter extends BaseRouter {
    *       204:
    *         description: Quote deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/quotes/:id')
   @authorize({ level: SecurityLevel.USER })

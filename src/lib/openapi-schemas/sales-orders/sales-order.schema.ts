@@ -2,17 +2,17 @@ import { SalesOrderStatus } from '@/modules/sales-orders/models/sales-order.enti
 
 // Références (supposons qu'ils sont définis globalement ou importés)
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCustomerDTORef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
+const EmbeddedCustomerDTORef = { $ref: '#/components/schemas/CreateCustomerInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
+const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/CreateCurrencyInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedAddressDTORef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
+const EmbeddedAddressDTORef = { $ref: '#/components/schemas/CreateAddressInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/EmbeddedWarehouseDTO' };
+const EmbeddedWarehouseDTORef = { $ref: '#/components/schemas/CreateWarehouseInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedShopDTORef = { $ref: '#/components/schemas/EmbeddedShopDTO' };
+const EmbeddedShopDTORef = { $ref: '#/components/schemas/CreateShopInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 const QuoteApiResponseRef = { $ref: '#/components/schemas/QuoteApiResponse' }; // Pour référence du devis lié
 // eslint-disable-next-line @typescript-eslint/naming-convention

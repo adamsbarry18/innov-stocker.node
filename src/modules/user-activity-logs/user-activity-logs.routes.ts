@@ -61,8 +61,7 @@ export default class UserActivityLogRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/UserActivityLogApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
    *         $ref: '#/components/responses/Unauthorized'
    *       403:

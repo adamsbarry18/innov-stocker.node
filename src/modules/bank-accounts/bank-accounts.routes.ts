@@ -68,17 +68,15 @@ export default class BankAccountRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/BankAccountApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/bank-accounts')
   @authorize({ level: SecurityLevel.USER })
   @paginate()
-  @sortable(['id', 'accountName', 'bankName', 'currencyId', 'createdAt']) // currency.code would require join logic
+  @sortable(['id', 'accountName', 'bankName', 'currencyId', 'createdAt'])
   @filterable(['accountName', 'bankName', 'currencyId'])
   @searchable(['accountName', 'bankName', 'iban', 'accountNumber'])
   async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -106,7 +104,11 @@ export default class BankAccountRouter extends BaseRouter {
    *     security:
    *       - bearerAuth: []
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Bank account found
@@ -115,13 +117,13 @@ export default class BankAccountRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/BankAccountApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/bank-accounts/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -154,11 +156,11 @@ export default class BankAccountRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/BankAccountApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/bank-accounts')
   @authorize({ level: SecurityLevel.USER })
@@ -179,7 +181,11 @@ export default class BankAccountRouter extends BaseRouter {
    *     security:
    *       - bearerAuth: []
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     requestBody:
    *       required: true
    *       content:
@@ -194,13 +200,13 @@ export default class BankAccountRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/BankAccountApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/bank-accounts/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -224,18 +230,22 @@ export default class BankAccountRouter extends BaseRouter {
    *     security:
    *       - bearerAuth: []
    *     parameters:
-   *       - $ref: '#/components/parameters/idPathParam'
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
    *     responses:
    *       204:
    *         description: Bank account deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/bank-accounts/:id')
   @authorize({ level: SecurityLevel.USER })

@@ -2,13 +2,13 @@ import { QuoteStatus } from '../../../modules/quotes/models/quote.entity';
 
 // Références
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCustomerDTORef = { $ref: '#/components/schemas/EmbeddedCustomerDTO' };
+const EmbeddedCustomerDTORef = { $ref: '#/components/schemas/CreateCustomerInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
+const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/CreateCurrencyInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedAddressDTORef = { $ref: '#/components/schemas/EmbeddedAddressDTO' };
+const EmbeddedAddressDTORef = { $ref: '#/components/schemas/CreateAddressInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 // --- QuoteItem Schemas (Confirmés et utilisés) ---
 // eslint-disable-next-line @typescript-eslint/naming-convention

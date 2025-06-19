@@ -80,12 +80,11 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/CustomerInvoiceApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/customer-invoices')
   @authorize({ level: SecurityLevel.USER })
@@ -136,13 +135,13 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-invoices/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -172,11 +171,11 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/customer-invoices')
   @authorize({ level: SecurityLevel.USER })
@@ -216,13 +215,13 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-invoices/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -267,11 +266,11 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-invoices/:id/status')
   @authorize({ level: SecurityLevel.USER })
@@ -316,11 +315,11 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/CustomerInvoiceApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Post('/customer-invoices/:id/send')
   @authorize({ level: SecurityLevel.USER })
@@ -352,13 +351,13 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *       204:
    *         description: Invoice deleted/voided successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-invoices/:id')
   @authorize({ level: SecurityLevel.USER })

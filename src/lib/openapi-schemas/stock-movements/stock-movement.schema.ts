@@ -3,7 +3,7 @@
 import { StockMovementType } from '@/modules/stock-movements/models/stock-movement.entity';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 
 export const stockMovementSchemas = {
   CreateStockMovementInput: {

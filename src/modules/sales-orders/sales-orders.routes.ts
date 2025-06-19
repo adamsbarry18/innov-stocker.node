@@ -71,12 +71,11 @@ export default class SalesOrderRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/SalesOrderApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/sales-orders')
   @authorize({ level: SecurityLevel.USER })
@@ -126,13 +125,13 @@ export default class SalesOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SalesOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/sales-orders/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -163,11 +162,11 @@ export default class SalesOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SalesOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/sales-orders')
   @authorize({ level: SecurityLevel.USER })
@@ -205,13 +204,13 @@ export default class SalesOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SalesOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/sales-orders/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -245,11 +244,11 @@ export default class SalesOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SalesOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/sales-orders/:id/approve')
   @authorize({ level: SecurityLevel.USER }) // or INTEGRATOR
@@ -285,11 +284,11 @@ export default class SalesOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SalesOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/sales-orders/:id/prepare')
   @authorize({ level: SecurityLevel.USER })
@@ -325,11 +324,11 @@ export default class SalesOrderRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/SalesOrderApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/sales-orders/:id/cancel')
   @authorize({ level: SecurityLevel.USER }) // or INTEGRATOR
@@ -361,13 +360,13 @@ export default class SalesOrderRouter extends BaseRouter {
    *       204:
    *         description: Sales order deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/sales-orders/:id')
   @authorize({ level: SecurityLevel.USER }) // or ADMIN

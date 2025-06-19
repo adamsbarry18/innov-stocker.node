@@ -36,7 +36,6 @@ export const supplierSchemas = {
   UpdateSupplierInput: {
     type: 'object',
     properties: {
-      // All fields optional
       name: { type: 'string', minLength: 1, maxLength: 255 },
       contactPersonName: { type: 'string', maxLength: 255, nullable: true },
       email: { type: 'string', format: 'email', maxLength: 255, nullable: true },
@@ -50,7 +49,7 @@ export const supplierSchemas = {
       notes: { type: 'string', nullable: true },
     },
   },
-  // Simplified DTOs for embedded Address and Currency in SupplierApiResponse
+
   EmbeddedAddressDTO: {
     type: 'object',
     properties: {
@@ -82,10 +81,10 @@ export const supplierSchemas = {
       vatNumber: { type: 'string', nullable: true, example: 'EU123456789' },
       siretNumber: { type: 'string', nullable: true, example: '12345678900010' },
       defaultCurrencyId: { type: 'integer', example: 1 },
-      defaultCurrency: { $ref: '#/components/schemas/EmbeddedCurrencyDTO', nullable: true },
+      defaultCurrency: { $ref: '#/components/schemas/CreateCurrencyInput', nullable: true },
       defaultPaymentTermsDays: { type: 'integer', nullable: true, example: 30 },
       addressId: { type: 'integer', nullable: true, example: 1 },
-      address: { $ref: '#/components/schemas/EmbeddedAddressDTO', nullable: true },
+      address: { $ref: '#/components/schemas/CreateAddressInput', nullable: true },
       notes: { type: 'string', nullable: true, example: 'Preferred supplier for electronics.' },
       createdByUserId: { type: 'integer', nullable: true },
       updatedByUserId: { type: 'integer', nullable: true },

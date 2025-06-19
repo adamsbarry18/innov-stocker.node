@@ -64,10 +64,9 @@ export default class ShopRouter extends BaseRouter {
    *                     $ref: '#/components/schemas/ShopApiResponse'
    *                 total:
    *                   type: integer
-   *                 meta:
-   *                   $ref: '#/components/schemas/PaginationMeta'
+
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/shops')
   @authorize({ level: SecurityLevel.USER })
@@ -114,11 +113,11 @@ export default class ShopRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ShopApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Get('/shops/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -151,11 +150,11 @@ export default class ShopRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ShopApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/shops')
   @authorize({ level: SecurityLevel.ADMIN })
@@ -197,13 +196,13 @@ export default class ShopRouter extends BaseRouter {
    *             schema:
    *               $ref: '#/components/schemas/ShopApiResponse'
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Put('/shops/:id')
   @authorize({ level: SecurityLevel.USER })
@@ -239,13 +238,13 @@ export default class ShopRouter extends BaseRouter {
    *       204:
    *         description: Shop deleted successfully
    *       400:
-   *         $ref: '#/components/responses/BadRequestError'
+   *         $ref: '#/components/responses/BadRequest'
    *       401:
-   *         $ref: '#/components/responses/UnauthorizedError'
+   *         $ref: '#/components/responses/Unauthorized'
    *       403:
-   *         $ref: '#/components/responses/ForbiddenError'
+   *         $ref: '#/components/responses/Forbidden'
    *       404:
-   *         $ref: '#/components/responses/NotFoundError'
+   *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/shops/:id')
   @authorize({ level: SecurityLevel.USER })

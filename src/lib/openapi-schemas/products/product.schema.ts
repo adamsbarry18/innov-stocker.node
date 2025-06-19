@@ -2,10 +2,10 @@ import { ProductStatus } from '@/modules/products/models/product.entity';
 
 // Références (supposons qu'ils sont définis globalement ou importés d'autres fichiers schema)
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedUserDTORef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const EmbeddedUserDTORef = { $ref: '#/components/schemas/UserInput' };
 // eslint-disable-next-line @typescript-eslint/naming-convention
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/EmbeddedCurrencyDTO' };
+const EmbeddedCurrencyDTORef = { $ref: '#/components/schemas/CreateCurrencyInput' };
 
 // --- ProductImage Schemas ---
 // eslint-disable-next-line @typescript-eslint/naming-convention

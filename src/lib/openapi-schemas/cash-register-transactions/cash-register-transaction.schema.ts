@@ -1,17 +1,16 @@
 import { CashRegisterTransactionType } from '@/modules/cash-register-transactions/models/cash-register-transaction.entity';
 
-// Assuming these are defined globally or imported
 const embeddedCashRegisterSessionDtoRef = {
-  $ref: '#/components/schemas/EmbeddedCashRegisterSessionDTO',
+  $ref: '#/components/schemas/CreateCashRegisterTransactionInput',
 };
-const embeddedPaymentMethodDtoRef = { $ref: '#/components/schemas/EmbeddedPaymentMethodDTO' };
-const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/EmbeddedSalesOrderDTO' };
-const embeddedUserDtoRef = { $ref: '#/components/schemas/EmbeddedUserDTO' };
+const embeddedPaymentMethodDtoRef = { $ref: '#/components/schemas/CreatePaymentInput' };
+const embeddedSalesOrderDtoRef = { $ref: '#/components/schemas/CreateSalesOrderInput' };
+const embeddedUserDtoRef = { $ref: '#/components/schemas/UserInput' };
 
 export const cashRegisterTransactionSchemas = {
   CreateCashRegisterTransactionInput: {
     type: 'object',
-    required: ['cashRegisterSessionId', 'type', 'amount', 'description'], // userId is from authenticated user
+    required: ['cashRegisterSessionId', 'type', 'amount', 'description'],
     properties: {
       cashRegisterSessionId: {
         type: 'integer',
@@ -85,7 +84,6 @@ export const cashRegisterTransactionSchemas = {
       userId: { type: 'integer' },
       user: { allOf: [embeddedUserDtoRef], nullable: true },
       createdAt: { type: 'string', format: 'date-time', nullable: true },
-      // updatedAt: { type: 'string', format: 'date-time', nullable: true }, // Less relevant
     },
   },
 };
