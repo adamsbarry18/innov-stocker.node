@@ -13,12 +13,12 @@ import {
 import { Request, Response, NextFunction } from '@/config/http';
 import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { BadRequestError } from '@/common/errors/httpErrors';
-import { CustomerShippingAddressService } from './services/csa.service';
+import { CustomerShippingAddressService } from './services/customer-shipping-address.service';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 import {
   CreateCustomerShippingAddressInput,
   UpdateCustomerShippingAddressInput,
-} from './models/csa.entity';
+} from './models/customer-shipping-address.entity';
 
 export default class CustomerShippingAddressRouter extends BaseRouter {
   service = CustomerShippingAddressService.getInstance();
