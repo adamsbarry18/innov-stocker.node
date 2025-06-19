@@ -9,48 +9,32 @@ import type {
   CustomerApiResponse,
 } from '../models/customer.entity';
 import { customerValidationInputErrors } from '../models/customer.entity';
-import {
-  NotFoundError,
-  BadRequestError,
-  ServerError,
-  DependencyError,
-} from '@/common/errors/httpErrors';
+import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { appDataSource } from '@/database/data-source';
 import { CustomerGroupRepository } from '@/modules/customer-groups';
-import { Address } from '@/modules/addresses/models/address.entity';
-import { CustomerShippingAddress } from '../models/customer-shipping-addresses.entity';
+import { type CreateAddressInput } from '@/modules/addresses/models/address.entity';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
-import { Service, ResourcesKeys, DependentWrapper, dependency } from '@/common/utils/Service';
-import { SalesOrderRepository } from '@/modules/sales-orders/data/sales-order.repository';
-import { CustomerInvoiceRepository } from '@/modules/customer-invoices/data/customer-invoice.repository';
+import { CustomerShippingAddress } from '@/modules/customer-shipping-address';
 
 let instance: CustomerService | null = null;
 
-@dependency(ResourcesKeys.CUSTOMERS, [ResourcesKeys.SALES_ORDERS, ResourcesKeys.CUSTOMER_INVOICES])
-export class CustomerService extends Service {
+export class CustomerService {
   private readonly customerRepository: CustomerRepository;
   private readonly addressRepository: AddressRepository;
   private readonly currencyRepository: CurrencyRepository;
   private readonly customerGroupRepository: CustomerGroupRepository;
-  private readonly salesOrderRepository: SalesOrderRepository;
-  private readonly customerInvoiceRepository: CustomerInvoiceRepository;
 
   constructor(
     customerRepository: CustomerRepository = new CustomerRepository(),
     addressRepository: AddressRepository = new AddressRepository(),
     currencyRepository: CurrencyRepository = new CurrencyRepository(),
     customerGroupRepository: CustomerGroupRepository = new CustomerGroupRepository(),
-    salesOrderRepository: SalesOrderRepository = new SalesOrderRepository(),
-    customerInvoiceRepository: CustomerInvoiceRepository = new CustomerInvoiceRepository(),
   ) {
-    super();
     this.customerRepository = customerRepository;
     this.addressRepository = addressRepository;
     this.currencyRepository = currencyRepository;
     this.customerGroupRepository = customerGroupRepository;
-    this.salesOrderRepository = salesOrderRepository;
-    this.customerInvoiceRepository = customerInvoiceRepository;
   }
 
   /**
@@ -143,34 +127,21 @@ export class CustomerService extends Service {
       }
     }
 
-    let billingAddressId = input.billingAddressId;
-    if (input.newBillingAddress && !input.billingAddressId) {
-      const createdBillingAddress = await this.addressRepository.save(
-        this.addressRepository.create(input.newBillingAddress),
-      );
-      billingAddressId = createdBillingAddress.id;
-    } else if (!input.billingAddressId && !input.newBillingAddress) {
-      throw new BadRequestError(
-        'Billing address information (billingAddressId or newBillingAddress) is required.',
-      );
-    } else if (input.billingAddressId) {
-      const address = await this.addressRepository.findById(input.billingAddressId);
-      if (!address)
-        throw new BadRequestError(`Billing Address with ID ${input.billingAddressId} not found.`);
-    }
+    const billingAddressId = await this._resolveAddressId(
+      input.newBillingAddress,
+      input.billingAddressId,
+      'Billing Address',
+      this.addressRepository,
+    );
 
-    let defaultShippingAddressId = input.defaultShippingAddressId;
-    if (input.newDefaultShippingAddress && !input.defaultShippingAddressId) {
-      const createdShippingAddress = await this.addressRepository.save(
-        this.addressRepository.create(input.newDefaultShippingAddress),
+    let defaultShippingAddressId: number | null = null;
+    if (input.newDefaultShippingAddress || input.defaultShippingAddressId) {
+      defaultShippingAddressId = await this._resolveAddressId(
+        input.newDefaultShippingAddress,
+        input.defaultShippingAddressId,
+        'Default Shipping Address',
+        this.addressRepository,
       );
-      defaultShippingAddressId = createdShippingAddress.id;
-    } else if (input.defaultShippingAddressId) {
-      const address = await this.addressRepository.findById(input.defaultShippingAddressId);
-      if (!address)
-        throw new BadRequestError(
-          `Default Shipping Address with ID ${input.defaultShippingAddressId} not found.`,
-        );
     }
 
     const customerEntity = this.customerRepository.create({
@@ -201,25 +172,18 @@ export class CustomerService extends Service {
     return appDataSource.transaction(async (transactionalEntityManager) => {
       const customerRepo = transactionalEntityManager.getRepository(Customer);
       const shippingAddressRepo = transactionalEntityManager.getRepository(CustomerShippingAddress);
-      const addressRepo = transactionalEntityManager.getRepository(Address);
+      const transactionalAddressRepo = new AddressRepository(transactionalEntityManager);
 
       const savedCustomer = await this.customerRepository.save(customerEntity);
 
       if (input.shippingAddresses && input.shippingAddresses.length > 0) {
         for (const saInput of input.shippingAddresses) {
-          let addressIdToLink = saInput.addressId;
-          if (saInput.newAddress && !saInput.addressId) {
-            const newAddr = await addressRepo.save(addressRepo.create(saInput.newAddress));
-            addressIdToLink = newAddr.id;
-          } else if (!saInput.addressId && !saInput.newAddress) {
-            throw new BadRequestError(
-              'Shipping address information (addressId or newAddress) is required for each entry.',
-            );
-          } else if (saInput.addressId) {
-            const addr = await addressRepo.findOneBy({ id: saInput.addressId });
-            if (!addr)
-              throw new BadRequestError(`Shipping address with ID ${saInput.addressId} not found.`);
-          }
+          const addressIdToLink = await this._resolveAddressId(
+            saInput.newAddress,
+            saInput.addressId,
+            `Shipping Address with label '${saInput.addressLabel}'`,
+            transactionalAddressRepo,
+          );
 
           const newShippingAddress = shippingAddressRepo.create({
             customerId: savedCustomer.id,
@@ -230,8 +194,6 @@ export class CustomerService extends Service {
           await shippingAddressRepo.save(newShippingAddress);
           if (newShippingAddress.isDefault) {
             savedCustomer.defaultShippingAddressId = newShippingAddress.addressId;
-            if (newShippingAddress.address)
-              savedCustomer.defaultShippingAddress = newShippingAddress.address;
             await customerRepo.save(savedCustomer);
           }
         }
@@ -382,6 +344,37 @@ export class CustomerService extends Service {
       logger.error({ message: `Error deleting customer ${id}`, error }, 'CustomerService.delete');
       if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
       throw new ServerError(`Error deleting customer ${id}.`);
+    }
+  }
+
+  /**
+   * Helper method to resolve an address ID, either by creating a new address
+   * or validating an existing one using the provided AddressRepository.
+   * This method ensures that the AddressRepository's `save` and `findById` methods are used.
+   * @param addressInput Input for creating a new address.
+   * @param addressId ID of an existing address.
+   * @param addressType A descriptive string for the address (e.g., 'Billing Address').
+   * @param addressRepo The AddressRepository instance to use.
+   * @returns The resolved address ID.
+   * @throws BadRequestError if address information is invalid or not found.
+   */
+  private async _resolveAddressId(
+    addressInput: CreateAddressInput | undefined,
+    addressId: number | null | undefined,
+    addressType: string,
+    addressRepo: AddressRepository,
+  ): Promise<number> {
+    if (addressInput && (addressId === undefined || addressId === null)) {
+      const createdAddress = await addressRepo.save(addressRepo.create(addressInput));
+      return createdAddress.id;
+    } else if (addressId !== undefined && addressId !== null) {
+      const address = await addressRepo.findById(addressId);
+      if (!address) {
+        throw new BadRequestError(`${addressType} with ID ${addressId} not found.`);
+      }
+      return addressId;
+    } else {
+      throw new BadRequestError(`${addressType} information (ID or new address data) is required.`);
     }
   }
 

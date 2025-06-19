@@ -249,7 +249,8 @@ export default class DeliveryRouter extends BaseRouter {
   async shipDeliveryAction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
     const { actualShipDate } = req.body;
     // Service gèrera la date si non fournie.
     await this.pipe(res, req, next, () =>
@@ -285,8 +286,9 @@ export default class DeliveryRouter extends BaseRouter {
   @authorize({ level: SecurityLevel.USER })
   async markDeliveryAsDelivered(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));
+    await this.pipe(res, req, next, () => this.deliveryService.markAsDelivered(id, userId));
     await this.pipe(res, req, next, () => this.deliveryService.markAsDelivered(id, userId));
   }
 

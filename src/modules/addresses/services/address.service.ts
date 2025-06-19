@@ -1,9 +1,4 @@
-import {
-  BadRequestError,
-  DependencyError,
-  NotFoundError,
-  ServerError,
-} from '@/common/errors/httpErrors';
+import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';
 import logger from '@/lib/logger';
 import {
@@ -15,16 +10,12 @@ import {
   type UpdateAddressInput,
 } from '@/modules/addresses';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
-import { Service, ResourcesKeys, dependency } from '@/common/utils/Service';
-
 let instance: AddressService | null = null;
 
-@dependency(ResourcesKeys.ADDRESSES)
-export class AddressService extends Service {
+export class AddressService {
   private readonly addressRepository: AddressRepository;
 
   constructor(addressRepository: AddressRepository = new AddressRepository()) {
-    super();
     this.addressRepository = addressRepository;
   }
 
@@ -187,9 +178,14 @@ export class AddressService extends Service {
       const address = await this.addressRepository.findById(id);
       if (!address) throw new NotFoundError(`Address with id ${id} not found.`);
 
-      await this.checkAndDelete(id, async () => {
-        await this.addressRepository.softDelete(id);
-      });
+      const isUsed = await this.addressRepository.isAddressInUse(id);
+      if (isUsed) {
+        throw new BadRequestError(
+          `Address with ID ${id} is currently in use by other entities and cannot be deleted.`,
+        );
+      }
+
+      await this.addressRepository.softDelete(id);
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -198,12 +194,7 @@ export class AddressService extends Service {
       );
     } catch (error) {
       logger.error(`Error deleting address ${id}: ${error}`);
-      if (
-        error instanceof BadRequestError ||
-        error instanceof NotFoundError ||
-        error instanceof DependencyError
-      )
-        throw error;
+      if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
       throw new ServerError(`Error deleting address ${id}.`);
     }
   }

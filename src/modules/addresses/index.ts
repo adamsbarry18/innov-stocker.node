@@ -1,19 +1,4 @@
-import { AddressRepository } from './data/address.repository';
-import {
-  Address,
-  AddressApiResponse,
-  CreateAddressInput,
-  UpdateAddressInput,
-  addressValidationInputErrors,
-} from './models/address.entity';
-import { AddressService } from './services/address.service';
-
-export {
-  Address,
-  AddressApiResponse,
-  CreateAddressInput,
-  UpdateAddressInput,
-  addressValidationInputErrors,
-  AddressService,
-  AddressRepository,
-};
+export * from './addresses.routes';
+export * from './data/address.repository';
+export * from './models/address.entity';
+export * from './services/address.service';

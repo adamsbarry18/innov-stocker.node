@@ -7,13 +7,7 @@ import {
   type ProductImageApiResponse,
   productImageValidationInputErrors,
 } from '../models/product-image.entity';
-import {
-  NotFoundError,
-  BadRequestError,
-  ServerError,
-  DependencyError,
-} from '@/common/errors/httpErrors';
-import { Service, ResourcesKeys, dependency, DependentWrapper } from '@/common/utils/Service';
+import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { IsNull } from 'typeorm';
 import { ProductRepository } from '@/modules/products/data/product.repository';
@@ -25,8 +19,7 @@ import {
 
 let instance: ProductImageService | null = null;
 
-@dependency(ResourcesKeys.PRODUCT_IMAGES, [ResourcesKeys.PRODUCTS])
-export class ProductImageService extends Service {
+export class ProductImageService {
   private readonly productRepository: ProductRepository;
   private readonly imageRepository: ProductImageRepository;
 
@@ -34,7 +27,6 @@ export class ProductImageService extends Service {
     productRepository: ProductRepository = new ProductRepository(),
     imageRepository: ProductImageRepository = new ProductImageRepository(),
   ) {
-    super();
     this.productRepository = productRepository;
     this.imageRepository = imageRepository;
   }
@@ -193,9 +185,7 @@ export class ProductImageService extends Service {
         );
       }
 
-      await this.checkAndDelete(imageId, async () => {
-        await this.imageRepository.softDelete(imageId);
-      });
+      await this.imageRepository.softDelete(imageId);
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -205,28 +195,11 @@ export class ProductImageService extends Service {
       );
     } catch (error) {
       logger.error({ message: `Error deleting image ${imageId} for product ${productId}`, error });
-      if (
-        error instanceof BadRequestError ||
-        error instanceof NotFoundError ||
-        error instanceof DependencyError
-      ) {
+      if (error instanceof BadRequestError || error instanceof NotFoundError) {
         throw error;
       }
       throw new ServerError('Error deleting product image.');
     }
-  }
-
-  async getDependentEntities(
-    dependentResourceKey: ResourcesKeys,
-    dependentResourceId: number,
-  ): Promise<DependentWrapper[]> {
-    if (dependentResourceKey === ResourcesKeys.PRODUCTS) {
-      const images = await this.imageRepository.findByProductId(dependentResourceId);
-      return images.map(
-        (i) => new DependentWrapper(ResourcesKeys.PRODUCT_IMAGES, i.id.toString(), true),
-      );
-    }
-    return [];
   }
 
   async setPrimaryProductImage(

@@ -282,7 +282,7 @@ describe('Product Category API', () => {
       expect(res.body.message).toBe('Bad request');
     });
 
-    it('should return 409 if category is in use by another entity (e.g., Product)', async () => {
+    it('should return 400 if category is in use by another entity (e.g., Product)', async () => {
       // Category ID 3 is used by product 1 in 2-datas.sql
       const categoryInUseId = 3;
 
@@ -290,9 +290,8 @@ describe('Product Category API', () => {
         .delete(`/api/v1/product-categories/${categoryInUseId}`)
         .set('Authorization', `Bearer ${adminToken}`);
 
-      expect(res.status).toBe(409);
+      expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
-      expect(res.body.message).toContain('dependencies');
     });
 
     it('should fail to delete a product category without authentication', async () => {

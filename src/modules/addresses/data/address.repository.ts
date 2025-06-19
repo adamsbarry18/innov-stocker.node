@@ -5,12 +5,21 @@ import {
   IsNull,
   type UpdateResult,
   type FindManyOptions,
-  type EntityManager, // Import EntityManager
+  type EntityManager,
 } from 'typeorm';
 import { Address } from '../models/address.entity';
 import { appDataSource } from '@/database/data-source';
+import { Customer } from '@/modules/customers';
+import { Company } from '@/modules/compagnies';
+import { Warehouse } from '@/modules/warehouses';
+import { Shop } from '@/modules/shops';
+import { Quote } from '@/modules/quotes';
+import { SalesOrder } from '@/modules/sales-orders';
+import { Delivery } from '@/modules/deliveries';
+import { CustomerInvoice } from '@/modules/customer-invoices';
+import { Supplier } from '@/modules/suppliers';
+import { PurchaseOrder } from '@/modules/purchase-orders';
 
-// Options for listing addresses
 interface FindAllAddressesOptions {
   skip?: number;
   take?: number;
@@ -21,7 +30,6 @@ interface FindAllAddressesOptions {
 export class AddressRepository {
   private readonly repository: Repository<Address>;
 
-  // Accept optional EntityManager
   constructor(dataSource: DataSource | EntityManager = appDataSource) {
     this.repository = dataSource.getRepository(Address);
   }
@@ -91,5 +99,81 @@ export class AddressRepository {
     return await this.repository.exists({
       where: { ...where, deletedAt: IsNull() },
     });
+  }
+
+  async isAddressInUse(addressId: number): Promise<boolean> {
+    const manager = this.repository.manager;
+
+    const companyCount = await manager
+      .getRepository(Company)
+      .count({ where: { addressId, deletedAt: IsNull() } });
+    if (companyCount > 0) return true;
+
+    const customerBillingCount = await manager
+      .getRepository(Customer)
+      .count({ where: { billingAddressId: addressId, deletedAt: IsNull() } });
+    if (customerBillingCount > 0) return true;
+
+    const customerDefaultShippingCount = await manager
+      .getRepository(Customer)
+      .count({ where: { defaultShippingAddressId: addressId, deletedAt: IsNull() } });
+    if (customerDefaultShippingCount > 0) return true;
+
+    const warehouseCount = await manager
+      .getRepository(Warehouse)
+      .count({ where: { addressId, deletedAt: IsNull() } });
+    if (warehouseCount > 0) return true;
+
+    const shopCount = await manager
+      .getRepository(Shop)
+      .count({ where: { addressId, deletedAt: IsNull() } });
+    if (shopCount > 0) return true;
+
+    const quoteBillingCount = await manager
+      .getRepository(Quote)
+      .count({ where: { billingAddressId: addressId, deletedAt: IsNull() } });
+    if (quoteBillingCount > 0) return true;
+
+    const quoteShippingCount = await manager
+      .getRepository(Quote)
+      .count({ where: { shippingAddressId: addressId, deletedAt: IsNull() } });
+    if (quoteShippingCount > 0) return true;
+
+    const salesOrderBillingCount = await manager
+      .getRepository(SalesOrder)
+      .count({ where: { billingAddressId: addressId, deletedAt: IsNull() } });
+    if (salesOrderBillingCount > 0) return true;
+
+    const salesOrderShippingCount = await manager
+      .getRepository(SalesOrder)
+      .count({ where: { shippingAddressId: addressId, deletedAt: IsNull() } });
+    if (salesOrderShippingCount > 0) return true;
+
+    const deliveryShippingCount = await manager
+      .getRepository(Delivery)
+      .count({ where: { shippingAddressId: addressId, deletedAt: IsNull() } });
+    if (deliveryShippingCount > 0) return true;
+
+    const customerInvoiceBillingCount = await manager
+      .getRepository(CustomerInvoice)
+      .count({ where: { billingAddressId: addressId, deletedAt: IsNull() } });
+    if (customerInvoiceBillingCount > 0) return true;
+
+    const customerInvoiceShippingCount = await manager
+      .getRepository(CustomerInvoice)
+      .count({ where: { shippingAddressId: addressId, deletedAt: IsNull() } });
+    if (customerInvoiceShippingCount > 0) return true;
+
+    const supplierCount = await manager
+      .getRepository(Supplier)
+      .count({ where: { addressId, deletedAt: IsNull() } });
+    if (supplierCount > 0) return true;
+
+    const purchaseOrderShippingCount = await manager
+      .getRepository(PurchaseOrder)
+      .count({ where: { shippingAddressId: addressId, deletedAt: IsNull() } });
+    if (purchaseOrderShippingCount > 0) return true;
+
+    return false;
   }
 }

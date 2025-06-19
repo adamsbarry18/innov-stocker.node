@@ -7,8 +7,6 @@ import { StockMovementService } from '../../stock-movements/services/stock-movem
 import {
   Delivery,
   DeliveryRepository,
-  DeliveryItemRepository,
-  DeliveryItem,
   type CreateDeliveryInput,
   type UpdateDeliveryInput,
   type DeliveryApiResponse,
@@ -35,6 +33,7 @@ import {
   ActionType,
   EntityType,
 } from '@/modules/user-activity-logs/models/user-activity-log.entity';
+import { DeliveryItem, DeliveryItemRepository } from '../delivery-items';
 
 let instance: DeliveryService | null = null;
 
@@ -263,7 +262,7 @@ export class DeliveryService {
           transactionalEntityManager: manager,
         });
 
-        if (deliveryWithItems && deliveryWithItems.items) {
+        if (deliveryWithItems?.items) {
           const itemsForUnreserve = deliveryWithItems.items.map((item) => ({
             ...item,
             unitPriceAtReturn:
@@ -387,7 +386,7 @@ export class DeliveryService {
         relations: ['salesOrder', 'salesOrder.items'],
         transactionalEntityManager: manager,
       });
-      if (!currentDelivery || !currentDelivery.salesOrder) {
+      if (!currentDelivery?.salesOrder) {
         throw new ServerError('Could not retrieve sales order for current delivery.');
       }
       salesOrder = currentDelivery.salesOrder;

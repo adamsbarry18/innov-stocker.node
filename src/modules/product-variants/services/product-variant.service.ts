@@ -5,13 +5,7 @@ import {
   type ProductVariantApiResponse,
   productVariantValidationInputErrors,
 } from '../models/product-variant.entity';
-import {
-  NotFoundError,
-  BadRequestError,
-  ServerError,
-  DependencyError,
-} from '@/common/errors/httpErrors';
-import { Service, ResourcesKeys, dependency, DependentWrapper } from '@/common/utils/Service';
+import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { ProductRepository } from '@/modules/products/data/product.repository';
 import { ProductVariantRepository } from '../data/product-variant.repository';
@@ -24,8 +18,7 @@ import {
 
 let instance: ProductVariantService | null = null;
 
-@dependency(ResourcesKeys.PRODUCT_VARIANTS, [ResourcesKeys.PRODUCTS])
-export class ProductVariantService extends Service {
+export class ProductVariantService {
   private readonly productRepository: ProductRepository;
   private readonly variantRepository: ProductVariantRepository;
   private readonly imageRepository: ProductImageRepository;
@@ -41,7 +34,6 @@ export class ProductVariantService extends Service {
     variantRepository: ProductVariantRepository = new ProductVariantRepository(),
     imageRepository: ProductImageRepository = new ProductImageRepository(),
   ) {
-    super();
     this.productRepository = productRepository;
     this.variantRepository = variantRepository;
     this.imageRepository = imageRepository;
@@ -315,9 +307,14 @@ export class ProductVariantService extends Service {
         );
       }
 
-      await this.checkAndDelete(variantId, async () => {
-        await this.variantRepository.softDelete(variantId);
-      });
+      const isUsed = await this.variantRepository.isProductVariantInUse(variantId);
+      if (isUsed) {
+        throw new BadRequestError(
+          `Product variant with ID ${variantId} is currently in use by other entities and cannot be deleted.`,
+        );
+      }
+
+      await this.variantRepository.softDelete(variantId);
 
       await UserActivityLogService.getInstance().insertEntry(
         ActionType.DELETE,
@@ -327,28 +324,11 @@ export class ProductVariantService extends Service {
       );
     } catch (error) {
       logger.error({ message: `Error deleting variant ${variantId}`, error });
-      if (
-        error instanceof BadRequestError ||
-        error instanceof NotFoundError ||
-        error instanceof DependencyError
-      ) {
+      if (error instanceof BadRequestError || error instanceof NotFoundError) {
         throw error;
       }
       throw new ServerError('Error deleting product variant.');
     }
-  }
-
-  async getDependentEntities(
-    dependentResourceKey: ResourcesKeys,
-    dependentResourceId: number,
-  ): Promise<DependentWrapper[]> {
-    if (dependentResourceKey === ResourcesKeys.PRODUCTS) {
-      const variants = await this.variantRepository.findByProductId(dependentResourceId);
-      return variants.map(
-        (v) => new DependentWrapper(ResourcesKeys.PRODUCT_VARIANTS, v.id.toString(), true),
-      );
-    }
-    return [];
   }
 
   /**

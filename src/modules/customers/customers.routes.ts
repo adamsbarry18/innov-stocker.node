@@ -13,14 +13,12 @@ import {
 import { Request, Response, NextFunction } from '@/config/http';
 import { SecurityLevel } from '@/modules/users/models/users.entity';
 import { CustomerService } from './services/customer.service';
-import { CustomerShippingAddressService } from './services/customer-shipping-address.service';
 import { CreateCustomerInput, UpdateCustomerInput } from './models/customer.entity';
 import { BadRequestError, UnauthorizedError } from '@/common/errors/httpErrors';
 import { buildTypeORMCriteria } from '@/common/utils/queryParsingUtils';
 
 export default class CustomerRouter extends BaseRouter {
   customerService = CustomerService.getInstance();
-  customerShippingAddressService = new CustomerShippingAddressService();
 
   /**
    * @openapi

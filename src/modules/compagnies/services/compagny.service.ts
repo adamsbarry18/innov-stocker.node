@@ -1,27 +1,19 @@
-import {
-  BadRequestError,
-  NotFoundError,
-  ServerError,
-  DependencyError,
-} from '@/common/errors/httpErrors';
+import { BadRequestError, NotFoundError, ServerError } from '@/common/errors/httpErrors';
 import {
   Company,
   CompanyRepository,
-  UpdateCompanyInput,
-  CompanyApiResponse,
+  type UpdateCompanyInput,
+  type CompanyApiResponse,
   companyValidationInputErrors,
 } from '../index';
 import logger from '@/lib/logger';
-import { Service, ResourcesKeys, DependentWrapper, dependency } from '@/common/utils/Service';
 
 let instance: CompanyService | null = null;
 
-@dependency(ResourcesKeys.COMPANY, [ResourcesKeys.ADDRESSES, ResourcesKeys.CURRENCIES])
-export class CompanyService extends Service {
+export class CompanyService {
   private readonly companyRepository: CompanyRepository;
 
   constructor(companyRepository: CompanyRepository = new CompanyRepository()) {
-    super();
     this.companyRepository = companyRepository;
   }
 
@@ -131,32 +123,6 @@ export class CompanyService extends Service {
   }
 
   /**
-   * Implements dependency checking for the COMPANY resource.
-   * Checks if any companies use the specified address.
-   * @param dependentResourceKey The key of the dependent resource (must be ResourcesKeys.ADDRESSES)
-   * @param dependentResourceId The ID of the dependent resource (the address ID)
-   * @returns An array of DependentWrapper for dependent companies.
-   */
-  async getDependentEntities(
-    dependentResourceKey: ResourcesKeys,
-    dependentResourceId: number,
-  ): Promise<DependentWrapper[]> {
-    if (dependentResourceKey === ResourcesKeys.ADDRESSES) {
-      const companies = await this.companyRepository.findByAddressId(dependentResourceId);
-      return companies.map(
-        (company) => new DependentWrapper(ResourcesKeys.COMPANY, company.id.toString(), true),
-      );
-    } else if (dependentResourceKey === ResourcesKeys.CURRENCIES) {
-      // Check if any company uses this currency as default
-      const companies = await this.companyRepository.getAllCompanies();
-      return companies
-        .filter((company) => company.defaultCurrencyId === dependentResourceId)
-        .map((company) => new DependentWrapper(ResourcesKeys.COMPANY, company.id.toString(), true));
-    }
-    return [];
-  }
-
-  /**
    * Deletes a company by its ID, after checking dependencies.
    * @param id The ID of the company to delete.
    */
@@ -167,17 +133,10 @@ export class CompanyService extends Service {
         throw new NotFoundError(`Company with ID ${id} not found.`);
       }
 
-      await this.checkAndDelete(id, async () => {
-        await this.companyRepository.softDelete(id);
-      });
+      await this.companyRepository.softDelete(id);
     } catch (error) {
       logger.error(`Error deleting company ${id}: ${error}`);
-      if (
-        error instanceof BadRequestError ||
-        error instanceof NotFoundError ||
-        error instanceof DependencyError
-      )
-        throw error;
+      if (error instanceof BadRequestError || error instanceof NotFoundError) throw error;
       throw new ServerError(`Error deleting company ${id}.`);
     }
   }

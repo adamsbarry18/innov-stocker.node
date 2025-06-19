@@ -21,20 +21,22 @@ import {
   CustomerReturn,
   CustomerReturnRepository,
   CustomerReturnStatus,
-  customerReturnValidationInputErrors,
-  customerReturnItemValidationInputErrors,
-  CustomerReturnItem,
-  ReturnItemActionTaken,
-  createCustomerReturnItemSchema,
-  type CreateCustomerReturnItemInput,
   type CreateCustomerReturnInput,
   type UpdateCustomerReturnInput,
   type CustomerReturnApiResponse,
   type ApproveReturnInput,
   type ReceiveReturnInput,
   type CompleteReturnInput,
+  customerReturnValidationInputErrors,
 } from '../index';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
+import {
+  CreateCustomerReturnItemInput,
+  createCustomerReturnItemSchema,
+  CustomerReturnItem,
+  customerReturnItemValidationInputErrors,
+  ReturnItemActionTaken,
+} from '../customer-return-items/models/customer-return-item.entity';
 
 interface ValidationContext {
   isUpdate: boolean;
