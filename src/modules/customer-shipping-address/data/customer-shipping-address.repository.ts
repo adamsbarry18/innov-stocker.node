@@ -11,7 +11,7 @@ import {
 import { appDataSource } from '@/database/data-source';
 import { ServerError, BadRequestError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
-import { CustomerShippingAddress } from '../models/csa.entity';
+import { CustomerShippingAddress } from '../models/customer-shipping-address.entity';
 
 interface FindAllCSAsOptions {
   skip?: number;

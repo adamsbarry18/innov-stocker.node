@@ -6,7 +6,7 @@ import {
   type UpdateCompanyInput,
   // Ajoute d'autres types/constantes utiles ici si besoin
 } from './models/company.entity';
-import { CompanyService } from './services/compagny.service';
+import { CompanyService } from './services/company.service';
 
 export {
   Company,
