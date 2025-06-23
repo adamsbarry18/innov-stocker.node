@@ -115,24 +115,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-# ===========================================
-# Job: Deploy to vercel
-# ===========================================
-deploy:
-  name: Deploy to Vercel
-  runs-on: ubuntu-latest
-  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  needs: build-and-push-docker
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+  # ===========================================
+  # Job: Deploy to vercel
+  # ===========================================
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build-and-push-docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install Vercel CLI
-      run: npm install --global vercel
+      - name: Install Vercel CLI
+        run: npm install --global vercel
 
-    - name: Deploy to Vercel
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      run: vercel --prod --token $VERCEL_TOKEN --confirm --scope $VERCEL_ORG_ID --project $VERCEL_PROJECT_ID
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME }}
+        run: vercel --prod --token $VERCEL_TOKEN --confirm --scope $VERCEL_ORG_ID $VERCEL_PROJECT_NAME
