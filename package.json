@@ -17,7 +17,8 @@
     "test-db:start": "docker compose -f src/tests/docker-compose.yml up --build -d",
     "test-db:stop": "docker compose -f src/tests/docker-compose.yml down -v",
     "test:all": "bash ./src/tests/test-with-clean-db.sh",
-    "prune": "docker system prune -af"
+    "prune": "docker system prune -af",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@types/uuid": "^10.0.0",

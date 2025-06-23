@@ -116,29 +116,23 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ===========================================
-  # Job: Deploy (Manual Trigger)
+  # Job: Deploy to vercel
   # ===========================================
   deploy:
-    name: Deploy Application
+    name: Deploy to Vercel
     runs-on: ubuntu-latest
-    # Ne s'exécute que sur déclenchement manuel ('workflow_dispatch')
-    # et après succès du job 'build-and-push-docker' (donc implicitement sur 'main')
-    if: github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build-and-push-docker
-
-    environment: production # Optionnel: Définit un environnement pour les secrets/règles
-
     steps:
-      - name: Checkout repository (si nécessaire pour les scripts de déploiement)
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: main # Assurez-vous de déployer depuis main
 
-      - name: Placeholder for Deployment Steps
-        run: |
-          echo "Deployment triggered manually for branch: ${{ github.ref }}"
-          echo "Image to deploy (example): ghcr.io/${{ github.repository }}:latest" # Nom d'image GHCR
-          echo "Add your deployment steps here (e.g., SSH, kubectl, serverless deploy, etc.)"
-          # Exemple:
-          # ssh user@your-server "docker pull your-image:latest && docker stop your-container && docker rm your-container && docker run -d --name your-container your-image:latest"
-          # kubectl set image deployment/your-deployment your-container=your-image:latest -n your-namespace
+      - name: Install Vercel CLI
+        run: npm install --global vercel
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel --prod --token $VERCEL_TOKEN --confirm --org $VERCEL_ORG_ID --project $VERCEL_PROJECT_ID
