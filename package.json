@@ -16,7 +16,7 @@
     "test": "cross-env NODE_ENV=test dotenv -e .env.test vitest run --color",
     "test-db:start": "docker compose -f src/tests/docker-compose.yml up --build -d",
     "test-db:stop": "docker compose -f src/tests/docker-compose.yml down -v",
-    "test:clean": "bash ./src/tests/test-with-clean-db.sh",
+    "test:all": "bash ./src/tests/test-with-clean-db.sh",
     "prune": "docker system prune -af"
   },
   "dependencies": {

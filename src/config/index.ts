@@ -54,8 +54,7 @@ const envSchema = z
       .int()
       .positive()
       .default(60 * 60 * 24)
-      .describe('Access Token expiration in seconds (default: 1 day)'), // 1 day
-    // JWT_REFRESH_EXPIRATION_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7).describe('Refresh Token expiration in seconds (default: 7 days)'), // If using refresh tokens
+      .describe('Access Token expiration in seconds (default: 1 day)'),
     PASSWORD_EXPIRY_DAYS: z.coerce.number().int().positive().default(90),
     PASSWORD_RESET_CODE_TTL_SECONDS: z.coerce
       .number()
@@ -64,10 +63,7 @@ const envSchema = z
       .default(60 * 60 * 24 * 3), // 3 days
 
     // --- Redis ---
-    REDIS_HOST: z.string().default('localhost'),
-    REDIS_PORT: z.coerce.number().int().positive().default(6379),
-    REDIS_PASSWORD: z.string().optional(),
-    REDIS_DB: z.coerce.number().int().min(0).optional().default(0),
+    REDIS_URL: z.string().url().default('redis://localhost:6379/1'),
 
     // TTL for authorization cache
     AUTH_CACHE_TTL_SECONDS: z.coerce
