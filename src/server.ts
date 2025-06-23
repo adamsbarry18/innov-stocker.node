@@ -80,10 +80,21 @@ async function initializeExternalConnections(): Promise<void> {
 
     logger.info('External connections initialization complete.');
   } catch (error: unknown) {
-    logger.fatal(
-      { err: error },
-      '❌ Critical error during external connections initialization. Exiting.',
-    );
+    if (error instanceof Error) {
+      logger.fatal(
+        { name: error.name, message: error.message, stack: error.stack },
+        '❌ Critical error during external connections initialization. Exiting.',
+      );
+      // Fallback: print to console for visibility
+      console.error('FATAL:', error.name, error.message, error.stack);
+    } else {
+      logger.fatal(
+        { err: error },
+        '❌ Critical error during external connections initialization. Exiting.',
+      );
+      // Fallback: print to console for visibility
+      console.error('FATAL:', error);
+    }
     throw error; // Re-throw critical errors to stop the startup process
   }
 }
@@ -217,9 +228,7 @@ async function startServer(): Promise<void> {
     logger.info(
       `   Database: ${config.DB_TYPE} on ${config.DB_HOST}:${config.DB_PORT}:${config.DB_NAME} (${appDataSource.isInitialized ? 'Connected' : 'Disconnected'})`,
     );
-    logger.info(
-      `   Redis: ${redisClient?.isOpen ? 'Connected' : 'Disconnected'} to ${config.REDIS_HOST}:${config.REDIS_PORT}`,
-    );
+    logger.info(`   Redis: ${redisClient?.isOpen ? 'Connected' : 'Disconnected'}`);
     logger.info('=======================================================');
   });
 
@@ -234,6 +243,13 @@ async function startServer(): Promise<void> {
 
 // --- Application Startup ---
 startServer().catch((error: unknown) => {
-  logger.fatal({ err: error }, '💥 Critical error during server startup sequence. Exiting.');
+  if (error instanceof Error) {
+    logger.fatal(
+      { name: error.name, message: error.message, stack: error.stack },
+      '💥 Critical error during server startup sequence. Exiting.',
+    );
+  } else {
+    logger.fatal({ err: error }, '💥 Critical error during server startup sequence. Exiting.');
+  }
   throw error;
 });
