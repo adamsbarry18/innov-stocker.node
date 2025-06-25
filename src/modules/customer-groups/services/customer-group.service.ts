@@ -1,5 +1,6 @@
 import logger from '@/lib/logger';
-import { CustomerGroupRepository, CustomerGroup } from '../index';
+import type { CustomerGroup } from '../index';
+import { CustomerGroupRepository } from '../index';
 import type {
   CreateCustomerGroupInput,
   UpdateCustomerGroupInput,

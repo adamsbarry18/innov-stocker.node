@@ -103,7 +103,7 @@ export class PasswordService {
     try {
       const code = nanoid(32);
       let url = referer;
-      if (url && url.endsWith('/')) url = url.substring(0, url.length - 1);
+      if (url?.endsWith('/')) url = url.substring(0, url.length - 1);
       if (!url) url = config.FRONTEND_URL || 'http://localhost:8080';
       await redis.setEx(
         `api:users:confirm-password:${code}`,
@@ -151,7 +151,7 @@ export class PasswordService {
     try {
       const code = nanoid(32);
       let url = referer;
-      if (url && url.endsWith('/')) url = url.substring(0, url.length - 1);
+      if (url?.endsWith('/')) url = url.substring(0, url.length - 1);
       if (!url) url = config.FRONTEND_URL || 'http://localhost:8080';
       await redis.setEx(
         `api:users:reset-password:${code}`,

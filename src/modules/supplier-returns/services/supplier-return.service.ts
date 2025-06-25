@@ -986,8 +986,7 @@ export class SupplierReturnService {
       [SupplierReturnStatus.CANCELLED]: [],
     };
     if (
-      !allowedTransitions[currentStatus] ||
-      !allowedTransitions[currentStatus].includes(newStatus)
+      !allowedTransitions[currentStatus]?.includes(newStatus)
     ) {
       throw new BadRequestError(
         `Invalid status transition from '${currentStatus}' to '${newStatus}' for return ID ${supplierReturn.id}.`,

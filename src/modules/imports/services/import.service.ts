@@ -1,32 +1,37 @@
-import {
+import type {
   CreateProductInput,
-  Product,
+  Product} from '@/modules/products';
+import {
   ProductRepository,
   productValidationInputErrors,
 } from '@/modules/products';
 import { ImportBatchRepository } from '../data/import.repository';
-import {
+import type {
   CreateProductCategoryInput,
-  ProductCategory,
+  ProductCategory} from '@/modules/product-categories';
+import {
   ProductCategoryRepository,
   productCategoryValidationInputErrors,
 } from '@/modules/product-categories';
-import {
+import type {
   CreateCustomerInput,
-  Customer,
+  Customer} from '@/modules/customers';
+import {
   CustomerRepository,
   customerValidationInputErrors,
 } from '@/modules/customers';
-import {
+import type {
   CreateSupplierInput,
-  Supplier,
+  Supplier} from '@/modules/suppliers';
+import {
   SupplierRepository,
   supplierValidationInputErrors,
 } from '@/modules/suppliers';
 import { type CreateSalesOrderInput, SalesOrder, SalesOrderService } from '@/modules/sales-orders';
 import { type CreatePurchaseOrderInput, PurchaseOrderService } from '@/modules/purchase-orders';
+import type {
+  CreateStockMovementInput} from '@/modules/stock-movements';
 import {
-  CreateStockMovementInput,
   StockMovementService,
   StockMovementType,
 } from '@/modules/stock-movements';

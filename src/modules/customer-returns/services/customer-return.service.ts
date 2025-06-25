@@ -30,8 +30,9 @@ import {
   customerReturnValidationInputErrors,
 } from '../index';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
+import type {
+  CreateCustomerReturnItemInput} from '../customer-return-items/models/customer-return-item.entity';
 import {
-  CreateCustomerReturnItemInput,
   createCustomerReturnItemSchema,
   CustomerReturnItem,
   customerReturnItemValidationInputErrors,
@@ -991,8 +992,7 @@ export class CustomerReturnService {
     };
 
     if (
-      !allowedTransitions[currentStatus] ||
-      !allowedTransitions[currentStatus].includes(newStatus)
+      !allowedTransitions[currentStatus]?.includes(newStatus)
     ) {
       throw new BadRequestError(
         `Invalid status transition from '${currentStatus}' to '${newStatus}' for return ID ${customerReturn.id}.`,
