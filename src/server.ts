@@ -1,11 +1,11 @@
 import http from 'http';
 import os from 'os';
 
-import app from './app.js';
-import config from './config/index.js';
-import { appDataSource } from './database/data-source.js';
-import logger from './lib/logger.js';
-import { initializeRedis, getRedisClient } from './lib/redis.js';
+import app from './app';
+import config from './config';
+import { appDataSource } from './database/data-source';
+import logger from './lib/logger';
+import { initializeRedis, getRedisClient } from './lib/redis';
 
 /** The hostname of the machine. */
 const hostname = os.hostname();

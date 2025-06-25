@@ -7,16 +7,16 @@ import helmet from 'helmet';
 import passport from 'passport';
 import swaggerUi from 'swagger-ui-express';
 
-import { initializedApiRouter } from './api/index.js';
-import { NotFoundError } from './common/errors/httpErrors.js';
-import { errorHandler } from './common/middleware/errorHandler.js';
-import { jsendMiddleware } from './common/middleware/JSend.js';
-import config from './config/index.js';
-import logger from './lib/logger.js';
-import swaggerSpec from './lib/openapi.js';
+import { initializedApiRouter } from '@/api';
+import { NotFoundError } from '@/common/errors/httpErrors';
+import { errorHandler } from '@/common/middleware/errorHandler';
+import { jsendMiddleware } from '@/common/middleware/JSend';
+import config from '@/config';
+import logger from '@/lib/logger';
+import swaggerSpec from '@/lib/openapi';
 
-import { passportAuthenticationMiddleware } from './common/middleware/authentication.js';
-import type { NextFunction, Request, Response } from './config/http.js';
+import { passportAuthenticationMiddleware } from './common/middleware/authentication';
+import type { NextFunction, Request, Response } from './config/http';
 import express from 'express';
 
 const HOSTNAME = os.hostname();

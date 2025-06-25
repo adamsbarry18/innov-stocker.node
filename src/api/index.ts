@@ -8,9 +8,6 @@ import { registerRoutes } from '../common/routing/register';
 import logger from '../lib/logger';
 
 const isProd = process.env.NODE_ENV === 'production';
-const isVercel = process.env.VERCEL === '1';
-
-// Sur Vercel, on utilise une approche simplifiée pour éviter les problèmes d'alias
 const modulesPath = isProd
   ? resolve(process.cwd(), 'dist/modules')
   : resolve(process.cwd(), 'src/modules');
@@ -26,30 +23,6 @@ const globPattern = resolve(modulesPath, `**/*.routes.${isProd ? 'js' : 'ts'}`).
  */
 async function initializeApiRouter(): Promise<Router> {
   const apiRouter = Router();
-  
-  // Sur Vercel, on retourne un router vide pour éviter les problèmes d'alias
-  if (isVercel) {
-    logger.info('Running on Vercel - using simplified router without dynamic route loading');
-    
-    // Ajouter quelques routes de base pour Vercel
-    apiRouter.get('/', (req, res) => {
-      res.json({
-        message: 'API is running on Vercel',
-        status: 'ok',
-        timestamp: new Date().toISOString()
-      });
-    });
-    
-    apiRouter.get('/health', (req, res) => {
-      res.json({
-        status: 'healthy',
-        timestamp: new Date().toISOString()
-      });
-    });
-    
-    return apiRouter;
-  }
-  
   let routeFiles: string[];
   try {
     // Use async glob
