@@ -5,13 +5,13 @@ import { type z } from 'zod';
 
 import {
   CustomerShippingAddress,
+  CreateCustomerShippingAddressInput,
+  UpdateCustomerShippingAddressInput,
   CustomerShippingAddressRepository,
-  type CreateCustomerShippingAddressInput,
-  type UpdateCustomerShippingAddressInput,
-  type CustomerShippingAddressApiResponse,
   createCustomerShippingAddressSchema,
   updateCustomerShippingAddressSchema,
-} from '../index';
+  CustomerShippingAddressApiResponse,
+} from '@/modules/customer-shipping-address';
 
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';

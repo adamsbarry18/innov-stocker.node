@@ -1,11 +1,12 @@
 import {
   CashRegister,
-  type CreateCashRegisterInput,
-  type UpdateCashRegisterInput,
-  type CashRegisterApiResponse,
-  cashRegisterValidationInputErrors,
+  CreateCashRegisterInput,
+  UpdateCashRegisterInput,
   CashRegisterRepository,
+  cashRegisterValidationInputErrors,
+  CashRegisterApiResponse,
 } from '@/modules/cash-registers';
+
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';

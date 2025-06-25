@@ -1,11 +1,12 @@
 import {
   BankAccount,
-  type CreateBankAccountInput,
-  type UpdateBankAccountInput,
-  type BankAccountApiResponse,
-  bankAccountValidationInputErrors,
+  CreateBankAccountInput,
+  UpdateBankAccountInput,
   BankAccountRepository,
+  bankAccountValidationInputErrors,
+  BankAccountApiResponse,
 } from '@/modules/bank-accounts';
+
 import { NotFoundError, BadRequestError, ServerError } from '@/common/errors/httpErrors';
 import logger from '@/lib/logger';
 import { type FindManyOptions, type FindOptionsWhere } from 'typeorm';

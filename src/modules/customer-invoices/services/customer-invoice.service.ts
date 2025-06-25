@@ -30,8 +30,9 @@ import { CurrencyRepository, Currency } from '@/modules/currencies';
 import dayjs from 'dayjs';
 import { UserActivityLogService, ActionType, EntityType } from '@/modules/user-activity-logs';
 import { appDataSource } from '@/database/data-source';
+import type {
+  CreateCustomerInvoiceItemInput} from '../customer-invoice-items/models/customer-invoice-item.entity';
 import {
-  CreateCustomerInvoiceItemInput,
   CustomerInvoiceItem,
   customerInvoiceItemValidationInputErrors,
 } from '../customer-invoice-items/models/customer-invoice-item.entity';
