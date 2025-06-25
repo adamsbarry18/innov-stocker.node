@@ -5,9 +5,8 @@
             "src": "dist/server.js",
             "use": "@vercel/node",
             "config": {
-                "buildCommand": "npm run build",
                 "includeFiles": [
-                    "dist/**"
+                    "dist/**/*"
                 ]
             }
         }
@@ -17,5 +16,7 @@
             "src": "/(.*)",
             "dest": "dist/server.js"
         }
-    ]
+    ],
+    "installCommand": "npm install",
+    "buildCommand": "npm run build"
 }
