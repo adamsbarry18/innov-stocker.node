@@ -2,14 +2,22 @@
     "version": 2,
     "builds": [
         {
-            "src": "/src/app.ts",
-            "use": "@vercel/node"
+            "src": "src/server.ts",
+            "use": "@vercel/node",
+            "config": {
+                "buildCommand": "npm run build:vercel"
+            }
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "/src/app.ts"
+            "dest": "src/server.ts"
         }
-    ]
+    ],
+    "functions": {
+        "src/server.ts": {
+            "maxDuration": 30
+        }
+    }
 }

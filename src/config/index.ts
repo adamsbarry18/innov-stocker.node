@@ -3,7 +3,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 import 'reflect-metadata';
-import logger from '@/lib/logger';
+import logger from '../lib/logger';
 
 // Priority: .env.development, .env.production, etc. > .env (base)
 /**
