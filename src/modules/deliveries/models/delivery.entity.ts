@@ -118,8 +118,7 @@ export class Delivery extends Model {
   deliveryDate!: Date;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: DeliveryStatus,
     default: DeliveryStatus.PENDING,
   })

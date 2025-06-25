@@ -124,16 +124,14 @@ export class CustomerReturnItem extends Model {
   unitPriceAtReturn: number | null = null;
 
   @Column({
-    type: 'varchar',
-    length: 20,
+    type: 'enum',
     enum: ReturnedItemCondition,
     nullable: true,
   })
   condition: ReturnedItemCondition | null = null;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: ReturnItemActionTaken,
     default: ReturnItemActionTaken.PENDING_INSPECTION,
     name: 'action_taken',

@@ -4,7 +4,7 @@ import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { z } from 'zod';
 
 export enum NotificationType {
-  INFO = 'INFO',
+  INFO = 'info',
   SUCCESS = 'success',
   WARNING = 'warning',
   ERROR = 'error',
@@ -48,8 +48,7 @@ export class Notification extends Model {
   message!: string;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: NotificationType,
     default: NotificationType.INFO,
   })

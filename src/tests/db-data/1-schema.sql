@@ -21,7 +21,7 @@ CREATE TABLE `user` (
     `internal_level` INT DEFAULT 1,
     `internal` TINYINT(1) DEFAULT 0,
     `color` VARCHAR(10) DEFAULT NULL,
-    `password_status` VARCHAR(20) DEFAULT 'ACTIVE',
+    `password_status` ENUM('ACTIVE', 'VALIDATING', 'EXPIRED') DEFAULT 'ACTIVE',
     `password_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `preferences` JSON DEFAULT NULL,
     `authorisation_overrides` VARCHAR(500) DEFAULT NULL,
@@ -296,7 +296,7 @@ CREATE TABLE `products` (
     `default_purchase_price` DECIMAL(15, 4) DEFAULT NULL,
     `default_selling_price_ht` DECIMAL(15, 4) DEFAULT NULL,
     `default_vat_rate_percentage` DECIMAL(5, 2) DEFAULT NULL,
-    `status` VARCHAR(20) DEFAULT 'active' NOT NULL, -- Possible values: active, inactive, obsolete
+    `status` ENUM('active', 'inactive', 'obsolete') DEFAULT 'active' NOT NULL, -- Possible values: active, inactive, obsolete
     `is_composite_product` TINYINT(1) DEFAULT 0 NOT NULL,
     `notes` TEXT DEFAULT NULL,
     `created_by_user_id` INT DEFAULT NULL,
@@ -456,7 +456,7 @@ CREATE TABLE `inventory_sessions` (
     `shop_id` INT DEFAULT NULL,
     `start_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     `end_date` TIMESTAMP NULL DEFAULT NULL,
-    `status` VARCHAR(20) DEFAULT 'pending' NOT NULL, -- Possible values: pending, in_progress, completed, cancelled
+    `status` ENUM('pending', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending' NOT NULL, -- Possible values: pending, in_progress, completed, cancelled
     `created_by_user_id` INT DEFAULT NULL,
     `updated_by_user_id` INT DEFAULT NULL,
     `validated_by_user_id` INT DEFAULT NULL,
@@ -511,7 +511,7 @@ CREATE TABLE `stock_transfers` (
     `source_shop_id` INT DEFAULT NULL,
     `destination_warehouse_id` INT DEFAULT NULL,
     `destination_shop_id` INT DEFAULT NULL,
-    `status` VARCHAR(25) DEFAULT 'pending' NOT NULL, -- Possible values: pending, in_transit, partially_received, received, cancelled
+    `status` ENUM('pending', 'in_transit', 'partially_received', 'received', 'cancelled') DEFAULT 'pending' NOT NULL, -- Possible values: pending, in_transit, partially_received, received, cancelled
     `requested_by_user_id` INT NOT NULL,
     `shipped_by_user_id` INT DEFAULT NULL,
     `received_by_user_id` INT DEFAULT NULL,
@@ -568,7 +568,7 @@ CREATE TABLE `purchase_orders` (
     `supplier_id` INT NOT NULL,
     `order_date` DATE NOT NULL,
     `expected_delivery_date` DATE DEFAULT NULL,
-    `status` VARCHAR(30) DEFAULT 'draft' NOT NULL, -- Possible values: draft, pending_approval, approved, sent_to_supplier, partially_received, fully_received, cancelled
+    `status` ENUM('draft', 'pending_approval', 'approved', 'sent_to_supplier', 'partially_received', 'fully_received', 'cancelled') DEFAULT 'draft' NOT NULL, -- Possible values: draft, pending_approval, approved, sent_to_supplier, partially_received, fully_received, cancelled
     `currency_id` INT NOT NULL,
     `total_amount_ht` DECIMAL(15, 4) DEFAULT 0.0000,
     `total_vat_amount` DECIMAL(15, 4) DEFAULT 0.0000,
@@ -633,7 +633,7 @@ CREATE TABLE `purchase_receptions` (
     `shop_id` INT DEFAULT NULL,
     `received_by_user_id` INT NOT NULL,
     `updated_by_user_id` INT DEFAULT NULL, -- Added for consistency with Model pattern
-    `status` VARCHAR(30) DEFAULT 'complete' NOT NULL, -- Possible values: partial, complete, pending_quality_check
+    `status` ENUM('partial', 'complete', 'pending_quality_check', 'cancelled') DEFAULT 'complete' NOT NULL, -- Possible values: partial, complete, pending_quality_check, cancelled
     `notes` TEXT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -688,7 +688,7 @@ CREATE TABLE `supplier_invoices` (
     `total_vat_amount` DECIMAL(15, 4) DEFAULT 0.0000,
     `total_amount_ttc` DECIMAL(15, 4) NOT NULL,
     `amount_paid` DECIMAL(15, 4) DEFAULT 0.0000 NOT NULL,
-    `status` VARCHAR(25) DEFAULT 'pending_payment' NOT NULL, -- Possible values: draft, pending_payment, partially_paid, paid, cancelled
+    `status` ENUM('draft', 'pending_payment', 'partially_paid', 'paid', 'cancelled') DEFAULT 'pending_payment' NOT NULL, -- Possible values: draft, pending_payment, partially_paid, paid, cancelled
     `notes` TEXT DEFAULT NULL,
     `file_attachment_url` VARCHAR(2048) DEFAULT NULL,
     `created_by_user_id` INT DEFAULT NULL,
@@ -757,7 +757,7 @@ CREATE TABLE `supplier_returns` (
     `return_number` VARCHAR(50) NOT NULL,
     `supplier_id` INT NOT NULL,
     `return_date` DATE NOT NULL,
-    `status` VARCHAR(30) DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved_by_supplier, pending_shipment, shipped_to_supplier, received_by_supplier, credit_expected, refunded, credit_note_received, completed, rejected_by_supplier, cancelled
+    `status` ENUM('requested', 'approved_by_supplier', 'pending_shipment', 'shipped_to_supplier', 'received_by_supplier', 'credit_expected', 'refunded', 'credit_note_received', 'completed', 'rejected_by_supplier', 'cancelled') DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved_by_supplier, pending_shipment, shipped_to_supplier, received_by_supplier, credit_expected, refunded, credit_note_received, completed, rejected_by_supplier, cancelled
     `reason` TEXT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
     `source_warehouse_id` INT DEFAULT NULL,
@@ -820,7 +820,7 @@ CREATE TABLE `quotes` (
     `customer_id` INT NOT NULL,
     `issue_date` DATE NOT NULL,
     `expiry_date` DATE DEFAULT NULL,
-    `status` VARCHAR(30) DEFAULT 'draft' NOT NULL, -- Possible values: draft, sent, accepted, refused, cancelled, converted_to_order
+    `status` ENUM('draft', 'sent', 'accepted', 'refused', 'cancelled', 'converted_to_order') DEFAULT 'draft' NOT NULL, -- Possible values: draft, sent, accepted, refused, cancelled, converted_to_order
     `currency_id` INT NOT NULL,
     `total_amount_ht` DECIMAL(15, 4) DEFAULT 0.0000,
     `total_vat_amount` DECIMAL(15, 4) DEFAULT 0.0000,
@@ -878,7 +878,7 @@ CREATE TABLE `sales_orders` (
     `customer_id` INT NOT NULL,
     `quote_id` INT DEFAULT NULL,
     `order_date` DATE NOT NULL,
-    `status` VARCHAR(30) DEFAULT 'draft' NOT NULL, -- Possible values: draft, pending_approval, approved, pending_payment, payment_received, in_preparation, partially_shipped, fully_shipped, invoiced, cancelled
+    `status` ENUM('draft', 'pending_approval', 'approved', 'pending_payment', 'payment_received', 'in_preparation', 'partially_shipped', 'fully_shipped', 'invoiced', 'cancelled') DEFAULT 'draft' NOT NULL, -- Possible values: draft, pending_approval, approved, pending_payment, payment_received, in_preparation, partially_shipped, fully_shipped, invoiced, cancelled
     `currency_id` INT NOT NULL,
     `total_amount_ht` DECIMAL(15, 4) DEFAULT 0.0000,
     `total_vat_amount` DECIMAL(15, 4) DEFAULT 0.0000,
@@ -942,7 +942,7 @@ CREATE TABLE `deliveries` (
     `delivery_number` VARCHAR(50) NOT NULL,
     `sales_order_id` INT NOT NULL,
     `delivery_date` DATE NOT NULL,
-    `status` VARCHAR(25) DEFAULT 'in_preparation' NOT NULL, -- Possible values: in_preparation, shipped, delivered, cancelled
+    `status` ENUM('in_preparation', 'shipped', 'delivered', 'cancelled', 'pending') DEFAULT 'in_preparation' NOT NULL, -- Possible values: in_preparation, shipped, delivered, cancelled, pending
     `shipping_address_id` INT NOT NULL,
     `carrier_name` VARCHAR(255) DEFAULT NULL,
     `tracking_number` VARCHAR(100) DEFAULT NULL,
@@ -994,7 +994,7 @@ CREATE TABLE `customer_invoices` (
     `customer_id` INT NOT NULL,
     `invoice_date` DATE NOT NULL,
     `due_date` DATE DEFAULT NULL,
-    `status` VARCHAR(20) DEFAULT 'draft' NOT NULL, -- Possible values: draft, sent, partially_paid, paid, overdue, cancelled, voided
+    `status` ENUM('draft', 'sent', 'partially_paid', 'paid', 'overdue', 'cancelled', 'voided') DEFAULT 'draft' NOT NULL, -- Possible values: draft, sent, partially_paid, paid, overdue, cancelled, voided
     `currency_id` INT NOT NULL,
     `total_amount_ht` DECIMAL(15, 4) NOT NULL,
     `total_vat_amount` DECIMAL(15, 4) DEFAULT 0.0000,
@@ -1076,7 +1076,7 @@ CREATE TABLE `customer_returns` (
     `warehouse_id` INT DEFAULT NULL,
     `shop_id` INT DEFAULT NULL,
     `return_date` DATE NOT NULL,
-    `status` VARCHAR(30) DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved, pending_reception, received, inspected, refunded, exchanged, rejected, cancelled
+    `status` ENUM('requested', 'approved', 'pending_reception', 'received_partial', 'received_complete', 'inspected', 'refund_pending', 'exchange_pending', 'credit_note_issued', 'refunded', 'exchanged', 'completed', 'cancelled') DEFAULT 'requested' NOT NULL, -- Possible values: requested, approved, pending_reception, received_partial, received_complete, inspected, refund_pending, exchange_pending, credit_note_issued, refunded, exchanged, completed, cancelled
     `reason` TEXT DEFAULT NULL,
     `created_by_user_id` INT DEFAULT NULL,
     `updated_by_user_id` INT DEFAULT NULL,
@@ -1107,8 +1107,8 @@ CREATE TABLE `customer_return_items` (
     `quantity` DECIMAL(15, 3) NOT NULL,
     `quantity_received` DECIMAL(15, 3) DEFAULT 0.000,
     `unit_price_at_return` DECIMAL(15, 4) DEFAULT NULL,
-    `condition` VARCHAR(20) DEFAULT NULL, -- Possible values: new, used, damaged
-    `action_taken` VARCHAR(30) DEFAULT 'pending_inspection', -- Possible values: restock, discard, repair, pending_inspection
+    `condition` ENUM('new', 'used', 'damaged', 'defective') DEFAULT NULL,
+    `action_taken` ENUM('pending_inspection', 'restock', 'restock_quarantine', 'discard', 'repair', 'return_to_supplier', 'refund_approved', 'exchange_approved', 'credit_note_approved') DEFAULT 'pending_inspection' NOT NULL,
     `notes` TEXT DEFAULT NULL, -- Ajout de la colonne notes
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -1194,7 +1194,7 @@ CREATE TABLE `cash_register_sessions` (
     `closing_balance_theoretical` DECIMAL(15, 4) DEFAULT NULL,
     `closing_balance_actual` DECIMAL(15, 4) DEFAULT NULL,
     `difference_amount` DECIMAL(15, 4) DEFAULT 0.0000, -- Application to calculate
-    `status` VARCHAR(10) DEFAULT 'open' NOT NULL, -- Possible values: open, closed
+    `status` ENUM('open', 'closed') DEFAULT 'open' NOT NULL, -- Possible values: open, closed
     `notes` TEXT DEFAULT NULL,
     `deleted_time` TIMESTAMP NULL DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -1215,7 +1215,7 @@ CREATE TABLE `payments` (
     `amount` DECIMAL(15, 4) NOT NULL,
     `currency_id` INT NOT NULL,
     `payment_method_id` INT NOT NULL,
-    `direction` VARCHAR(10) NOT NULL, -- Possible values: inbound, outbound
+    `direction` ENUM('inbound', 'outbound') NOT NULL, -- Possible values: inbound, outbound
     `customer_id` INT DEFAULT NULL,
     `supplier_id` INT DEFAULT NULL,
     `customer_invoice_id` INT DEFAULT NULL,
@@ -1298,7 +1298,7 @@ DROP TABLE IF EXISTS `notifications`;
 CREATE TABLE `notifications` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `user_id` INT NOT NULL,
-    `type` VARCHAR(100) NOT NULL,
+    `type` ENUM('info', 'success', 'warning', 'error', 'approval_request') DEFAULT 'info' NOT NULL,
     `message` TEXT NOT NULL,
     `is_read` TINYINT(1) DEFAULT 0 NOT NULL,
     `entity_type` VARCHAR(100) DEFAULT NULL,
@@ -1323,19 +1323,19 @@ DROP TABLE IF EXISTS `import_batches`;
 
 CREATE TABLE `import_batches` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `entity_type` VARCHAR(50) NOT NULL,
-    `status` VARCHAR(30) DEFAULT 'pending' NOT NULL,
+    `entity_type` ENUM('product', 'customer', 'supplier', 'product_category', 'opening_stock', 'sales_order', 'purchase_order') NOT NULL,
+    `status` ENUM('pending', 'processing', 'completed', 'failed') DEFAULT 'pending' NOT NULL,
     `summary` JSON DEFAULT NULL,
     `error_details` JSON DEFAULT NULL,
     `critical_error` TEXT DEFAULT NULL,
     `payload` JSON NOT NULL,
     `original_file_name` VARCHAR(255) DEFAULT NULL,
-    `created_by_user_id` INT NOT NULL,
+    `created_by_user_id` INT DEFAULT NULL,
     `updated_by_user_id` INT DEFAULT NULL,
     `created_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `deleted_time` TIMESTAMP NULL DEFAULT NULL,
-    CONSTRAINT `fk_import_batches_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `fk_import_batches_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Réactiver les vérifications de clés étrangères

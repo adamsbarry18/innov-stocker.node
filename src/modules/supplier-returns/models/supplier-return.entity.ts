@@ -133,8 +133,7 @@ export class SupplierReturn extends Model {
   returnDate!: Date;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: SupplierReturnStatus,
     default: SupplierReturnStatus.REQUESTED,
   })

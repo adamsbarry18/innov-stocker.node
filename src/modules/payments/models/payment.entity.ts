@@ -157,7 +157,7 @@ export class Payment extends Model {
   @JoinColumn({ name: 'payment_method_id' })
   paymentMethod!: PaymentMethod;
 
-  @Column({ type: 'varchar', length: 10, enum: PaymentDirection })
+  @Column({ type: 'enum', enum: PaymentDirection })
   direction!: PaymentDirection;
 
   @Column({ type: 'int', name: 'customer_id', nullable: true })

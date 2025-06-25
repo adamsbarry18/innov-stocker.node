@@ -55,16 +55,16 @@ export type ImportBatchApiResponse = {
 @Entity({ name: 'import_batches' })
 export class ImportBatch extends Model {
   @Column({
-    type: 'varchar',
-    length: 50,
+    type: 'enum',
+    enum: ImportEntityType,
     name: 'entity_type',
   })
   entityType!: ImportEntityType;
 
   @Column({
-    type: 'varchar',
-    length: 30,
-    default: '',
+    type: 'enum',
+    enum: ImportStatus,
+    default: ImportStatus.PENDING,
   })
   status: ImportStatus = ImportStatus.PENDING;
 
@@ -83,8 +83,8 @@ export class ImportBatch extends Model {
   @Column({ type: 'varchar', length: 255, name: 'original_file_name', nullable: true })
   originalFileName: string | null = null;
 
-  @Column({ type: 'int', name: 'created_by_user_id' })
-  createdByUserId!: number;
+  @Column({ type: 'int', name: 'created_by_user_id', nullable: true })
+  createdByUserId: number | null = null;
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'created_by_user_id' })

@@ -100,8 +100,7 @@ export class Quote extends Model {
   expiryDate: Date | null = null;
 
   @Column({
-    type: 'varchar', // Ou 'enum'
-    length: 30,
+    type: 'enum',
     enum: QuoteStatus,
     default: QuoteStatus.DRAFT,
   })

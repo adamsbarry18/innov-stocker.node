@@ -102,8 +102,7 @@ export class InventorySession extends Model {
   endDate: Date | null = null;
 
   @Column({
-    type: 'varchar',
-    length: 20,
+    type: 'enum',
     enum: InventorySessionStatus,
     default: InventorySessionStatus.PENDING,
   })

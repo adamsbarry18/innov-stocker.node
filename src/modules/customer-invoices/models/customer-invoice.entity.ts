@@ -134,8 +134,7 @@ export class CustomerInvoice extends Model {
   amountPaid: number = 0; // Géré par le module Payments
 
   @Column({
-    type: 'varchar',
-    length: 20,
+    type: 'enum',
     enum: CustomerInvoiceStatus,
     default: CustomerInvoiceStatus.DRAFT,
   })

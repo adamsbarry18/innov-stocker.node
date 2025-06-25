@@ -7,9 +7,15 @@ import { glob } from 'glob'; // Use async import
 import { registerRoutes } from '../common/routing/register';
 import logger from '../lib/logger';
 
+const isProd = process.env.NODE_ENV === 'production';
+const modulesPath = isProd
+  ? resolve(process.cwd(), 'dist/modules')
+  : resolve(process.cwd(), 'src/modules');
+const globPattern = resolve(modulesPath, `**/*.routes.${isProd ? 'js' : 'ts'}`).replace(/\\/g, '/');
+
 /**
  * Dynamically discovers and registers all routes defined in `*.routes.{ts,js}` files
- * within the `src/modules` directory.
+ * within the `src/modules` or `dist/modules` directory.
  *
  * @returns {Promise<Router>} A promise that resolves with the Express router
  *                            containing all registered routes.
@@ -17,9 +23,6 @@ import logger from '../lib/logger';
  */
 async function initializeApiRouter(): Promise<Router> {
   const apiRouter = Router();
-  const modulesPath = resolve(process.cwd(), 'src/modules');
-  // Ensure cross-OS path compatibility
-  const globPattern = resolve(modulesPath, '**/*.routes.{ts,js}').replace(/\\/g, '/');
   let routeFiles: string[];
   try {
     // Use async glob

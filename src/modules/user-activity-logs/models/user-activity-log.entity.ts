@@ -97,14 +97,13 @@ export class UserActivityLog {
   user!: User;
 
   @Column({
-    type: 'varchar',
-    length: 255,
+    type: 'enum',
     name: 'action_type',
     enum: ActionType,
   })
   actionType!: ActionType;
 
-  @Column({ type: 'varchar', length: 100, name: 'entity_type', nullable: true, enum: EntityType })
+  @Column({ type: 'enum', name: 'entity_type', nullable: true, enum: EntityType })
   entityType!: EntityType;
 
   @Column({ type: 'varchar', length: 100, name: 'entity_id', nullable: true })

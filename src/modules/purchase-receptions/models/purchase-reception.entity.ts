@@ -125,8 +125,7 @@ export class PurchaseReception extends Model {
   shop: Shop | null = null;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: PurchaseReceptionStatus,
     default: PurchaseReceptionStatus.PENDING_QUALITY_CHECK,
   })

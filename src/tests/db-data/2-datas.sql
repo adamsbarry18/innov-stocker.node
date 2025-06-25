@@ -314,7 +314,7 @@ INSERT INTO supplier_return_items (id, supplier_return_id, product_id, product_v
 -- Table customer_returns
 -- -----------------------------------------------------
 INSERT INTO customer_returns (id, return_number, customer_id, sales_order_id, customer_invoice_id, return_date, status, reason, created_by_user_id, notes, created_time, updated_time) VALUES
-(1, 'RMA-CUST-2025-001', 1, 1, 1, '2025-05-25', 'received', 'Ne convient pas', 2, 'Client souhaite échanger contre un autre modèle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'RMA-CUST-2025-001', 1, 1, 1, '2025-05-25', 'received_complete', 'Ne convient pas', 2, 'Client souhaite échanger contre un autre modèle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (2, 'RMA-CUST-2025-002', 2, 2, 2, '2025-05-28', 'pending_reception', 'Panne au déballage', 1, 'Laptop ne démarre pas', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, 'RMA-CUST-2025-003', 1, NULL, NULL, '2025-06-10', 'refunded', 'Remboursement effectué', 1, 'Retour avec remboursement déjà traité pour test de suppression', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
@@ -344,7 +344,7 @@ INSERT INTO inventory_session_items (id, inventory_session_id, product_id, produ
 -- Table stock_transfers
 -- -----------------------------------------------------
 INSERT INTO stock_transfers (id, transfer_number, source_warehouse_id, source_shop_id, destination_warehouse_id, destination_shop_id, status, requested_by_user_id, shipped_by_user_id, received_by_user_id, request_date, ship_date, receive_date, notes, created_time, updated_time) VALUES
-(1, 'TRF-2025-001', 1, NULL, NULL, 1, 'shipped', 2, 1, NULL, '2025-06-02', '2025-06-03', NULL, 'Transfert de chargeurs vers boutique Nantes - Expédié', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'TRF-2025-001', 1, NULL, NULL, 1, 'in_transit', 2, 1, NULL, '2025-06-02', '2025-06-03', NULL, 'Transfert de chargeurs vers boutique Nantes - Expédié', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (2, 'TRF-2025-002', 2, NULL, 1, NULL, 'received', 1, 1, 1, '2025-06-03', '2025-06-04', '2025-06-05', 'Rapatriement variantes smartphone vers Paris - Reçu', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- -----------------------------------------------------
@@ -407,9 +407,9 @@ INSERT INTO user_activity_logs (id, user_id, action_type, entity_type, entity_id
 -- Table notifications
 -- -----------------------------------------------------
 INSERT INTO notifications (id, user_id, type, message, is_read, entity_type, entity_id, link_url, created_time) VALUES
-(1, 1, 'LOW_STOCK_ALERT', 'Le produit "Smartphone Modèle X - Bleu" (PROD-SP-001-BLU) est en stock bas (3 restants).', 0, 'product_variant', '1', '/products/1/variants/1', CURRENT_TIMESTAMP),
-(2, 2, 'NEW_SALES_ORDER', 'Nouvelle commande client SO-2025-00002 reçue de Entreprise ABC SARL.', 0, 'sales_order', '2', '/sales-orders/2', CURRENT_TIMESTAMP),
-(3, 1, 'INVOICE_DUE_SOON', 'La facture INV-SUP-HIGHTECH-05-001 arrive à échéance le 2025-06-14.', 0, 'supplier_invoice', '1', '/supplier-invoices/1', '2025-06-01 09:00:00'),
-(4, 2, 'QUOTE_ACCEPTED', 'Le devis QT-2025-00001 pour Jean Dupont a été accepté.', 1, 'quote', '1', '/quotes/1', '2025-05-09 12:00:00');
+(1, 1, 'info', 'Le produit "Smartphone Modèle X - Bleu" (PROD-SP-001-BLU) est en stock bas (3 restants).', 0, 'product_variant', '1', '/products/1/variants/1', CURRENT_TIMESTAMP),
+(2, 2, 'info', 'Nouvelle commande client SO-2025-00002 reçue de Entreprise ABC SARL.', 0, 'sales_order', '2', '/sales-orders/2', CURRENT_TIMESTAMP),
+(3, 1, 'info', 'La facture INV-SUP-HIGHTECH-05-001 arrive à échéance le 2025-06-14.', 0, 'supplier_invoice', '1', '/supplier-invoices/1', '2025-06-01 09:00:00'),
+(4, 2, 'info', 'Le devis QT-2025-00001 pour Jean Dupont a été accepté.', 1, 'quote', '1', '/quotes/1', '2025-05-09 12:00:00');
 
 SET FOREIGN_KEY_CHECKS = 1;

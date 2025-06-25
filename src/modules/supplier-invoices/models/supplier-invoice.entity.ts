@@ -126,8 +126,7 @@ export class SupplierInvoice extends Model {
   amountPaid: number = 0;
 
   @Column({
-    type: 'varchar',
-    length: 25,
+    type: 'enum',
     enum: SupplierInvoiceStatus,
     default: SupplierInvoiceStatus.PENDING_PAYMENT,
   })

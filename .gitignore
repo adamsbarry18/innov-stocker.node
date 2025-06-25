@@ -51,3 +51,4 @@ coverage
 # Vitest cache
 .vitest-cache.*
 .vitest/cache
+.vercel

@@ -117,8 +117,7 @@ export class PurchaseOrder extends Model {
   expectedDeliveryDate: Date | null = null;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: PurchaseOrderStatus,
     default: PurchaseOrderStatus.DRAFT,
   })

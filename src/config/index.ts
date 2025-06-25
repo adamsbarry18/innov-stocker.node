@@ -96,16 +96,6 @@ const envSchema = z
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     GOOGLE_CALLBACK_URL: z.string().url().optional(),
   })
-  .refine(
-    (data) => {
-      if (data.NODE_ENV === 'production' && data.DB_SYNCHRONIZE === true) {
-        logger.error('❌ FATAL SECURITY RISK: DB_SYNCHRONIZE cannot be true in production!');
-        return false;
-      }
-      return true;
-    },
-    { message: 'DB_SYNCHRONIZE must be false in production environment' },
-  )
   .refine((data) => {
     if (!data.API_URL && data.NODE_ENV !== 'test') {
       logger.warn(
