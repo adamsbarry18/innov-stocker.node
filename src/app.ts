@@ -7,7 +7,9 @@ import helmet from 'helmet';
 import passport from 'passport';
 import swaggerUi from 'swagger-ui-express';
 
-import { initializedApiRouter } from '@/api';
+// import { initializedApiRouter } from '@/api';
+import { initializedApiRouter } from './api/index';
+
 import { NotFoundError } from '@/common/errors/httpErrors';
 import { errorHandler } from '@/common/middleware/errorHandler';
 import { jsendMiddleware } from '@/common/middleware/JSend';
