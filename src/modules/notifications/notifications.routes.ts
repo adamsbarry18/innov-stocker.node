@@ -78,7 +78,7 @@ export default class NotificationRouter extends BaseRouter {
    *         description: Filter notifications by their read status (true or false).
    *       - name: type
    *         in: query
-   *         schema: { type: string, enum: [INFO, success, warning, error, approval_request] }
+   *         schema: { type: string, enum: [info, success, warning, error, approval_request] }
    *         description: Filter by notification type.
    *     responses:
    *       200:

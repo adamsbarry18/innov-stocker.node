@@ -127,8 +127,7 @@ export class CashRegisterSession extends Model {
   differenceAmount: number | null = null;
 
   @Column({
-    type: 'varchar', // Ou 'enum'
-    length: 10,
+    type: 'enum',
     enum: CashRegisterSessionStatus,
     default: CashRegisterSessionStatus.OPEN,
   })

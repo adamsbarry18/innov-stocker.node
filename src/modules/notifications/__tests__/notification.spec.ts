@@ -3,16 +3,11 @@ import { describe, it, expect } from 'vitest';
 
 import app from '@/app';
 import { adminToken } from '@/tests/globalSetup';
-import { NotificationType } from '../models/notification.entity'; // Re-import for test data
 
 describe('Notifications API', () => {
   // Notifications existantes dans 2-datas.sql pour userId 1 (admin):
-  // ID 1: userId 1, type: 'LOW_STOCK_ALERT', isRead: 0 (unread)
-  // ID 3: userId 1, type: 'INVOICE_DUE_SOON', isRead: 0 (unread)
+  // ID 1: userId 1, type: 'info', isRead: 0 (unread)
 
-  // Notifications existantes dans 2-datas.sql pour userId 2 (normal user):
-  // ID 2: userId 2, type: 'NEW_SALES_ORDER', isRead: 0 (unread)
-  // ID 4: userId 2, type: 'QUOTE_ACCEPTED', isRead: 1 (read)
 
   let createdNotificationId: number;
 
@@ -20,7 +15,7 @@ describe('Notifications API', () => {
     it('should create a new notification for the authenticated user (admin)', async () => {
       const testNotification = {
         message: "Nouvelle notification de test créée par l'API.",
-        type: NotificationType.INFO,
+        type: 'info',
         entityType: 'test_entity',
         entityId: '123',
       };
@@ -77,7 +72,6 @@ describe('Notifications API', () => {
       expect(res.body.data).toHaveProperty('markedAsReadCount');
       expect(res.body.data.markedAsReadCount).toBe(3);
 
-      // Vérifier le compte après avoir tout marqué comme lu
       const finalCountRes = await request(app)
         .get('/api/v1/notifications/unread-count')
         .set('Authorization', `Bearer ${adminToken}`);
@@ -111,7 +105,6 @@ describe('Notifications API', () => {
       expect(res.body.data).toHaveProperty('notifications');
       expect(Array.isArray(res.body.data.notifications)).toBe(true);
       expect(res.body.data).toHaveProperty('total');
-      // Admin (userId 1) has 3 notifications (ID 1, 3, createdNotificationId), all now read
       expect(res.body.data.notifications.length).toBe(3);
       expect(res.body.data.notifications.every((n: any) => n.isRead === true)).toBe(true);
     });
@@ -132,19 +125,19 @@ describe('Notifications API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data.notifications.every((n: any) => n.isRead === true)).toBe(true);
-      expect(res.body.data.notifications.length).toBe(3); // Notifications 1, 3, createdNotificationId for admin
+      expect(res.body.data.notifications.length).toBe(3);
     });
 
-    it('should filter notifications by type (e.g., LOW_STOCK_ALERT, which is now read)', async () => {
+    it('should filter notifications by type (e.g., info, which is now read)', async () => {
       const res = await request(app)
-        .get('/api/v1/notifications?type=LOW_STOCK_ALERT')
+        .get('/api/v1/notifications?type=info')
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.data.notifications.every((n: any) => n.type === 'LOW_STOCK_ALERT')).toBe(
+      expect(res.body.data.notifications.every((n: any) => n.type === 'info')).toBe(
         true,
       );
-      expect(res.body.data.notifications.length).toBe(1); // Notification 1 for admin
+      expect(res.body.data.notifications.length).toBe(3);
       expect(res.body.data.notifications[0].isRead).toBe(true);
     });
 

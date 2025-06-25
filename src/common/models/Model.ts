@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
@@ -26,7 +25,7 @@ dayjs.extend(timezone);
 /**
  * Classe de base pour les entités TypeORM, fournissant validation, gestion du cache et sérialisation.
  */
-export abstract class Model extends BaseEntity {
+export abstract class Model {
   @PrimaryGeneratedColumn({ name: 'id' })
   id!: number;
 

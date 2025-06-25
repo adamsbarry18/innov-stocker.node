@@ -129,8 +129,7 @@ export class SalesOrder extends Model {
   orderDate!: Date;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: SalesOrderStatus,
     default: SalesOrderStatus.DRAFT,
   })

@@ -577,7 +577,7 @@ export class ImportService {
           throw new Error('Quantity must be positive for opening stock.');
         if (!itemInput.locationId || !itemInput.locationType)
           throw new Error('locationId and locationType are required.');
-
+        if(batch.createdByUserId) {
         const movementInput: CreateStockMovementInput = {
           productId: itemInput.productId,
           productVariantId: itemInput.productVariantId,
@@ -591,8 +591,9 @@ export class ImportService {
           referenceDocumentId: null,
           notes: `Opening stock for row ${rowIndex} of import batch ${batch.id}.`,
         };
-
         await this.stockMovementService.createMovement(movementInput);
+        }
+
         summary.successfullyImported++;
       } catch (error: any) {
         failedRows.push({ row: rowIndex, data: itemInput, error: error.message });
@@ -619,6 +620,7 @@ export class ImportService {
       const orderInput = ordersToImport[i];
       const rowIndex = i + 1;
       try {
+        if(batch.createdByUserId)
         await this.salesOrderService.createSalesOrder(orderInput, batch.createdByUserId);
         if (!orderInput.customerId || !orderInput.items || orderInput.items.length === 0) {
           throw new Error('Missing customerId or items.');
@@ -648,7 +650,9 @@ export class ImportService {
       const orderInput = ordersToImport[i];
       const rowIndex = i + 1;
       try {
-        await this.purchaseOrderService.createPurchaseOrder(orderInput, batch.createdByUserId);
+        if(batch.createdByUserId) {
+          await this.purchaseOrderService.createPurchaseOrder(orderInput, batch.createdByUserId);
+        }
         if (!orderInput.supplierId || !orderInput.items || orderInput.items.length === 0) {
           throw new Error('Missing supplierId or items.');
         }

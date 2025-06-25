@@ -54,7 +54,7 @@ export const appDataSourceOptions: DataSourceOptions = {
   username: config.DB_USERNAME,
   password: config.DB_PASSWORD,
   database: config.DB_NAME,
-  synchronize: false, // Schema is managed by SQL scripts (1-schema.sql) for tests
+  synchronize: false,
   logging: ['error'],
   entities: [
     User,

@@ -162,8 +162,7 @@ export class CustomerReturn extends Model {
   returnDate!: Date;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: CustomerReturnStatus,
     default: CustomerReturnStatus.REQUESTED,
   })

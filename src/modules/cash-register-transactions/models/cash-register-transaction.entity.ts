@@ -77,8 +77,7 @@ export class CashRegisterTransaction extends Model {
   transactionTimestamp!: Date;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     enum: CashRegisterTransactionType,
     name: 'type',
   })

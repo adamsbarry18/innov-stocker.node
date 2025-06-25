@@ -107,8 +107,7 @@ export class StockMovement extends Model {
   shop: Shop | null = null;
 
   @Column({
-    type: 'varchar',
-    length: 30,
+    type: 'enum',
     name: 'movement_type',
     enum: StockMovementType,
   })

@@ -14,10 +14,22 @@ export const errorHandler = (
   _next: NextFunction,
 ): void => {
   let error: BaseError;
+
+  // Log détaillé de l'erreur, même en production
+  // Affiche toutes les propriétés de l'objet Error
+  // eslint-disable-next-line no-console
+  if (config.NODE_ENV === 'production') {
+    console.error('Erreur API détaillée:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+  }
+
   logger.error(
     {
-      err,
-      stack: err.stack,
+      err: err instanceof Error ? {
+        ...err, // d'abord toutes les props custom
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+      } : err,
       url: req.originalUrl,
       method: req.method,
       ip: req.ip,

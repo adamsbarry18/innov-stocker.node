@@ -165,8 +165,7 @@ export class StockTransfer extends Model {
   destinationShop: Shop | null = null;
 
   @Column({
-    type: 'varchar',
-    length: 25,
+    type: 'enum',
     enum: StockTransferStatus,
     default: StockTransferStatus.PENDING,
   })
