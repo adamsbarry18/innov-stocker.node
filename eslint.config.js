@@ -14,6 +14,7 @@ export default tseslint.config(
   {
     // Global ignores
     ignores: [
+      'api/**',
       'dist/**',
       'build/**',
       'coverage/**',
