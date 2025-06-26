@@ -67,7 +67,6 @@ jobs:
   # ===========================================
   deploy:
     name: Deploy to Vercel
-    needs: build-and-push-docker
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
