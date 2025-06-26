@@ -1,0 +1,30 @@
+# Fichiers de développement
+node_modules
+.git
+.github
+.husky
+.vitest
+.eslintcache
+
+# Fichiers de test
+src/tests
+tests
+*.test.ts
+*.spec.ts
+
+# Fichiers de configuration de développement
+.env.local
+.env.development
+.env.test
+.prettierrc.js
+eslint.config.js
+vitest.config.mts
+
+# Documentation
+README.md
+*.md
+
+# Autres
+Dockerfile
+.dockerignore
+renovate.json 
