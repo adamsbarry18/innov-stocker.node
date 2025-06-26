@@ -80,10 +80,17 @@ jobs:
       - name: Docker Login to ACR
         run: |
           echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY_LOGIN_SERVER }} -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "BRANCH_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:${{ github.sha }} .
+          docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:${{ github.sha }} \
+                       -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:${{ env.BRANCH_NAME }} \
+                       -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:latest .
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:${{ github.sha }}
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:${{ env.BRANCH_NAME }}
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:latest
 
   # ===========================================
   # Job: Deploy to vercel
@@ -102,4 +109,4 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          images: ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:${{ github.sha }}
+          images: ${{ secrets.REGISTRY_LOGIN_SERVER }}/innov-stocker-app:main
