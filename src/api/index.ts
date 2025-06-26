@@ -68,8 +68,7 @@ async function initializeApiRouter(): Promise<Router> {
       }
     } catch (error) {
       logger.error(
-        { err: error },
-        `  Failed to load or register routes from file: ${relativePath}`,
+        `  Failed to load or register routes from file: ${relativePath}\nMessage: ${error instanceof Error ? error.message : String(error)}\nStack: ${error instanceof Error && error.stack ? error.stack : ''}`
       );
       // Propagate the error to fail Promise.all
       throw new Error(

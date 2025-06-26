@@ -2,23 +2,20 @@
     "version": 2,
     "builds": [
         {
-            "src": "api/index.ts",
+            "src": "api/index.cjs",
             "use": "@vercel/node",
             "config": {
                 "includeFiles": [
                     "dist/**"
-                ],
-                "maxLambdaSize": "100mb"
+                ]
             }
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "api/index.ts"
+            "dest": "api/index.cjs"
         }
     ],
-    "buildCommand": "npm run build:vercel",
-    "installCommand": "npm install",
-    "outputDirectory": "dist"
+    "buildCommand": "npm run build:vercel"
 }
