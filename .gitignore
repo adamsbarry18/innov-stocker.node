@@ -52,6 +52,3 @@ coverage
 .vitest-cache.*
 .vitest/cache
 .vercel
-
-# API dist directory
-api/dist/

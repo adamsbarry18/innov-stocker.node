@@ -46,7 +46,7 @@ const swaggerDefinition = {
   info: {
     title: 'API Documentation',
     version: '1.0.0',
-    description: 'Documentation auto-générée de l’API',
+    description: "Documentation auto-générée de l'API",
   },
   servers: [
     {
@@ -269,9 +269,14 @@ const swaggerDefinition = {
   security: [{ bearerAuth: [] }],
 };
 
+const isProd = process.env.NODE_ENV === 'production' || __dirname.includes('dist');
+const apisPattern = isProd
+  ? path.resolve(process.cwd(), 'dist/modules/**/*.routes.js')
+  : path.resolve(process.cwd(), 'src/modules/**/*.routes.ts');
+
 const options = {
   swaggerDefinition,
-  apis: [path.resolve(process.cwd(), 'src/modules/**/*.routes.ts')],
+  apis: [apisPattern],
 };
 
 const swaggerSpec = swaggerJSDoc(options);

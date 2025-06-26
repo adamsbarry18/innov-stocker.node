@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "tsx watch -r tsconfig-paths/register src/server.ts",
     "build": "npm run lint && tsc && tsc-alias && tsc-esm-fix dist",
-    "build:vercel": "tsc && tsc-alias && tsc-esm-fix api/dist",
     "prod": "cross-env NODE_ENV=production tsx -r tsconfig-paths/register dist/server.js",
     "lint": "rimraf dist && eslint . --cache",
     "lint:fix": "eslint . --fix --cache",

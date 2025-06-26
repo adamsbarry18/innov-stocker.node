@@ -7,9 +7,9 @@ import { glob } from 'glob'; // Use async import
 import { registerRoutes } from '../common/routing/register';
 import logger from '../lib/logger';
 
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === 'production' || __dirname.includes('dist');
 const modulesPath = isProd
-  ? resolve(process.cwd(), 'dist/modules')
+  ? resolve(__dirname, '../modules')
   : resolve(process.cwd(), 'src/modules');
 const globPattern = resolve(modulesPath, `**/*.routes.${isProd ? 'js' : 'ts'}`).replace(/\\/g, '/');
 

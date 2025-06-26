@@ -4,7 +4,7 @@
 docker build -t innov-stocker-app .
 
 # Lancer le container avec varibales .env
- docker run --rm --env-file .env -p 8000:8000 innov-stocker-app
+ docker run --rm --env-file .env.developmen -p 8000:8000 innov-stocker-app
 
 # Starting redis server
 
