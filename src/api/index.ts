@@ -1,5 +1,5 @@
-import { resolve } from 'path';
-import { pathToFileURL } from 'url';
+import { resolve, dirname } from 'path';
+import { pathToFileURL, fileURLToPath } from 'url';
 
 import { Router } from 'express';
 import { glob } from 'glob'; // Use async import
@@ -7,9 +7,12 @@ import { glob } from 'glob'; // Use async import
 import { registerRoutes } from '../common/routing/register';
 import logger from '../lib/logger';
 
-const isProd = process.env.NODE_ENV === 'production' || __dirname.includes('dist');
+const currentFilename = fileURLToPath(import.meta.url);
+const currentDirname = dirname(currentFilename);
+
+const isProd = process.env.NODE_ENV === 'production' || currentDirname.includes('dist');
 const modulesPath = isProd
-  ? resolve(__dirname, '../modules')
+  ? resolve(currentDirname, '../modules')
   : resolve(process.cwd(), 'src/modules');
 const globPattern = resolve(modulesPath, `**/*.routes.${isProd ? 'js' : 'ts'}`).replace(/\\/g, '/');
 
@@ -68,7 +71,7 @@ async function initializeApiRouter(): Promise<Router> {
       }
     } catch (error) {
       logger.error(
-        `  Failed to load or register routes from file: ${relativePath}\nMessage: ${error instanceof Error ? error.message : String(error)}\nStack: ${error instanceof Error && error.stack ? error.stack : ''}`
+        `  Failed to load or register routes from file: ${relativePath}\nMessage: ${error instanceof Error ? error.message : String(error)}\nStack: ${error instanceof Error && error.stack ? error.stack : ''}`,
       );
       // Propagate the error to fail Promise.all
       throw new Error(

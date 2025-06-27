@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 import swaggerJSDoc from 'swagger-jsdoc';
 
@@ -40,6 +41,9 @@ import {
   notificationSchemas,
   importSchemas,
 } from './openapi-schemas';
+
+const currentFilename = fileURLToPath(import.meta.url);
+const currentDirname = path.dirname(currentFilename);
 
 const swaggerDefinition = {
   openapi: '3.0.3',
@@ -269,7 +273,7 @@ const swaggerDefinition = {
   security: [{ bearerAuth: [] }],
 };
 
-const isProd = process.env.NODE_ENV === 'production' || __dirname.includes('dist');
+const isProd = process.env.NODE_ENV === 'production' || currentDirname.includes('dist');
 const apisPattern = isProd
   ? path.resolve(process.cwd(), 'dist/modules/**/*.routes.js')
   : path.resolve(process.cwd(), 'src/modules/**/*.routes.ts');
