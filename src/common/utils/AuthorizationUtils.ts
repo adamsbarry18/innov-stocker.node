@@ -1,8 +1,9 @@
 import logger from '@/lib/logger';
 import { FEATURES_BY_NAME, featuresRawFlagsConfigMap } from '@/modules/auth/models/features';
+import { type UserActionType } from '@/modules/users';
 
 // Type pour la carte des permissions en entrée
-export type PermissionsInputMap = Record<string, string[]>;
+export type PermissionsInputMap = Record<string, UserActionType[]>;
 
 export class AuthorizationUtils {
   /**
@@ -32,7 +33,7 @@ export class AuthorizationUtils {
             continue;
           }
 
-          actionsToEncode.forEach((action) => {
+          actionsToEncode.forEach((action: UserActionType | string) => {
             const actionConfig = rawFlagsConfig[action];
             if (actionConfig) {
               currentMask |= actionConfig.value;

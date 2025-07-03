@@ -15,30 +15,36 @@ export const errorHandler = (
 ): void => {
   let error: BaseError;
 
-  // Log détaillé de l'erreur, même en production
-  // Affiche toutes les propriétés de l'objet Error
-  // eslint-disable-next-line no-console
+  // Detailed error log, even in production
   if (config.NODE_ENV === 'production') {
-    console.error('Erreur API détaillée:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
-  }
-
-  logger.error(
-    {
-      err: err instanceof Error ? {
-        ...err, // d'abord toutes les props custom
-        name: err.name,
-        message: err.message,
-        stack: err.stack,
-      } : err,
+    try {
+      // Use logger serialization for safe error logging
+      logger.error({
+        type: 'API_ERROR_DETAIL',
+        error: err,
+        url: req.originalUrl,
+        method: req.method,
+        ip: req.ip,
+      });
+    } catch (e) {
+      // Fallback to console if logger fails
+      // eslint-disable-next-line no-console
+      console.error('API error detail (fallback):', err);
+    }
+  } else {
+    // In development, log everything including body and query
+    logger.error({
+      type: 'API_ERROR_DETAIL',
+      error: err,
       url: req.originalUrl,
       method: req.method,
       ip: req.ip,
-      body: config.NODE_ENV !== 'production' ? req.body : undefined,
+      body: req.body,
       query: req.query,
-    },
-    `Error occurred: ${err.message}`,
-  );
+    });
+  }
 
+  // Construction de l'objet d'erreur pour la réponse
   if (err instanceof ZodError) {
     error = new ValidationError(err.errors.map((e) => e.message));
   } else if (err instanceof BaseError) {
