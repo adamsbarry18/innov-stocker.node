@@ -10,38 +10,46 @@ let isRedisReady = false;
 const initializeRedis = async (): Promise<void> => {
   if (isRedisReady) return;
 
-  try {
-    redisClient = createClient({
-      url: config.REDIS_URL,
-      socket: {
-        connectTimeout: 5000,
-        reconnectStrategy: (retries) => Math.min(retries * 50, 1000),
-      },
-    });
+  let attempts = 0;
+  const maxAttempts = 5;
+  while (attempts < maxAttempts) {
+    try {
+      redisClient = createClient({
+        url: config.REDIS_URL,
+        socket: {
+          connectTimeout: 5000,
+          reconnectStrategy: (retries) => Math.min(retries * 50, 1000),
+        },
+      });
 
-    redisClient.on('connect', () => {
-      logger.info('Connecting to Redis...');
-    });
+      redisClient.on('connect', () => {
+        logger.info('Connecting to Redis...');
+      });
 
-    redisClient.on('ready', () => {
-      isRedisReady = true;
-      logger.info('Redis client ready.');
-    });
+      redisClient.on('ready', () => {
+        isRedisReady = true;
+        logger.info('Redis client ready.');
+      });
 
-    redisClient.on('error', (err) => {
-      isRedisReady = false;
-      logger.error(err, 'Redis client error');
-    });
+      redisClient.on('error', (err) => {
+        isRedisReady = false;
+        logger.error(err, 'Redis client error');
+      });
 
-    redisClient.on('end', () => {
-      isRedisReady = false;
-      logger.warn('Redis client connection ended.');
-    });
+      redisClient.on('end', () => {
+        isRedisReady = false;
+        logger.warn('Redis client connection ended.');
+      });
 
-    await redisClient.connect();
-  } catch (error) {
-    logger.error(error, 'Failed to initialize Redis connection.');
+      await redisClient.connect();
+      if (isRedisReady) return;
+    } catch (error) {
+      logger.error(error, `Failed to initialize Redis connection (attempt ${attempts + 1})`);
+      attempts++;
+      await new Promise((res) => setTimeout(res, 1000));
+    }
   }
+  throw new Error('Could not connect to Redis after several attempts');
 };
 
 const getRedisClient = (): RedisClientType | null => {
