@@ -47,7 +47,7 @@ export default class PaymentRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/payments')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async recordPaymentRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreatePaymentInput = req.body;
     const userId = req.user?.id;
@@ -126,7 +126,7 @@ export default class PaymentRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/payments')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable([
     'id',
@@ -195,7 +195,7 @@ export default class PaymentRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/payments/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getPaymentByIdRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const paymentId = parseInt(req.params.id, 10);
     if (!paymentId) {
@@ -232,7 +232,7 @@ export default class PaymentRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/payments/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deletePaymentRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const paymentId = parseInt(req.params.id, 10);
     if (!paymentId) {

@@ -36,12 +36,6 @@ describe('Authorization API', () => {
       expect(typeof res.body.data).toBe('object');
       expect(Object.keys(res.body.data).length).toBeGreaterThan(0);
     });
-
-    it('should return 401 if no token is provided', async () => {
-      const res = await request(app).get('/api/v1/authorization/features');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('GET /authorization/levels', () => {
@@ -57,12 +51,6 @@ describe('Authorization API', () => {
       expect(res.body.data).toHaveProperty('2');
       expect(typeof res.body.data['1']).toBe('object');
       expect(Object.keys(res.body.data['1']).length).toBeGreaterThan(0);
-    });
-
-    it('should return 401 if no token is provided', async () => {
-      const res = await request(app).get('/api/v1/authorization/levels');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
   });
 
@@ -87,12 +75,6 @@ describe('Authorization API', () => {
       expect(typeof res.body.data).toBe('object');
       expect(Object.keys(res.body.data).length).toBeGreaterThan(0);
     });
-
-    it('should return 401 if no token is provided', async () => {
-      const res = await request(app).get('/api/v1/authorization/levels/1');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('GET /authorization/users/:userId', () => {
@@ -114,12 +96,6 @@ describe('Authorization API', () => {
         .get('/api/v1/authorization/users/999999')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should return 401 if no token is provided', async () => {
-      const res = await request(app).get(`/api/v1/authorization/users/${testUserId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

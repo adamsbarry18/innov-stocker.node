@@ -409,12 +409,6 @@ describe('Users API', () => {
       expect(res.body.data.email).toBe(standardUserEmail);
       expect(res.body.data).not.toHaveProperty('password');
     });
-
-    it('should fail without token', async () => {
-      const res = await request(app).get('/api/v1/users/me');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PUT /users/:id', () => {

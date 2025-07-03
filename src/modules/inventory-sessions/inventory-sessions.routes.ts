@@ -82,7 +82,7 @@ export default class InventorySessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/inventory-sessions')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'startDate', 'endDate', 'status', 'warehouseId', 'shopId', 'createdAt'])
   @filterable(['warehouseId', 'shopId', 'status', 'createdByUserId', 'validatedByUserId'])
@@ -134,7 +134,7 @@ export default class InventorySessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/inventory-sessions/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getInventorySessionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -170,7 +170,7 @@ export default class InventorySessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/inventory-sessions')
-  @authorize({ level: SecurityLevel.USER }) // User with rights to manage inventory
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async startInventorySession(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateInventorySessionInput = req.body;
     const userId = req.user?.id;
@@ -214,7 +214,7 @@ export default class InventorySessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/inventory-sessions/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateInventorySession(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -261,7 +261,7 @@ export default class InventorySessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/inventory-sessions/:id/complete') // Changed from PATCH to POST as per API list
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async completeInventorySession(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -298,7 +298,7 @@ export default class InventorySessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/inventory-sessions/:id/cancel')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async cancelInventorySession(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

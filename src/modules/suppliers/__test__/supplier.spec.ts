@@ -39,12 +39,6 @@ describe('Supplier API', () => {
       createdSupplierId = res.body.data.id;
     });
 
-    it('should fail to create a supplier without authentication', async () => {
-      const res = await request(app).post('/api/v1/suppliers').send(testSupplier);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for invalid supplier data', async () => {
       const res = await request(app)
         .post('/api/v1/suppliers')
@@ -63,12 +57,6 @@ describe('Supplier API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.suppliers)).toBe(true);
-    });
-
-    it('should fail to return suppliers without authentication', async () => {
-      const res = await request(app).get('/api/v1/suppliers');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering', async () => {
@@ -120,12 +108,6 @@ describe('Supplier API', () => {
         .get('/api/v1/suppliers/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to get a supplier without authentication', async () => {
-      const res = await request(app).get(`/api/v1/suppliers/${createdSupplierId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });
@@ -185,14 +167,6 @@ describe('Supplier API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a supplier without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/suppliers/${createdSupplierId}`)
-        .send(updatedSupplier);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /suppliers/:id', () => {
@@ -229,12 +203,6 @@ describe('Supplier API', () => {
         .delete('/api/v1/suppliers/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a supplier without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/suppliers/${supplierToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
 

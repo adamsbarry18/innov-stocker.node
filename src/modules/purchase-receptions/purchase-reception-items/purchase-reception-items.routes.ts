@@ -53,7 +53,7 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/purchase-receptions/:receptionId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addReceptionItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const receptionId = parseInt(req.params.receptionId, 10);
     if (isNaN(receptionId))
@@ -104,7 +104,7 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/purchase-receptions/:receptionId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listReceptionItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const receptionId = parseInt(req.params.receptionId, 10);
     if (isNaN(receptionId))
@@ -145,7 +145,7 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/purchase-receptions/:receptionId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getReceptionItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const receptionId = parseInt(req.params.receptionId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -196,7 +196,7 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/purchase-receptions/:receptionId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateReceptionItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const receptionId = parseInt(req.params.receptionId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -248,7 +248,7 @@ export default class PurchaseReceptionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/purchase-receptions/:receptionId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeReceptionItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const receptionId = parseInt(req.params.receptionId, 10);
     const itemId = parseInt(req.params.itemId, 10);

@@ -52,7 +52,7 @@ export default class CashRegisterTransactionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/cash-register-transactions')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createManualTransaction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateCashRegisterTransactionInput = req.body;
     const userId = req.user?.id;
@@ -138,7 +138,7 @@ export default class CashRegisterTransactionRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/cash-register-transactions')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'transactionTimestamp', 'type', 'amount', 'userId', 'createdAt'])
   @filterable(['cashRegisterSessionId', 'type', 'userId', 'paymentMethodId', 'relatedSalesOrderId'])
@@ -186,7 +186,7 @@ export default class CashRegisterTransactionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/cash-register-transactions/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getTransactionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transactionId = parseInt(req.params.id, 10);
     if (isNaN(transactionId)) {

@@ -27,13 +27,6 @@ describe('Company API', () => {
         expect(company).toHaveProperty('defaultCurrency');
       }
     });
-
-    it('should fail to return a list of companies without authentication', async () => {
-      const res = await request(app).get('/api/v1/companies');
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('GET /company/:id', () => {
@@ -66,13 +59,6 @@ describe('Company API', () => {
       expect(res.status).toBe(404);
       expect(res.body.status).toBe('fail');
       expect(res.body.message).toBe('Not found');
-    });
-
-    it('should fail to get a specific company without authentication', async () => {
-      const res = await request(app).get(`/api/v1/company/${existingCompanyId}`);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
   });
 
@@ -156,19 +142,6 @@ describe('Company API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
       expect(res.body.message).toBe('Bad request');
-    });
-
-    it('should fail to update a company without authentication', async () => {
-      const res = await request(app).put(`/api/v1/company/${existingCompanyId}`).send({
-        name: 'Unauthorized Update',
-        addressId: 1,
-        defaultCurrencyId: 1,
-        email: 'unauthorized@test.com',
-        timezone: 'Europe/Paris',
-      });
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
   });
 });

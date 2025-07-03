@@ -46,7 +46,7 @@ export default class ProductVariantRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/products/:productId/variants')
-  @authorize({ level: SecurityLevel.USER }) // Ou ADMIN
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createProductVariant(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     if (isNaN(productId)) return next(new BadRequestError('Invalid Product ID.'));
@@ -92,7 +92,7 @@ export default class ProductVariantRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/variants')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listProductVariants(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     if (isNaN(productId)) return next(new BadRequestError('Invalid Product ID.'));
@@ -132,7 +132,7 @@ export default class ProductVariantRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/variants/:variantId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getProductVariantById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     const variantId = parseInt(req.params.variantId, 10);
@@ -184,7 +184,7 @@ export default class ProductVariantRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/products/:productId/variants/:variantId')
-  @authorize({ level: SecurityLevel.USER }) // Ou ADMIN
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateProductVariant(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     const variantId = parseInt(req.params.variantId, 10);
@@ -231,7 +231,7 @@ export default class ProductVariantRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/products/:productId/variants/:variantId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteProductVariant(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productId = parseInt(req.params.productId, 10);
     const variantId = parseInt(req.params.variantId, 10);

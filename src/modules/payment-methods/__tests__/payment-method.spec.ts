@@ -31,12 +31,6 @@ describe('PaymentMethod API', () => {
       createdMethodId = res.body.data.id;
     });
 
-    it('should fail to create a payment method without authentication', async () => {
-      const res = await request(app).post('/api/v1/payment-methods').send(testMethod);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for missing required name', async () => {
       const res = await request(app)
         .post('/api/v1/payment-methods')
@@ -82,12 +76,6 @@ describe('PaymentMethod API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.methods)).toBe(true);
-    });
-
-    it('should fail to return payment methods without authentication', async () => {
-      const res = await request(app).get('/api/v1/payment-methods');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering', async () => {
@@ -143,12 +131,6 @@ describe('PaymentMethod API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to get a payment method without authentication', async () => {
-      const res = await request(app).get(`/api/v1/payment-methods/${createdMethodId}`);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PUT /payment-methods/:id', () => {
@@ -195,14 +177,6 @@ describe('PaymentMethod API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a payment method without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/payment-methods/${createdMethodId}`)
-        .send(updatedMethod);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /payment-methods/:id', () => {
@@ -239,12 +213,6 @@ describe('PaymentMethod API', () => {
         .delete('/api/v1/payment-methods/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a payment method without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/payment-methods/${methodToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
 

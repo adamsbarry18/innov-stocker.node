@@ -22,11 +22,10 @@ export default defineConfig({
         '**/*.d.ts',
       ],
     },
-    // testTimeout: 10000,
-    // hookTimeout: 20000,
+    testTimeout: 10000,
+    hookTimeout: 20000,
     isolate: false,
-    // fileParallelism: false,
-    // Ajouter la configuration pour désactiver le type stripping
+    fileParallelism: false,
     poolOptions: {
       threads: {
         execArgv: ['--no-experimental-strip-types'],

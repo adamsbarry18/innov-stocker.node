@@ -84,7 +84,7 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/cash-register-sessions')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'openingTimestamp', 'closingTimestamp', 'status', 'cashRegisterId'])
   @filterable(['cashRegisterId', 'openedByUserId', 'closedByUserId', 'status'])
@@ -132,7 +132,7 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/cash-register-sessions/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getSessionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -171,7 +171,7 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/cash-registers/:cashRegisterId/sessions/active')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getActiveSessionByRegisterId(
     req: Request,
     res: Response,
@@ -214,7 +214,7 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/cash-register-sessions/open')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async openSession(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: OpenCashRegisterSessionInput = req.body;
     const userId = req.user?.id;
@@ -261,7 +261,7 @@ export default class CashRegisterSessionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/cash-register-sessions/:id/close')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async closeSession(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

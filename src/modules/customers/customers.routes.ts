@@ -73,7 +73,7 @@ export default class CustomerRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/customers')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'email', 'companyName', 'lastName', 'firstName', 'createdAt'])
   @filterable(['email', 'companyName', 'customerGroupId'])
@@ -122,7 +122,7 @@ export default class CustomerRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCustomerById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const customerId = parseInt(req.params.id, 10);
     if (isNaN(customerId)) {
@@ -161,7 +161,7 @@ export default class CustomerRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/customers')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createCustomer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const customerInput: CreateCustomerInput = req.body;
     const userId = req.user?.id;
@@ -209,7 +209,7 @@ export default class CustomerRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCustomer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const customerId = parseInt(req.params.id, 10);
     if (isNaN(customerId)) {
@@ -254,7 +254,7 @@ export default class CustomerRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteCustomer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const customerId = parseInt(req.params.id, 10);
     if (isNaN(customerId)) {

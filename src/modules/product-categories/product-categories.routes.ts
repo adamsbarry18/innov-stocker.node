@@ -76,7 +76,7 @@ export default class ProductCategoryRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/product-categories')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'name', 'createdAt'])
   @filterable(['name', 'parentCategoryId'])
@@ -139,7 +139,7 @@ export default class ProductCategoryRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/product-categories/:id')
-  @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
+  @authorize({ level: SecurityLevel.READER })
   async getCategoryById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const categoryId = parseInt(req.params.id, 10);
     if (isNaN(categoryId)) {
@@ -181,7 +181,7 @@ export default class ProductCategoryRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/product-categories')
-  @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
     const categoryInput: CreateProductCategoryInput = req.body;
     await this.pipe(res, req, next, () => this.categoryService.create(categoryInput), 201);
@@ -226,7 +226,7 @@ export default class ProductCategoryRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/product-categories/:id')
-  @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
     const categoryId = parseInt(req.params.id, 10);
     if (isNaN(categoryId)) {
@@ -266,7 +266,7 @@ export default class ProductCategoryRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/product-categories/:id')
-  @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteCategory(req: Request, res: Response, next: NextFunction): Promise<void> {
     const categoryId = parseInt(req.params.id, 10);
     if (isNaN(categoryId)) {

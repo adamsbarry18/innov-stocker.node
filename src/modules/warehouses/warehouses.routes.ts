@@ -68,7 +68,7 @@ export default class WarehouseRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/warehouses')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'name', 'code', 'createdAt'])
   @filterable(['name', 'code'])
@@ -117,7 +117,7 @@ export default class WarehouseRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/warehouses/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getByIdRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -156,7 +156,7 @@ export default class WarehouseRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/warehouses')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateWarehouseInput = req.body;
     const userId = req.user?.id;
@@ -206,7 +206,7 @@ export default class WarehouseRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/warehouses/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -252,7 +252,7 @@ export default class WarehouseRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/warehouses/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {

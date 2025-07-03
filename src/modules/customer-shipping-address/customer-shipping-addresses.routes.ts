@@ -74,7 +74,7 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/customer-shipping-addresses')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'customerId', 'addressLabel', 'isDefault', 'createdAt'])
   @filterable(['customerId', 'addressLabel', 'isDefault'])
@@ -123,7 +123,7 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-shipping-addresses/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getByIdRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -164,7 +164,7 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/customer-shipping-addresses')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateCustomerShippingAddressInput = req.body;
 
@@ -210,7 +210,7 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-shipping-addresses/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -247,7 +247,7 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-shipping-addresses/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -296,7 +296,7 @@ export default class CustomerShippingAddressRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-shipping-addresses/:id/set-default')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async setAsDefaultRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

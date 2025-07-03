@@ -30,7 +30,7 @@ export default class CompanyRouter extends BaseRouter {
    *
    */
   @Get('/companies')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getAllCompanies(req: Request, res: Response, next: NextFunction): Promise<void> {
     await this.pipe(res, req, next, () => this.companyService.getAllCompanies());
   }
@@ -63,7 +63,7 @@ export default class CompanyRouter extends BaseRouter {
    *
    */
   @Get('/company/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCompany(req: Request, res: Response, next: NextFunction): Promise<void> {
     const companyId = parseInt(req.params.id, 10);
     await this.pipe(res, req, next, () => this.companyService.getCompanyDetails(companyId));
@@ -105,7 +105,7 @@ export default class CompanyRouter extends BaseRouter {
    *
    */
   @Put('/company/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCompany(req: Request, res: Response, next: NextFunction): Promise<void> {
     const companyId = parseInt(req.params.id, 10);
     const companyInput = req.body;

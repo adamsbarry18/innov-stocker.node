@@ -113,7 +113,7 @@ export default class UserRouter extends BaseRouter {
    *         description: Unauthorized
    */
   @Get('/users/me')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCurrentUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     const userId = req.user?.id;
     if (!userId) {
@@ -169,7 +169,7 @@ export default class UserRouter extends BaseRouter {
    *         description: User not found
    */
   @Get('/users/:identifier')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getUserByIdentifier(req: Request, res: Response, next: NextFunction): Promise<void> {
     const identifier = req.params.identifier;
     const requestingUser = req.user;

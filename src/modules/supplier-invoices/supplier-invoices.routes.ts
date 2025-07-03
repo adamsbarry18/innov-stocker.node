@@ -80,7 +80,7 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/supplier-invoices')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable([
     'id',
@@ -137,7 +137,7 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-invoices/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getSupplierInvoiceById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -173,7 +173,7 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/supplier-invoices')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createSupplierInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateSupplierInvoiceInput = req.body;
     const userId = req.user?.id;
@@ -217,7 +217,7 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/supplier-invoices/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateSupplierInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -266,7 +266,7 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-invoices/:id/status')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateSupplierInvoiceStatus(
     req: Request,
     res: Response,
@@ -314,7 +314,7 @@ export default class SupplierInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/supplier-invoices/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteSupplierInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

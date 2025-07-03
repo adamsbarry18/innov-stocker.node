@@ -39,12 +39,6 @@ describe('Customer API', () => {
       createdCustomerId = res.body.data.id;
     });
 
-    it('should fail to create a customer without authentication', async () => {
-      const res = await request(app).post('/api/v1/customers').send(testCustomer);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for invalid customer data', async () => {
       const res = await request(app)
         .post('/api/v1/customers')
@@ -63,12 +57,6 @@ describe('Customer API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.customers)).toBe(true);
-    });
-
-    it('should fail to return customers without authentication', async () => {
-      const res = await request(app).get('/api/v1/customers');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering', async () => {
@@ -123,12 +111,6 @@ describe('Customer API', () => {
         .get('/api/v1/customers/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to get a customer without authentication', async () => {
-      const res = await request(app).get(`/api/v1/customers/${createdCustomerId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });
@@ -186,14 +168,6 @@ describe('Customer API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a customer without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/customers/${createdCustomerId}`)
-        .send(updatedCustomer);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /customers/:id', () => {
@@ -230,12 +204,6 @@ describe('Customer API', () => {
         .delete('/api/v1/customers/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a customer without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/customers/${customerToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
 

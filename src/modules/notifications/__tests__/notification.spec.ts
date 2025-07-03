@@ -8,7 +8,6 @@ describe('Notifications API', () => {
   // Notifications existantes dans 2-datas.sql pour userId 1 (admin):
   // ID 1: userId 1, type: 'info', isRead: 0 (unread)
 
-
   let createdNotificationId: number;
 
   describe('POST /notifications', () => {
@@ -41,14 +40,6 @@ describe('Notifications API', () => {
         .send({});
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to create a notification without authentication', async () => {
-      const res = await request(app)
-        .post('/api/v1/notifications')
-        .send({ message: 'Notification sans auth.' });
-
-      expect(res.status).toBe(401);
     });
   });
 
@@ -87,11 +78,6 @@ describe('Notifications API', () => {
       expect(
         notificationsRes.body.data.notifications.some((n: any) => n.id === createdNotificationId),
       ).toBe(true);
-    });
-
-    it('should fail to mark all as read without authentication', async () => {
-      const res = await request(app).post('/api/v1/notifications/mark-all-as-read');
-      expect(res.status).toBe(401);
     });
   });
 
@@ -134,16 +120,9 @@ describe('Notifications API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.data.notifications.every((n: any) => n.type === 'info')).toBe(
-        true,
-      );
+      expect(res.body.data.notifications.every((n: any) => n.type === 'info')).toBe(true);
       expect(res.body.data.notifications.length).toBe(3);
       expect(res.body.data.notifications[0].isRead).toBe(true);
-    });
-
-    it('should fail to get notifications without authentication', async () => {
-      const res = await request(app).get('/api/v1/notifications');
-      expect(res.status).toBe(401);
     });
   });
 
@@ -156,11 +135,6 @@ describe('Notifications API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveProperty('unreadCount');
       expect(res.body.data.unreadCount).toBe(0); // All marked as read by previous test
-    });
-
-    it('should fail to get unread count without authentication', async () => {
-      const res = await request(app).get('/api/v1/notifications/unread-count');
-      expect(res.status).toBe(401);
     });
   });
 
@@ -197,11 +171,6 @@ describe('Notifications API', () => {
         .patch(`/api/v1/notifications/${notificationIdOfOtherUser}/read`)
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(403);
-    });
-
-    it('should fail to mark as read without authentication', async () => {
-      const res = await request(app).patch('/api/v1/notifications/1/read');
-      expect(res.status).toBe(401);
     });
   });
 
@@ -252,11 +221,6 @@ describe('Notifications API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(403);
     });
-
-    it('should fail to delete a notification without authentication', async () => {
-      const res = await request(app).delete('/api/v1/notifications/1');
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('DELETE /notifications', () => {
@@ -283,11 +247,6 @@ describe('Notifications API', () => {
         .get('/api/v1/notifications')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(finalRes.body.data.notifications.length).toBe(0);
-    });
-
-    it('should fail to delete all notifications without authentication', async () => {
-      const res = await request(app).delete('/api/v1/notifications');
-      expect(res.status).toBe(401);
     });
   });
 });

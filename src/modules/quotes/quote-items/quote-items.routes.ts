@@ -43,7 +43,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/quotes/:quoteId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addQuoteItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const quoteId = parseInt(req.params.quoteId, 10);
     if (isNaN(quoteId)) return next(new BadRequestError('Invalid Quote ID.'));
@@ -89,7 +89,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/quotes/:quoteId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listQuoteItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const quoteId = parseInt(req.params.quoteId, 10);
     if (isNaN(quoteId)) return next(new BadRequestError('Invalid Quote ID.'));
@@ -125,7 +125,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/quotes/:quoteId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getQuoteItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const quoteId = parseInt(req.params.quoteId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -173,7 +173,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/quotes/:quoteId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER }) // User who can edit the quote
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateQuoteItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const quoteId = parseInt(req.params.quoteId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -216,7 +216,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/quotes/:quoteId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER }) // User who can edit the quote
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeQuoteItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const quoteId = parseInt(req.params.quoteId, 10);
     const itemId = parseInt(req.params.itemId, 10);

@@ -49,7 +49,7 @@ export default class CustomerInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/customer-invoices/:invoiceId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addCustomerInvoiceItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     if (isNaN(invoiceId)) return next(new BadRequestError('Invalid Customer Invoice ID in path.'));
@@ -97,7 +97,7 @@ export default class CustomerInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-invoices/:invoiceId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listCustomerInvoiceItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     if (isNaN(invoiceId)) return next(new BadRequestError('Invalid Customer Invoice ID in path.'));
@@ -137,7 +137,7 @@ export default class CustomerInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-invoices/:invoiceId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCustomerInvoiceItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -188,7 +188,7 @@ export default class CustomerInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-invoices/:invoiceId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCustomerInvoiceItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -234,7 +234,7 @@ export default class CustomerInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-invoices/:invoiceId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeCustomerInvoiceItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     const itemId = parseInt(req.params.itemId, 10);

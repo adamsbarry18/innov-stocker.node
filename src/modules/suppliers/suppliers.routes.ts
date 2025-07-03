@@ -69,7 +69,7 @@ export default class SupplierRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/suppliers')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'name', 'email', 'createdAt'])
   @filterable(['name', 'email'])
@@ -118,7 +118,7 @@ export default class SupplierRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/suppliers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getSupplierById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const supplierId = parseInt(req.params.id, 10);
     if (isNaN(supplierId)) {
@@ -157,7 +157,7 @@ export default class SupplierRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/suppliers')
-  @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createSupplier(req: Request, res: Response, next: NextFunction): Promise<void> {
     const supplierInput: CreateSupplierInput = req.body;
     const userId = req.user?.id;
@@ -205,7 +205,7 @@ export default class SupplierRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/suppliers/:id')
-  @authorize({ level: SecurityLevel.USER }) // Or INTEGRATOR
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateSupplier(req: Request, res: Response, next: NextFunction): Promise<void> {
     const supplierId = parseInt(req.params.id, 10);
     if (isNaN(supplierId)) {
@@ -250,7 +250,7 @@ export default class SupplierRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/suppliers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteSupplier(req: Request, res: Response, next: NextFunction): Promise<void> {
     const supplierId = parseInt(req.params.id, 10);
     if (isNaN(supplierId)) {

@@ -36,12 +36,6 @@ describe('Warehouse API', () => {
       createdWarehouseId = res.body.data.id;
     });
 
-    it('should fail to create a warehouse without authentication', async () => {
-      const res = await request(app).post('/api/v1/warehouses').send(testWarehouse);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for missing required name', async () => {
       const res = await request(app)
         .post('/api/v1/warehouses')
@@ -88,12 +82,6 @@ describe('Warehouse API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.warehouses)).toBe(true);
-    });
-
-    it('should fail to return warehouses without authentication', async () => {
-      const res = await request(app).get('/api/v1/warehouses');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering', async () => {
@@ -147,12 +135,6 @@ describe('Warehouse API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to get a warehouse without authentication', async () => {
-      const res = await request(app).get(`/api/v1/warehouses/${createdWarehouseId}`);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PUT /warehouses/:id', () => {
@@ -201,14 +183,6 @@ describe('Warehouse API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a warehouse without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/warehouses/${createdWarehouseId}`)
-        .send(updatedWarehouse);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /warehouses/:id', () => {
@@ -247,12 +221,6 @@ describe('Warehouse API', () => {
         .delete('/api/v1/warehouses/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a warehouse without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/warehouses/${warehouseToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
 

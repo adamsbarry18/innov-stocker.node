@@ -48,7 +48,7 @@ export default class PurchaseOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/purchase-orders/:orderId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addPurchaseOrderItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10); // orderId vient du routeur parent
     if (isNaN(orderId)) return next(new BadRequestError('Invalid Purchase Order ID in path.'));
@@ -96,7 +96,7 @@ export default class PurchaseOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/purchase-orders/:orderId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listPurchaseOrderItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     if (isNaN(orderId)) return next(new BadRequestError('Invalid Purchase Order ID in path.'));
@@ -136,7 +136,7 @@ export default class PurchaseOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/purchase-orders/:orderId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getPurchaseOrderItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -186,7 +186,7 @@ export default class PurchaseOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/purchase-orders/:orderId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updatePurchaseOrderItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -231,7 +231,7 @@ export default class PurchaseOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/purchase-orders/:orderId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removePurchaseOrderItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     const itemId = parseInt(req.params.itemId, 10);

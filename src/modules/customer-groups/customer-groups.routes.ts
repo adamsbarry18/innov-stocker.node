@@ -63,7 +63,7 @@ export default class CustomerGroupRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/customer-groups')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'name', 'discountPercentage', 'createdAt'])
   @filterable(['name'])
@@ -112,7 +112,7 @@ export default class CustomerGroupRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-groups/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getGroupById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const groupId = parseInt(req.params.id, 10);
     if (isNaN(groupId)) {
@@ -151,7 +151,7 @@ export default class CustomerGroupRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/customer-groups')
-  @authorize({ level: SecurityLevel.USER }) // Typically an admin task
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createGroup(req: Request, res: Response, next: NextFunction): Promise<void> {
     const groupInput: CreateCustomerGroupInput = req.body;
 
@@ -197,7 +197,7 @@ export default class CustomerGroupRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-groups/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateGroup(req: Request, res: Response, next: NextFunction): Promise<void> {
     const groupId = parseInt(req.params.id, 10);
     if (isNaN(groupId)) {
@@ -238,7 +238,7 @@ export default class CustomerGroupRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-groups/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteGroup(req: Request, res: Response, next: NextFunction): Promise<void> {
     const groupId = parseInt(req.params.id, 10);
     if (isNaN(groupId)) {

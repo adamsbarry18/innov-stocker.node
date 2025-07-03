@@ -2,7 +2,7 @@ import { SecurityLevel } from '@/modules/users/models/users.entity';
 
 /**
  * Map of feature names to allowed action names.
- * Example: { user: ['read', 'write'], config: ['read'] }
+ * Example: { user: ['read', 'update'], config: ['read'] }
  */
 export type PermissionsInputMap = Record<string, string[]>;
 
@@ -45,31 +45,275 @@ interface ProcessedFlag {
  * The configuration for features.
  */
 export const FEATURES_CONFIG = [
-  { id: 1, name: 'folder' },
   {
-    id: 2,
+    id: 1,
     name: 'user',
     flags: {
-      read: {
-        value: 1,
-        level: SecurityLevel.READER,
-      },
-      write: {
-        value: 2,
-        level: SecurityLevel.ADMIN,
-      },
-      create: {
-        value: 4,
-        inheritedFlags: ['write'],
-        level: SecurityLevel.ADMIN,
-      },
-      execute: {
-        value: 8,
-        level: SecurityLevel.ADMIN,
-      },
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.USER },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.USER },
+      delete: { value: 8, level: SecurityLevel.ADMIN },
+      execute: { value: 16, level: SecurityLevel.USER },
+      export: { value: 32, level: SecurityLevel.USER },
     } as Record<string, Partial<RawFlagConfig>>,
   },
-  // ... etc
+  {
+    id: 2,
+    name: 'customer_group',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 3,
+    name: 'customer',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 4,
+    name: 'supplier',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 5,
+    name: 'product',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 6,
+    name: 'product_category',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 7,
+    name: 'stock_movement',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      execute: { value: 8, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 8,
+    name: 'warehouse',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 9,
+    name: 'shop',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 10,
+    name: 'purchase_order',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      execute: { value: 8, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 11,
+    name: 'purchase_reception',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      execute: { value: 8, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 12,
+    name: 'sales_order',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 16, level: SecurityLevel.INTEGRATOR },
+      execute: { value: 32, level: SecurityLevel.USER },
+      export: { value: 64, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 13,
+    name: 'customer_invoice',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      execute: { value: 8, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 14,
+    name: 'payment',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      execute: { value: 8, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 15,
+    name: 'cash_register',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 16,
+    name: 'cash_register_session',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      create: { value: 4, level: SecurityLevel.INTEGRATOR },
+      execute: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 17,
+    name: 'cash_register_transaction',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      create: { value: 4, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 18,
+    name: 'config',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+      execute: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 19,
+    name: 'notification',
+    flags: {
+      read: { value: 1, level: SecurityLevel.INTEGRATOR },
+      create: { value: 2, level: SecurityLevel.INTEGRATOR },
+      update: { value: 4, level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 20,
+    name: 'user_activity_log',
+    flags: {
+      read: { value: 1, level: SecurityLevel.INTEGRATOR },
+      export: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 21,
+    name: 'import',
+    flags: {
+      read: { value: 1, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, level: SecurityLevel.INTEGRATOR },
+      execute: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 23,
+    name: 'authorization',
+    flags: {
+      read: { value: 1, level: SecurityLevel.ADMIN },
+      update: { value: 2, level: SecurityLevel.ADMIN },
+      delete: { value: 4, level: SecurityLevel.ADMIN },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 24,
+    name: 'supplier_return',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+      execute: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 25,
+    name: 'supplier_invoice',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 26,
+    name: 'stock_transfer',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+      execute: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
+  {
+    id: 27,
+    name: 'quote',
+    flags: {
+      read: { value: 1, level: SecurityLevel.READER },
+      update: { value: 2, level: SecurityLevel.INTEGRATOR },
+      create: { value: 4, inheritedFlags: ['update'], level: SecurityLevel.INTEGRATOR },
+      delete: { value: 8, level: SecurityLevel.INTEGRATOR },
+      execute: { value: 16, level: SecurityLevel.INTEGRATOR },
+    } as Record<string, Partial<RawFlagConfig>>,
+  },
 ];
 /**
  * Quick access object for features by name.
@@ -103,8 +347,8 @@ export const featuresProcessedFlagsMap = new Map<
 FEATURES_CONFIG.forEach((feature) => {
   const defaultFlags: Record<string, RawFlagConfig> = {
     read: { value: 1, inheritedFlags: [], level: SecurityLevel.READER },
-    write: { value: 2, inheritedFlags: ['read'], level: SecurityLevel.USER },
-    create: { value: 4, inheritedFlags: ['read', 'write'], level: SecurityLevel.USER },
+    update: { value: 2, inheritedFlags: ['read'], level: SecurityLevel.USER },
+    create: { value: 4, inheritedFlags: ['read', 'update'], level: SecurityLevel.USER },
     execute: { value: 8, inheritedFlags: [], level: SecurityLevel.USER },
   };
 

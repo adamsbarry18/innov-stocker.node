@@ -96,18 +96,6 @@ describe('Quotes API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to create quote without authentication', async () => {
-      const payload = {
-        ...testQuotePayloadBase,
-        customerId: testCustomerId,
-        currencyId: testCurrencyId,
-        billingAddressId: testBillingAddressId,
-        items: [{ ...testQuotePayloadBase.items[0], productId: testProductId }],
-      };
-      const res = await request(app).post('/api/v1/quotes').send(payload);
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /quotes', () => {

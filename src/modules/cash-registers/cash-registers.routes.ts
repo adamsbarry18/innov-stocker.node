@@ -80,7 +80,7 @@ export default class CashRegisterRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/cash-registers')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'name', 'shopId', 'currencyId', 'isActive', 'createdAt'])
   @filterable(['name', 'shopId', 'currencyId', 'isActive'])
@@ -131,7 +131,7 @@ export default class CashRegisterRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/cash-registers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getByIdCash(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -168,7 +168,7 @@ export default class CashRegisterRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/cash-registers')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createCash(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateCashRegisterInput = req.body;
 
@@ -215,7 +215,7 @@ export default class CashRegisterRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/cash-registers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCash(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -255,7 +255,7 @@ export default class CashRegisterRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/cash-registers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteCash(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

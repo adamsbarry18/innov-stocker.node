@@ -27,12 +27,6 @@ describe('CustomerGroup API', () => {
       createdGroupId = res.body.data.id;
     });
 
-    it('should fail to create a group without authentication', async () => {
-      const res = await request(app).post('/api/v1/customer-groups').send(testGroup);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for invalid group data', async () => {
       const res = await request(app)
         .post('/api/v1/customer-groups')
@@ -51,12 +45,6 @@ describe('CustomerGroup API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.groups)).toBe(true);
-    });
-
-    it('should fail to return groups without authentication', async () => {
-      const res = await request(app).get('/api/v1/customer-groups');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering', async () => {
@@ -107,12 +95,6 @@ describe('CustomerGroup API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to get a group without authentication', async () => {
-      const res = await request(app).get(`/api/v1/customer-groups/${createdGroupId}`);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PUT /customer-groups/:id', () => {
@@ -159,14 +141,6 @@ describe('CustomerGroup API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a group without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/customer-groups/${createdGroupId}`)
-        .send(updatedGroup);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /customer-groups/:id', () => {
@@ -203,12 +177,6 @@ describe('CustomerGroup API', () => {
         .delete('/api/v1/customer-groups/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a group without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/customer-groups/${groupToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

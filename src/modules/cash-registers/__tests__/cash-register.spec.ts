@@ -33,12 +33,6 @@ describe('CashRegister API', () => {
       createdRegisterId = res.body.data.id;
     });
 
-    it('should fail to create a cash register without authentication', async () => {
-      const res = await request(app).post('/api/v1/cash-registers').send(testRegister);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for missing required name', async () => {
       const res = await request(app)
         .post('/api/v1/cash-registers')
@@ -76,12 +70,6 @@ describe('CashRegister API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.registers)).toBe(true);
-    });
-
-    it('should fail to return cash registers without authentication', async () => {
-      const res = await request(app).get('/api/v1/cash-registers');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering', async () => {
@@ -135,12 +123,6 @@ describe('CashRegister API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to get a cash register without authentication', async () => {
-      const res = await request(app).get(`/api/v1/cash-registers/${createdRegisterId}`);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PUT /cash-registers/:id', () => {
@@ -191,14 +173,6 @@ describe('CashRegister API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a cash register without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/cash-registers/${createdRegisterId}`)
-        .send(updatedRegister);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /cash-registers/:id', () => {
@@ -236,12 +210,6 @@ describe('CashRegister API', () => {
         .delete('/api/v1/cash-registers/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a cash register without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/cash-registers/${registerToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

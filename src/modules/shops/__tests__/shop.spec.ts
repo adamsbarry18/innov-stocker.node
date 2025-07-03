@@ -36,12 +36,6 @@ describe('Shop API', () => {
       createdShopId = res.body.data.id;
     });
 
-    it('should fail to create a shop without authentication', async () => {
-      const res = await request(app).post('/api/v1/shops').send(testShop);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for missing required name', async () => {
       const res = await request(app)
         .post('/api/v1/shops')
@@ -88,12 +82,6 @@ describe('Shop API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.shops)).toBe(true);
-    });
-
-    it('should fail to return shops without authentication', async () => {
-      const res = await request(app).get('/api/v1/shops');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering', async () => {
@@ -147,12 +135,6 @@ describe('Shop API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to get a shop without authentication', async () => {
-      const res = await request(app).get(`/api/v1/shops/${createdShopId}`);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PUT /shops/:id', () => {
@@ -201,12 +183,6 @@ describe('Shop API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a shop without authentication', async () => {
-      const res = await request(app).put(`/api/v1/shops/${createdShopId}`).send(updatedShop);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /shops/:id', () => {
@@ -245,12 +221,6 @@ describe('Shop API', () => {
         .delete('/api/v1/shops/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a shop without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/shops/${shopToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

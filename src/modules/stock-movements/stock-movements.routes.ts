@@ -96,7 +96,7 @@ export default class StockMovementRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/stock-movements')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'movementDate', 'productId', 'movementType', 'quantity', 'createdAt'])
   @filterable([
@@ -151,7 +151,7 @@ export default class StockMovementRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/stock-movements/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getStockMovementById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -190,7 +190,7 @@ export default class StockMovementRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/stock-movements/adjustments')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createManualStockAdjustment(
     req: Request,
     res: Response,
@@ -267,7 +267,7 @@ export default class StockMovementRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/stock-movements/current-stock')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCurrentStock(req: Request, res: Response, next: NextFunction): Promise<void> {
     const productIdNum = req.query.productId
       ? parseInt(req.query.productId as string, 10)

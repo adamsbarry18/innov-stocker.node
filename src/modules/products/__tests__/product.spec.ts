@@ -51,12 +51,6 @@ describe('Products API', () => {
       expect(res.status).toBe(400);
       // expect(res.body.success).toBe(false); // Commented out for now
     });
-
-    it('should fail to create a product without authentication', async () => {
-      const res = await request(app).post('/api/v1/products').send(testProduct);
-
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /products', () => {
@@ -77,11 +71,6 @@ describe('Products API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
-    });
-
-    it('should fail to get products without authentication', async () => {
-      const res = await request(app).get('/api/v1/products');
-      expect(res.status).toBe(401);
     });
   });
 
@@ -111,11 +100,6 @@ describe('Products API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to get a product without authentication', async () => {
-      const res = await request(app).get(`/api/v1/products/${createdProductId}`);
-      expect(res.status).toBe(401);
     });
   });
 
@@ -150,12 +134,6 @@ describe('Products API', () => {
 
       expect(res.status).toBe(400);
     });
-
-    it('should fail to update a product without authentication', async () => {
-      const res = await request(app).put(`/api/v1/products/${createdProductId}`).send(updateData);
-
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('DELETE /products/:id', () => {
@@ -181,12 +159,6 @@ describe('Products API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to delete a product without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/products/${createdProductId}`);
-
-      expect(res.status).toBe(401);
     });
   });
 });

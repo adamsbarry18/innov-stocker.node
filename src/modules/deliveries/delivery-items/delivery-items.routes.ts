@@ -50,7 +50,7 @@ export default class DeliveryItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/deliveries/:deliveryId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addDeliveryItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const deliveryId = parseInt(req.params.deliveryId, 10);
     if (isNaN(deliveryId)) return next(new BadRequestError('Invalid Delivery ID in path.'));
@@ -96,7 +96,7 @@ export default class DeliveryItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/deliveries/:deliveryId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listDeliveryItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const deliveryId = parseInt(req.params.deliveryId, 10);
     if (isNaN(deliveryId)) return next(new BadRequestError('Invalid Delivery ID in path.'));
@@ -134,7 +134,7 @@ export default class DeliveryItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/deliveries/:deliveryId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getDeliveryItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const deliveryId = parseInt(req.params.deliveryId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -183,7 +183,7 @@ export default class DeliveryItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/deliveries/:deliveryId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateDeliveryItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const deliveryId = parseInt(req.params.deliveryId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -225,7 +225,7 @@ export default class DeliveryItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/deliveries/:deliveryId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeDeliveryItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const deliveryId = parseInt(req.params.deliveryId, 10);
     const itemId = parseInt(req.params.itemId, 10);

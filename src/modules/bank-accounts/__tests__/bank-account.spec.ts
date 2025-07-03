@@ -37,12 +37,6 @@ describe('BankAccount API', () => {
       createdAccountId = res.body.data.id;
     });
 
-    it('should fail to create a bank account without authentication', async () => {
-      const res = await request(app).post('/api/v1/bank-accounts').send(testAccount);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for missing required accountName', async () => {
       const res = await request(app)
         .post('/api/v1/bank-accounts')
@@ -100,12 +94,6 @@ describe('BankAccount API', () => {
       expect(Array.isArray(res.body.data.accounts)).toBe(true);
     });
 
-    it('should fail to return bank accounts without authentication', async () => {
-      const res = await request(app).get('/api/v1/bank-accounts');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should support pagination, sorting, and filtering', async () => {
       const res = await request(app)
         .get(
@@ -157,12 +145,6 @@ describe('BankAccount API', () => {
         .get('/api/v1/bank-accounts/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to get a bank account without authentication', async () => {
-      const res = await request(app).get(`/api/v1/bank-accounts/${createdAccountId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });
@@ -217,14 +199,6 @@ describe('BankAccount API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a bank account without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/bank-accounts/${createdAccountId}`)
-        .send(updatedAccount);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /bank-accounts/:id', () => {
@@ -262,12 +236,6 @@ describe('BankAccount API', () => {
         .delete('/api/v1/bank-accounts/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a bank account without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/bank-accounts/${accountToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

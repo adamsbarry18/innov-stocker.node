@@ -94,7 +94,7 @@ export default class AddressRouter extends BaseRouter {
    *
    */
   @Get('/addresses')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'city', 'country', 'createdAt'])
   @filterable(['city', 'country', 'postalCode'])
@@ -144,7 +144,7 @@ export default class AddressRouter extends BaseRouter {
    *
    */
   @Get('/addresses/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getAddressById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const addressId = parseInt(req.params.id, 10);
     if (isNaN(addressId)) {
@@ -185,7 +185,7 @@ export default class AddressRouter extends BaseRouter {
    *
    */
   @Post('/addresses')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
     const addressInput = req.body;
 
@@ -232,7 +232,7 @@ export default class AddressRouter extends BaseRouter {
    *
    */
   @Put('/addresses/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
     const addressId = parseInt(req.params.id, 10);
     if (isNaN(addressId)) {
@@ -273,7 +273,7 @@ export default class AddressRouter extends BaseRouter {
    *
    */
   @Delete('/addresses/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
     const addressId = parseInt(req.params.id, 10);
     if (isNaN(addressId)) {

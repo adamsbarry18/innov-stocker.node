@@ -62,7 +62,7 @@ export default class CurrencyRouter extends BaseRouter {
    *
    */
   @Get('/currencies')
-  @authorize({ level: SecurityLevel.USER }) // Accessible aux utilisateurs pour voir les devises disponibles
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'code', 'name', 'isActive', 'createdAt'])
   @filterable(['isActive', 'code'])
@@ -108,7 +108,7 @@ export default class CurrencyRouter extends BaseRouter {
    *
    */
   @Get('/currencies/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCurrencyById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const currencyId = parseInt(req.params.id, 10);
     if (isNaN(currencyId)) {
@@ -148,7 +148,7 @@ export default class CurrencyRouter extends BaseRouter {
    *
    */
   @Post('/currencies')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createCurrency(req: Request, res: Response, next: NextFunction): Promise<void> {
     const currencyInput = req.body;
     await this.pipe(res, req, next, () => this.currencyService.create(currencyInput), 201);
@@ -194,7 +194,7 @@ export default class CurrencyRouter extends BaseRouter {
    *
    */
   @Put('/currencies/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCurrency(req: Request, res: Response, next: NextFunction): Promise<void> {
     const currencyId = parseInt(req.params.id, 10);
     if (isNaN(currencyId)) {
@@ -236,7 +236,7 @@ export default class CurrencyRouter extends BaseRouter {
    *
    */
   @Delete('/currencies/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteCurrency(req: Request, res: Response, next: NextFunction): Promise<void> {
     const currencyId = parseInt(req.params.id, 10);
     if (isNaN(currencyId)) {
@@ -289,7 +289,7 @@ export default class CurrencyRouter extends BaseRouter {
    *
    */
   @Patch('/currencies/:id/set-default')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async setDefaultCompanyCurrency(req: Request, res: Response, next: NextFunction): Promise<void> {
     const currencyId = parseInt(req.params.id, 10);
     if (isNaN(currencyId)) {

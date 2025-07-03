@@ -70,7 +70,7 @@ export default class DeliveryRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/deliveries')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'deliveryNumber', 'deliveryDate', 'status', 'salesOrderId', 'createdAt'])
   @filterable([
@@ -124,7 +124,7 @@ export default class DeliveryRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/deliveries/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getDeliveryById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -159,7 +159,7 @@ export default class DeliveryRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/deliveries')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createDelivery(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateDeliveryInput = req.body;
     const userId = req.user?.id;
@@ -204,7 +204,7 @@ export default class DeliveryRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/deliveries/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateDelivery(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -256,7 +256,7 @@ export default class DeliveryRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/deliveries/:id/ship')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async shipDeliveryAction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -298,7 +298,7 @@ export default class DeliveryRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/deliveries/:id/deliver')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async markDeliveryAsDelivered(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     const userId = req.user?.id;
@@ -334,7 +334,7 @@ export default class DeliveryRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/deliveries/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteDelivery(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

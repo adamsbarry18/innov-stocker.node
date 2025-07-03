@@ -52,7 +52,7 @@ export default class SalesOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/sales-orders/:orderId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addSalesOrderItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     if (isNaN(orderId)) return next(new BadRequestError('Invalid Sales Order ID in path.'));
@@ -100,7 +100,7 @@ export default class SalesOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/sales-orders/:orderId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listSalesOrderItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     if (isNaN(orderId)) return next(new BadRequestError('Invalid Sales Order ID in path.'));
@@ -143,7 +143,7 @@ export default class SalesOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/sales-orders/:orderId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getSalesOrderItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -193,7 +193,7 @@ export default class SalesOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/sales-orders/:orderId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateSalesOrderItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -238,7 +238,7 @@ export default class SalesOrderItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/sales-orders/:orderId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeSalesOrderItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const orderId = parseInt(req.params.orderId, 10);
     const itemId = parseInt(req.params.itemId, 10);

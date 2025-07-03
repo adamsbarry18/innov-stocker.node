@@ -79,7 +79,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/supplier-returns')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'returnNumber', 'returnDate', 'status', 'supplierId', 'createdAt'])
   @filterable(['supplierId', 'status', 'createdByUserId', 'sourceWarehouseId', 'sourceShopId'])
@@ -131,7 +131,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-returns/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getSupplierReturnById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -166,7 +166,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/supplier-returns')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateSupplierReturnInput = req.body;
     const userId = req.user?.id;
@@ -210,7 +210,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/supplier-returns/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -257,7 +257,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-returns/:id/approve')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async approveSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -304,7 +304,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-returns/:id/ship')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async shipSupplierReturnAction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -349,7 +349,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-returns/:id/complete')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async completeSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -390,7 +390,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/supplier-returns/:id/cancel')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async cancelSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -426,7 +426,7 @@ export default class SupplierReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/supplier-returns/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteSupplierReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

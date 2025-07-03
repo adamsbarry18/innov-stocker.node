@@ -74,7 +74,7 @@ export default class BankAccountRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/bank-accounts')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'accountName', 'bankName', 'currencyId', 'createdAt'])
   @filterable(['accountName', 'bankName', 'currencyId'])
@@ -126,7 +126,7 @@ export default class BankAccountRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/bank-accounts/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getByIdRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -163,7 +163,7 @@ export default class BankAccountRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/bank-accounts')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateBankAccountInput = req.body;
 
@@ -209,7 +209,7 @@ export default class BankAccountRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/bank-accounts/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -248,7 +248,7 @@ export default class BankAccountRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/bank-accounts/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

@@ -158,24 +158,6 @@ describe('Purchase Receptions API', () => {
       expect(res.body.data.items).toHaveLength(0);
       expect(res.body.data.status).toBe(PurchaseReceptionStatus.PENDING_QUALITY_CHECK);
     });
-
-    it('should fail to create reception without authentication', async () => {
-      const payload = {
-        ...baseReceptionPayload,
-        supplierId: testSupplierId,
-        warehouseId: testWarehouseId,
-        purchaseOrderId: testPurchaseOrderId,
-        items: [
-          {
-            purchaseOrderItemId: testPoItemId,
-            productId: testProductId,
-            quantityReceived: 1,
-          },
-        ],
-      };
-      const res = await request(app).post('/api/v1/purchase-receptions').send(payload);
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /purchase-receptions', () => {

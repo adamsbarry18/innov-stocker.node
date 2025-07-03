@@ -84,7 +84,7 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/stock-transfers')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable([
     'id',
@@ -152,7 +152,7 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/stock-transfers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getStockTransferById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -188,7 +188,7 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/stock-transfers')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createStockTransfer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateStockTransferInput = req.body;
     const userId = req.user?.id;
@@ -232,7 +232,7 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/stock-transfers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateStockTransfer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -277,7 +277,7 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/stock-transfers/:id/ship')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async shipStockTransferAction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -322,7 +322,7 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/stock-transfers/:id/receive')
-  @authorize({ level: SecurityLevel.USER }) // User at destination location
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async receiveStockTransferAction(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -360,7 +360,7 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/stock-transfers/:id/cancel')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async cancelStockTransfer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -396,7 +396,7 @@ export default class StockTransferRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/stock-transfers/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteStockTransfer(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

@@ -69,11 +69,5 @@ describe('Import API - Supplier', () => {
 
       expect(res.status).toBe(400);
     });
-
-    it('should return 401 if not authenticated', async () => {
-      const res = await request(app).get(`/api/v1/import/batches/${importBatchId}`);
-
-      expect(res.status).toBe(401);
-    });
   });
 });

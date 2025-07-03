@@ -69,7 +69,7 @@ export default class ShopRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/shops')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'name', 'code', 'createdAt'])
   @filterable(['name', 'code'])
@@ -120,7 +120,7 @@ export default class ShopRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/shops/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getByIdRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -157,7 +157,7 @@ export default class ShopRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/shops')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateShopInput = req.body;
     const userId = req.user?.id;
@@ -205,7 +205,7 @@ export default class ShopRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/shops/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -247,7 +247,7 @@ export default class ShopRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/shops/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
