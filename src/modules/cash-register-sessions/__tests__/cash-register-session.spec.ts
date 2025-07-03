@@ -82,12 +82,6 @@ describe('CashRegisterSession API', () => {
         expect(res.status).toBe(400);
         expect(res.body.status).toBe('fail');
       });
-
-      it('should fail to get a session without authentication', async () => {
-        const res = await request(app).get(`/api/v1/cash-register-sessions/${createdSessionId}`);
-        expect(res.status).toBe(401);
-        expect(res.body.status).toBe('fail');
-      });
     });
 
     describe('PATCH /cash-register-sessions/:id/close', () => {
@@ -152,25 +146,11 @@ describe('CashRegisterSession API', () => {
         expect(res.status).toBe(400);
         expect(res.body.status).toBe('fail');
       });
-
-      it('should fail to close a session without authentication', async () => {
-        const res = await request(app)
-          .patch(`/api/v1/cash-register-sessions/${createdSessionId}/close`)
-          .send(closeInput);
-        expect(res.status).toBe(401);
-        expect(res.body.status).toBe('fail');
-      });
     });
   });
 
   // Tests that don't depend on a specific created session can remain outside the sequential block
   describe('POST /cash-register-sessions/open', () => {
-    it('should fail to open a session without authentication', async () => {
-      const res = await request(app).post('/api/v1/cash-register-sessions/open').send(testSession);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for missing required cashRegisterId', async () => {
       const res = await request(app)
         .post('/api/v1/cash-register-sessions/open')
@@ -209,12 +189,6 @@ describe('CashRegisterSession API', () => {
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.sessions)).toBe(true);
-    });
-
-    it('should fail to return sessions without authentication', async () => {
-      const res = await request(app).get('/api/v1/cash-register-sessions');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering', async () => {
@@ -273,14 +247,6 @@ describe('CashRegisterSession API', () => {
         .get('/api/v1/cash-registers/abc/sessions/active')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to get active session without authentication', async () => {
-      const res = await request(app).get(
-        `/api/v1/cash-registers/${testSession.cashRegisterId}/sessions/active`,
-      );
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

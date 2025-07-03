@@ -49,7 +49,7 @@ export default class StockTransferItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/stock-transfers/:transferId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addStockTransferItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transferId = parseInt(req.params.transferId, 10);
     if (isNaN(transferId)) return next(new BadRequestError('Invalid Stock Transfer ID in path.'));
@@ -95,7 +95,7 @@ export default class StockTransferItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/stock-transfers/:transferId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listStockTransferItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transferId = parseInt(req.params.transferId, 10);
     if (isNaN(transferId)) return next(new BadRequestError('Invalid Stock Transfer ID in path.'));
@@ -134,7 +134,7 @@ export default class StockTransferItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/stock-transfers/:transferId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getStockTransferItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transferId = parseInt(req.params.transferId, 10);
     const itemId = parseInt(req.params.itemId, 10); // BIGINT is string
@@ -184,7 +184,7 @@ export default class StockTransferItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/stock-transfers/:transferId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateStockTransferItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transferId = parseInt(req.params.transferId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -229,7 +229,7 @@ export default class StockTransferItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/stock-transfers/:transferId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeStockTransferItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const transferId = parseInt(req.params.transferId, 10);
     const itemId = parseInt(req.params.itemId, 10);

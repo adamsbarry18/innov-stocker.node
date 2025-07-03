@@ -68,7 +68,7 @@ export default class PaymentMethodRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/payment-methods')
-  @authorize({ level: SecurityLevel.USER }) // Users might need to list these
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable(['id', 'name', 'type', 'isActive', 'createdAt'])
   @filterable(['name', 'type', 'isActive'])
@@ -115,7 +115,7 @@ export default class PaymentMethodRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/payment-methods/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getByIdRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -152,7 +152,7 @@ export default class PaymentMethodRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/payment-methods')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreatePaymentMethodInput = req.body;
 
@@ -198,7 +198,7 @@ export default class PaymentMethodRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/payment-methods/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -238,7 +238,7 @@ export default class PaymentMethodRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/payment-methods/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteRoute(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

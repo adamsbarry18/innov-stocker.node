@@ -68,7 +68,7 @@ export default class UserActivityLogRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/user-activity-logs')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   @paginate()
   @sortable(['id', 'timestamp', 'userId', 'actionType', 'entityType'])
   @filterable(['userId', 'actionType', 'entityType', 'entityId', 'ipAddress'])
@@ -151,7 +151,7 @@ export default class UserActivityLogRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/user-activity-logs/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async getLogById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const logId = parseInt(req.params.id, 10);
     if (!logId) {

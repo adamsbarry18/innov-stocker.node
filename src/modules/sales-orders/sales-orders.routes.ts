@@ -78,7 +78,7 @@ export default class SalesOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/sales-orders')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable([
     'id',
@@ -134,7 +134,7 @@ export default class SalesOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/sales-orders/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getSalesOrderById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -169,7 +169,7 @@ export default class SalesOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/sales-orders')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateSalesOrderInput = req.body;
     const userId = req.user?.id;
@@ -213,7 +213,7 @@ export default class SalesOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/sales-orders/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -251,7 +251,7 @@ export default class SalesOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/sales-orders/:id/approve')
-  @authorize({ level: SecurityLevel.USER }) // or INTEGRATOR
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async approveSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -291,7 +291,7 @@ export default class SalesOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/sales-orders/:id/prepare')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async prepareSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -331,7 +331,7 @@ export default class SalesOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/sales-orders/:id/cancel')
-  @authorize({ level: SecurityLevel.USER }) // or INTEGRATOR
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async cancelSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -369,7 +369,7 @@ export default class SalesOrderRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/sales-orders/:id')
-  @authorize({ level: SecurityLevel.USER }) // or ADMIN
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteSalesOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

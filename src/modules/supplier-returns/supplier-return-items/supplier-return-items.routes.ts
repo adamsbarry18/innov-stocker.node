@@ -49,7 +49,7 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/supplier-returns/:returnId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addSupplierReturnItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     if (isNaN(returnId)) return next(new BadRequestError('Invalid Supplier Return ID in path.'));
@@ -97,7 +97,7 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-returns/:returnId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listSupplierReturnItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     if (isNaN(returnId)) return next(new BadRequestError('Invalid Supplier Return ID in path.'));
@@ -136,7 +136,7 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-returns/:returnId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getSupplierReturnItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -186,7 +186,7 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/supplier-returns/:returnId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateSupplierReturnItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -231,7 +231,7 @@ export default class SupplierReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/supplier-returns/:returnId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeSupplierReturnItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     const itemId = parseInt(req.params.itemId, 10);

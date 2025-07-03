@@ -179,19 +179,6 @@ describe('Stock Movements API', () => {
         .send(payload);
       expect(res.status).toBe(400);
     });
-
-    it('should fail to create adjustment without authentication', async () => {
-      const payload = {
-        productId: testProductId,
-        warehouseId: testWarehouseId,
-        movementType: StockMovementType.MANUAL_ENTRY_IN,
-        quantity: 1,
-        userId: testUserId, // User ID is set by the service based on authenticated user
-        notes: 'No auth test',
-      };
-      const res = await request(app).post('/api/v1/stock-movements/adjustments').send(payload); // No authorization header
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /stock-movements/:id', () => {

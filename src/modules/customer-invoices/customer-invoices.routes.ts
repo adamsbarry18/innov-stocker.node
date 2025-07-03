@@ -87,7 +87,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/customer-invoices')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable([
     'id',
@@ -144,7 +144,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-invoices/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCustomerInvoiceById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     await this.pipe(res, req, next, () => this.service.findCustomerInvoiceById(id));
@@ -178,7 +178,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/customer-invoices')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createCustomerInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateCustomerInvoiceInput = req.body;
     const userId = req.user?.id;
@@ -224,7 +224,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-invoices/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCustomerInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -273,7 +273,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-invoices/:id/status')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCustomerInvoiceStatus(
     req: Request,
     res: Response,
@@ -322,7 +322,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/customer-invoices/:id/send')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async sendCustomerInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -360,7 +360,7 @@ export default class CustomerInvoiceRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-invoices/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteCustomerInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

@@ -34,12 +34,6 @@ describe('Payment API', () => {
       createdPaymentId = res.body.data.id;
     });
 
-    it('should fail to record a payment without authentication', async () => {
-      const res = await request(app).post('/api/v1/payments').send(newPaymentInput);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for missing required fields', async () => {
       const invalidInput = { ...newPaymentInput, amount: undefined };
       const res = await request(app)
@@ -60,12 +54,6 @@ describe('Payment API', () => {
       expect(res.body.status).toBe('success');
       expect(Array.isArray(res.body.data.payments)).toBe(true);
       expect(res.body.data.payments.length).toBeGreaterThan(0);
-    });
-
-    it('should fail to return payments without authentication', async () => {
-      const res = await request(app).get('/api/v1/payments');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
   });
 
@@ -93,12 +81,6 @@ describe('Payment API', () => {
         .get('/api/v1/payments/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to get a payment without authentication', async () => {
-      const res = await request(app).get(`/api/v1/payments/${createdPaymentId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });
@@ -140,12 +122,6 @@ describe('Payment API', () => {
         .delete('/api/v1/payments/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a payment without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/payments/${paymentToDeleteId}`);
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

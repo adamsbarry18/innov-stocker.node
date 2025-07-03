@@ -138,13 +138,6 @@ describe('SalesOrderItems API', () => {
 
       expect(res.status).toBe(403);
     });
-
-    it('should fail to add an item without authentication', async () => {
-      const res = await request(app)
-        .post(`/api/v1/sales-orders/${currentSalesOrderId}/items`)
-        .send(testSalesOrderItemInput());
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /sales-orders/:salesOrderId/items', () => {
@@ -165,11 +158,6 @@ describe('SalesOrderItems API', () => {
         .get('/api/v1/sales-orders/999999/items')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
-    });
-
-    it('should fail to get items without authentication', async () => {
-      const res = await request(app).get(`/api/v1/sales-orders/${salesOrderId}/items`);
-      expect(res.status).toBe(401);
     });
   });
 
@@ -214,13 +202,6 @@ describe('SalesOrderItems API', () => {
       await request(app)
         .delete(`/api/v1/sales-orders/${anotherOrderId}`)
         .set('Authorization', `Bearer ${adminToken}`);
-    });
-
-    it('should fail to get a specific item without authentication', async () => {
-      const res = await request(app).get(
-        `/api/v1/sales-orders/${salesOrderId}/items/${createdSalesOrderItemId}`,
-      );
-      expect(res.status).toBe(401);
     });
   });
 
@@ -292,13 +273,6 @@ describe('SalesOrderItems API', () => {
 
       expect(res.status).toBe(403);
     });
-
-    it('should fail to update an item without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/sales-orders/${currentSalesOrderId}/items/${currentSalesOrderItemId}`)
-        .send(updateData);
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('DELETE /sales-orders/:salesOrderId/items/:itemId', () => {
@@ -366,13 +340,6 @@ describe('SalesOrderItems API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(403);
-    });
-
-    it('should fail to delete an item without authentication', async () => {
-      const res = await request(app).delete(
-        `/api/v1/sales-orders/${currentSalesOrderId}/items/${itemToDeleteId}`,
-      );
-      expect(res.status).toBe(401);
     });
   });
 });

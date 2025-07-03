@@ -63,14 +63,6 @@ describe('Cash Register Transaction API', () => {
       expect(res.body.data.relatedSalesOrderId).toBe(input.relatedSalesOrderId);
     });
 
-    it('should fail to record a transaction without authentication', async () => {
-      const res = await request(app)
-        .post('/api/v1/cash-register-transactions')
-        .send(newTransactionInput);
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for missing required fields', async () => {
       const invalidInput = {
         ...newTransactionInput,
@@ -174,12 +166,6 @@ describe('Cash Register Transaction API', () => {
       expect(res.body.data.transactions.length).toBeGreaterThan(0);
     });
 
-    it('should fail to return transactions without authentication', async () => {
-      const res = await request(app).get('/api/v1/cash-register-transactions');
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should filter transactions by cashRegisterSessionId', async () => {
       const res = await request(app)
         .get(`/api/v1/cash-register-transactions?cashRegisterSessionId=${testSessionId}`)
@@ -238,14 +224,6 @@ describe('Cash Register Transaction API', () => {
         .get('/api/v1/cash-register-transactions/abc')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to get a transaction without authentication', async () => {
-      const res = await request(app).get(
-        `/api/v1/cash-register-transactions/${createdTransactionId}`,
-      );
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

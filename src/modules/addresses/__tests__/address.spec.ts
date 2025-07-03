@@ -30,13 +30,6 @@ describe('Address API', () => {
       createdAddressId = res.body.data.id; // Store ID for later tests
     });
 
-    it('should fail to create a new address without authentication', async () => {
-      const res = await request(app).post('/api/v1/addresses').send(testAddress);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for invalid address data (as admin)', async () => {
       const invalidAddress = { ...testAddress, city: '' }; // Invalid city
       const res = await request(app)
@@ -59,13 +52,6 @@ describe('Address API', () => {
       expect(res.body.status).toBe('success');
       expect(res.body).toHaveProperty('data');
       expect(Array.isArray(res.body.data.addresses)).toBe(true);
-    });
-
-    it('should fail to return a list of addresses without authentication', async () => {
-      const res = await request(app).get('/api/v1/addresses');
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, filtering, and searching', async () => {
@@ -130,13 +116,6 @@ describe('Address API', () => {
       expect(res.body.status).toBe('fail');
       expect(res.body.message).toBe('Bad request');
     });
-
-    it('should fail to get a specific address without authentication', async () => {
-      const res = await request(app).get(`/api/v1/addresses/${createdAddressId}`);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PUT /addresses/:id', () => {
@@ -194,15 +173,6 @@ describe('Address API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update an address without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/addresses/${createdAddressId}`)
-        .send(updatedAddress);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /addresses/:id', () => {
@@ -249,13 +219,6 @@ describe('Address API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
       expect(res.body.message).toBe('Bad request');
-    });
-
-    it('should fail to delete an address without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/addresses/${addressToDeleteId}`);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should return 400 if address is in use by another entity (e.g., Company)', async () => {

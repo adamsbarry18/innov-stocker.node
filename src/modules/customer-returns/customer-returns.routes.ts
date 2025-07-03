@@ -87,7 +87,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/customer-returns')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable([
     'id',
@@ -147,7 +147,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-returns/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCustomerReturnById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -182,7 +182,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/customer-returns')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createCustomerReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateCustomerReturnInput = req.body;
     const userId = req.user?.id;
@@ -226,7 +226,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-returns/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCustomerReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -270,7 +270,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-returns/:id/approve')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async approveCustomerReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -315,7 +315,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-returns/:id/receive')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async receiveCustomerReturnItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -360,7 +360,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/customer-returns/:id/complete')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async completeCustomerReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -399,7 +399,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/customer-returns/:id/cancel')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async cancelCustomerReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -435,7 +435,7 @@ export default class CustomerReturnRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-returns/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteCustomerReturn(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

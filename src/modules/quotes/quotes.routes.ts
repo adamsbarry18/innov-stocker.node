@@ -77,7 +77,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/quotes')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable([
     'id',
@@ -173,7 +173,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/quotes/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getQuoteById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -210,7 +210,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/quotes')
-  @authorize({ level: SecurityLevel.USER }) // Sales role or similar
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createQuote(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateQuoteInput = req.body;
     const userId = req.user?.id;
@@ -257,7 +257,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/quotes/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateQuote(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -309,7 +309,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/quotes/:id/status')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateQuoteStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -355,7 +355,7 @@ export default class QuoteRouter extends BaseRouter {
    *         description: Not Implemented Yet
    */
   @Post('/quotes/:id/convert-to-order')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async convertQuoteToOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -391,7 +391,7 @@ export default class QuoteRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/quotes/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteQuote(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

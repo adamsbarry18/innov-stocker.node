@@ -49,7 +49,7 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/supplier-invoices/:invoiceId/items')
-  @authorize({ level: SecurityLevel.USER }) // Or specific accounting role
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addSupplierInvoiceItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     if (isNaN(invoiceId)) return next(new BadRequestError('Invalid Supplier Invoice ID in path.'));
@@ -97,7 +97,7 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-invoices/:invoiceId/items')
-  @authorize({ level: SecurityLevel.USER }) // User with rights to view supplier invoices
+  @authorize({ level: SecurityLevel.READER })
   async listSupplierInvoiceItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     if (isNaN(invoiceId)) return next(new BadRequestError('Invalid Supplier Invoice ID in path.'));
@@ -134,7 +134,7 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/supplier-invoices/:invoiceId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getSupplierInvoiceItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -183,7 +183,7 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/supplier-invoices/:invoiceId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateSupplierInvoiceItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -227,7 +227,7 @@ export default class SupplierInvoiceItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/supplier-invoices/:invoiceId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeSupplierInvoiceItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const invoiceId = parseInt(req.params.invoiceId, 10);
     const itemId = parseInt(req.params.itemId, 10);

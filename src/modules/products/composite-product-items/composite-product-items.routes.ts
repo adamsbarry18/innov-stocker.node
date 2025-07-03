@@ -46,7 +46,7 @@ export default class ProductRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/products/:productId/components')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addProductComponent(req: Request, res: Response, next: NextFunction): Promise<void> {
     const compositeProductId = parseInt(req.params.productId, 10);
     if (isNaN(compositeProductId))
@@ -93,7 +93,7 @@ export default class ProductRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/components')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listProductComponents(req: Request, res: Response, next: NextFunction): Promise<void> {
     const compositeProductId = parseInt(req.params.productId, 10);
     if (isNaN(compositeProductId))
@@ -132,7 +132,7 @@ export default class ProductRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/products/:productId/components/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getProductComponentById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const compositeProductId = parseInt(req.params.productId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -182,7 +182,7 @@ export default class ProductRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/products/:productId/components/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateProductComponent(req: Request, res: Response, next: NextFunction): Promise<void> {
     const compositeProductId = parseInt(req.params.productId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -225,7 +225,7 @@ export default class ProductRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/products/:productId/components/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeProductComponent(req: Request, res: Response, next: NextFunction): Promise<void> {
     const compositeProductId = parseInt(req.params.productId, 10);
     const itemId = parseInt(req.params.itemId, 10);

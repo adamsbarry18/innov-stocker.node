@@ -49,7 +49,7 @@ export default class CustomerReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/customer-returns/:returnId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addCustomerReturnItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     if (isNaN(returnId)) return next(new BadRequestError('Invalid Customer Return ID in path.'));
@@ -89,7 +89,7 @@ export default class CustomerReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-returns/:returnId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listCustomerReturnItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     if (isNaN(returnId)) return next(new BadRequestError('Invalid Customer Return ID in path.'));
@@ -129,7 +129,7 @@ export default class CustomerReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/customer-returns/:returnId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getCustomerReturnItemById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -180,7 +180,7 @@ export default class CustomerReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/customer-returns/:returnId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateCustomerReturnItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     const itemId = parseInt(req.params.itemId, 10);
@@ -226,7 +226,7 @@ export default class CustomerReturnItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/customer-returns/:returnId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeCustomerReturnItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const returnId = parseInt(req.params.returnId, 10);
     const itemId = parseInt(req.params.itemId, 10);

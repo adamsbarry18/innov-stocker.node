@@ -52,7 +52,7 @@ export default class InventorySessionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Post('/inventory-sessions/:sessionId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async addOrUpdateInventoryItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const sessionId = parseInt(req.params.sessionId, 10);
     if (isNaN(sessionId)) return next(new BadRequestError('Invalid Inventory Session ID in path.'));
@@ -91,7 +91,7 @@ export default class InventorySessionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/inventory-sessions/:sessionId/items')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async listInventorySessionItems(req: Request, res: Response, next: NextFunction): Promise<void> {
     const sessionId = parseInt(req.params.sessionId, 10);
     if (isNaN(sessionId)) return next(new BadRequestError('Invalid Inventory Session ID in path.'));
@@ -131,7 +131,7 @@ export default class InventorySessionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/inventory-sessions/:sessionId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getInventorySessionItemById(
     req: Request,
     res: Response,
@@ -174,7 +174,7 @@ export default class InventorySessionItemRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/inventory-sessions/:sessionId/items/:itemId')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async removeInventorySessionItem(req: Request, res: Response, next: NextFunction): Promise<void> {
     const sessionId = parseInt(req.params.sessionId, 10);
     const itemId = parseInt(req.params.itemId, 10);

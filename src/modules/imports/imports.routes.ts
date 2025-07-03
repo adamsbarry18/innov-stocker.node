@@ -58,7 +58,7 @@ export default class ImportRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/import/products')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async scheduleProductImport(req: Request, res: Response, next: NextFunction): Promise<void> {
     await this.handleImportRequest(ImportEntityType.PRODUCT, req, res, next);
   }
@@ -91,7 +91,7 @@ export default class ImportRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/import/customers')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async scheduleCustomerImport(req: Request, res: Response, next: NextFunction): Promise<void> {
     await this.handleImportRequest(ImportEntityType.CUSTOMER, req, res, next);
   }
@@ -124,7 +124,7 @@ export default class ImportRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/import/suppliers')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async scheduleSupplierImport(req: Request, res: Response, next: NextFunction): Promise<void> {
     await this.handleImportRequest(ImportEntityType.SUPPLIER, req, res, next);
   }
@@ -157,7 +157,7 @@ export default class ImportRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/import/product-categories')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async scheduleProductCategoryImport(
     req: Request,
     res: Response,
@@ -194,7 +194,7 @@ export default class ImportRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/import/opening-stock')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async scheduleOpeningStockImport(req: Request, res: Response, next: NextFunction): Promise<void> {
     await this.handleImportRequest(ImportEntityType.OPENING_STOCK, req, res, next);
   }
@@ -227,7 +227,7 @@ export default class ImportRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/import/sales-orders')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async scheduleSalesOrderImport(req: Request, res: Response, next: NextFunction): Promise<void> {
     await this.handleImportRequest(ImportEntityType.SALES_ORDER, req, res, next);
   }
@@ -260,7 +260,7 @@ export default class ImportRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/import/purchase-orders')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async schedulePurchaseOrderImport(
     req: Request,
     res: Response,
@@ -296,7 +296,7 @@ export default class ImportRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/import/batches/:id')
-  @authorize({ level: SecurityLevel.ADMIN })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async getImportBatchStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     const batchId = parseInt(req.params.id, 10);
     if (isNaN(batchId)) return next(new BadRequestError('Invalid batch ID format.'));

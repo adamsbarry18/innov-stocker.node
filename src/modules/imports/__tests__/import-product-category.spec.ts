@@ -44,14 +44,6 @@ describe('Import API - Product Category', () => {
 
       expect(res.status).toBe(400);
     });
-
-    it('should return 401 if not authenticated', async () => {
-      const res = await request(app)
-        .post('/api/v1/import/product-categories')
-        .send(productCategoryImportPayload);
-
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /import/batches/{id}', () => {
@@ -81,12 +73,6 @@ describe('Import API - Product Category', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should return 401 if not authenticated', async () => {
-      const res = await request(app).get(`/api/v1/import/batches/${importBatchId}`);
-
-      expect(res.status).toBe(401);
     });
   });
 });

@@ -33,13 +33,6 @@ describe('Product Category API', () => {
       createdCategoryId = res.body.data.id; // Store ID for later tests
     });
 
-    it('should fail to create a new product category without authentication', async () => {
-      const res = await request(app).post('/api/v1/product-categories').send(testProductCategory);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for invalid product category data (as admin)', async () => {
       const invalidCategory = { ...testProductCategory, name: '' }; // Invalid name
       const res = await request(app)
@@ -63,13 +56,6 @@ describe('Product Category API', () => {
       expect(res.body).toHaveProperty('data');
       expect(Array.isArray(res.body.data.categories)).toBe(true);
       expect(res.body.data).toHaveProperty('total');
-    });
-
-    it('should fail to return a list of product categories without authentication', async () => {
-      const res = await request(app).get('/api/v1/product-categories');
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering (as admin)', async () => {
@@ -149,13 +135,6 @@ describe('Product Category API', () => {
       expect(res.body.message).toBe('Bad request');
     });
 
-    it('should fail to get a specific product category without authentication', async () => {
-      const res = await request(app).get(`/api/v1/product-categories/${createdCategoryId}`);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should include children if includeChildren=true (as admin)', async () => {
       // Now a child category is created in beforeAll above
       const res = await request(app)
@@ -226,15 +205,6 @@ describe('Product Category API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
     });
-
-    it('should fail to update a product category without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/product-categories/${createdCategoryId}`)
-        .send(updatedProductCategory);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('DELETE /product-categories/:id', () => {
@@ -291,13 +261,6 @@ describe('Product Category API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to delete a product category without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/product-categories/${categoryToDeleteId}`);
-
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });

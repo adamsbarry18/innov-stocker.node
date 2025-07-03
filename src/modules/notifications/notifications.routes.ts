@@ -47,7 +47,7 @@ export default class NotificationRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/notifications')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createNotification(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreateNotificationInput = req.body;
     const userId = req.user?.id;
@@ -99,7 +99,7 @@ export default class NotificationRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/notifications')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   @paginate()
   @sortable(['createdAt'])
   @filterable(['isRead', 'type'])
@@ -137,7 +137,7 @@ export default class NotificationRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Get('/notifications/unread-count')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async getUnreadCount(req: Request, res: Response, next: NextFunction): Promise<void> {
     const userId = req.user?.id;
     if (!userId) return next(new UnauthorizedError('User not found.'));
@@ -165,7 +165,7 @@ export default class NotificationRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Post('/notifications/mark-all-as-read')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async markAllAsRead(req: Request, res: Response, next: NextFunction): Promise<void> {
     const userId = req.user?.id;
     if (!userId) return next(new UnauthorizedError('User not found.'));
@@ -198,7 +198,7 @@ export default class NotificationRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/notifications/:id/read')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async markAsRead(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid Notification ID format.'));
@@ -243,7 +243,7 @@ export default class NotificationRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/notifications/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteNotification(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -274,7 +274,7 @@ export default class NotificationRouter extends BaseRouter {
    *         $ref: '#/components/responses/Unauthorized'
    */
   @Delete('/notifications')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteAllNotifications(req: Request, res: Response, next: NextFunction): Promise<void> {
     const userId = req.user?.id;
     if (!userId) return next(new UnauthorizedError('User ID not found for audit.'));

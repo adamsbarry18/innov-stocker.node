@@ -68,7 +68,7 @@ export default class LoginRouter extends BaseRouter {
    *         description: Logout successful
    */
   @Post('/auth/logout')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     const token = req.user?.authToken;
     if (!token) {
@@ -247,7 +247,7 @@ export default class LoginRouter extends BaseRouter {
    *         description: Not Found - User ID not found
    */
   @Put('/users/:userId/password')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async updatePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { password } = req.body;
     const userIdParam = req.params.userId;
@@ -266,8 +266,9 @@ export default class LoginRouter extends BaseRouter {
     }
 
     const isEditingSelf = authenticatedUserId === userId;
+    const isAdmin = req.user?.level === SecurityLevel.ADMIN;
 
-    if (!isEditingSelf) {
+    if (!isEditingSelf && !isAdmin) {
       try {
         const authorised = await this.authorizationService.checkAuthorisation(
           authenticatedUserId,

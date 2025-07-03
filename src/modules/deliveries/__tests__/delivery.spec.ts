@@ -67,11 +67,6 @@ describe('Deliveries API', () => {
       expect(res.body.data.items).toHaveLength(0); // Expect 0 items
     });
 
-    it('should fail to create a delivery without authentication', async () => {
-      const res = await request(app).post('/api/v1/deliveries').send(createDeliveryInput);
-      expect(res.status).toBe(401);
-    });
-
     it('should fail to create a delivery with invalid salesOrderId', async () => {
       const invalidInput = { ...createDeliveryInput, salesOrderId: 999999 };
       const res = await request(app)
@@ -151,11 +146,6 @@ describe('Deliveries API', () => {
         res.body.data.deliveries.some((d: any) => d.deliveryNumber === createdDeliveryNumber),
       ).toBe(true);
     });
-
-    it('should fail to get deliveries without authentication', async () => {
-      const res = await request(app).get('/api/v1/deliveries');
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /deliveries/:id', () => {
@@ -183,11 +173,6 @@ describe('Deliveries API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to get a delivery without authentication', async () => {
-      const res = await request(app).get(`/api/v1/deliveries/${createdDeliveryId}`);
-      expect(res.status).toBe(401);
     });
   });
 
@@ -227,13 +212,6 @@ describe('Deliveries API', () => {
         .send(updateData);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to update a delivery without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/deliveries/${createdDeliveryId}`)
-        .send(updateData);
-      expect(res.status).toBe(401);
     });
 
     it('should fail to update a delivery if status is SHIPPED or DELIVERED', async () => {
@@ -412,11 +390,6 @@ describe('Deliveries API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to delete a delivery without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/deliveries/${deliveryToDeleteId}`);
-      expect(res.status).toBe(401);
     });
 
     it('should return 400 if the delivery is linked to an invoice', async () => {

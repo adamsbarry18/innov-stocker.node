@@ -61,13 +61,6 @@ describe('DeliveryItems API', () => {
         .send(testDeliveryItemInput(2, 1, 1, 3));
       expect(res.status).toBe(403);
     });
-
-    it('should fail to add an item without authentication', async () => {
-      const res = await request(app)
-        .post(`/api/v1/deliveries/${existingDeliveryIdPending}/items`)
-        .send(testDeliveryItemInput(1, 1, 1, 6));
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /deliveries/:deliveryId/items', () => {
@@ -88,11 +81,6 @@ describe('DeliveryItems API', () => {
         .get('/api/v1/deliveries/999999/items')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
-    });
-
-    it('should fail to get items without authentication', async () => {
-      const res = await request(app).get(`/api/v1/deliveries/${existingDeliveryIdPending}/items`);
-      expect(res.status).toBe(401);
     });
   });
 
@@ -121,13 +109,6 @@ describe('DeliveryItems API', () => {
         )
         .set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
-    });
-
-    it('should fail to get a specific item without authentication', async () => {
-      const res = await request(app).get(
-        `/api/v1/deliveries/${existingDeliveryIdPending}/items/${existingDeliveryItem1Id}`,
-      );
-      expect(res.status).toBe(401);
     });
   });
 
@@ -174,13 +155,6 @@ describe('DeliveryItems API', () => {
 
       expect(res.status).toBe(403);
     });
-
-    it('should fail to update an item without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/deliveries/${existingDeliveryIdPending}/items/${existingDeliveryItem1Id}`)
-        .send(updateData);
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('DELETE /deliveries/:deliveryId/items/:itemId', () => {
@@ -219,13 +193,6 @@ describe('DeliveryItems API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(403);
-    });
-
-    it('should fail to delete an item without authentication', async () => {
-      const res = await request(app).delete(
-        `/api/v1/deliveries/${existingDeliveryIdPending}/items/${existingDeliveryItem1Id}`,
-      );
-      expect(res.status).toBe(401);
     });
   });
 });

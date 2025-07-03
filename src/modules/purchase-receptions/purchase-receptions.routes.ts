@@ -81,7 +81,7 @@ export default class PurchaseReceptionRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Get('/purchase-receptions')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   @paginate()
   @sortable([
     'id',
@@ -144,7 +144,7 @@ export default class PurchaseReceptionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Get('/purchase-receptions/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.READER })
   async getReceptionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -180,7 +180,7 @@ export default class PurchaseReceptionRouter extends BaseRouter {
    *         $ref: '#/components/responses/Forbidden'
    */
   @Post('/purchase-receptions')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async createReception(req: Request, res: Response, next: NextFunction): Promise<void> {
     const input: CreatePurchaseReceptionInput = req.body;
     const userId = req.user?.id;
@@ -226,7 +226,7 @@ export default class PurchaseReceptionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Put('/purchase-receptions/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async updateReception(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -265,7 +265,7 @@ export default class PurchaseReceptionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Patch('/purchase-receptions/:id/validate')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async validateReception(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));
@@ -301,7 +301,7 @@ export default class PurchaseReceptionRouter extends BaseRouter {
    *         $ref: '#/components/responses/NotFound'
    */
   @Delete('/purchase-receptions/:id')
-  @authorize({ level: SecurityLevel.USER })
+  @authorize({ level: SecurityLevel.INTEGRATOR })
   async deleteReception(req: Request, res: Response, next: NextFunction): Promise<void> {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return next(new BadRequestError('Invalid ID format.'));

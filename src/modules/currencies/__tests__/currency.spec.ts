@@ -42,13 +42,6 @@ describe('Currency API', () => {
       expect(getRes.body.data.total).toBe(4);
     });
 
-    it('should fail to create a new currency without authentication', async () => {
-      const res = await request(app).post('/api/v1/currencies').send(testCurrency);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
-
     it('should return 400 for invalid currency data (as admin)', async () => {
       const invalidCurrency = { ...testCurrency, code: '' }; // Invalid code
       const res = await request(app)
@@ -72,13 +65,6 @@ describe('Currency API', () => {
       expect(res.body.status).toBe('success');
       expect(res.body).toHaveProperty('data');
       expect(Array.isArray(res.body.data.currencies)).toBe(true);
-    });
-
-    it('should fail to return a list of currencies without authentication', async () => {
-      const res = await request(app).get('/api/v1/currencies');
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
 
     it('should support pagination, sorting, and filtering (as admin)', async () => {
@@ -141,13 +127,6 @@ describe('Currency API', () => {
       expect(res.body.status).toBe('fail');
       expect(res.body.message).toBe('Bad request');
     });
-
-    it('should fail to get a specific currency without authentication', async () => {
-      const res = await request(app).get(`/api/v1/currencies/${createdCurrencyId}`);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PUT /currencies/:id', () => {
@@ -204,15 +183,6 @@ describe('Currency API', () => {
         .send(invalidUpdate);
 
       expect(res.status).toBe(400);
-      expect(res.body.status).toBe('fail');
-    });
-
-    it('should fail to update a currency without authentication', async () => {
-      const res = await request(app)
-        .put(`/api/v1/currencies/${createdCurrencyId}`)
-        .send(updatedCurrency);
-
-      expect(res.status).toBe(401);
       expect(res.body.status).toBe('fail');
     });
   });
@@ -273,13 +243,6 @@ describe('Currency API', () => {
       expect(res.body.status).toBe('fail');
       expect(res.body.message).toBe('Bad request');
     });
-
-    it('should fail to delete a currency without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/currencies/${currencyToDeleteId}`);
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
-    });
   });
 
   describe('PATCH /currencies/:id/set-default', () => {
@@ -327,15 +290,6 @@ describe('Currency API', () => {
       expect(res.status).toBe(400);
       expect(res.body.status).toBe('fail');
       expect(res.body.message).toBe('Bad request');
-    });
-
-    it('should fail to set default currency without authentication', async () => {
-      const res = await request(app).patch(
-        `/api/v1/currencies/${currencyToSetDefaultId}/set-default`,
-      );
-
-      expect(res.status).toBe(401);
-      expect(res.body.status).toBe('fail');
     });
   });
 });

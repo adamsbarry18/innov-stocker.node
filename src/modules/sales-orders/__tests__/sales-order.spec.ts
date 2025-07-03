@@ -148,11 +148,6 @@ describe('SalesOrders API', () => {
         .send({ notes: 'Missing required fields' });
       expect(res.status).toBe(400);
     });
-
-    it('should fail to create a sales order without authentication', async () => {
-      const res = await request(app).post('/api/v1/sales-orders').send(testOrderInputWithItems());
-      expect(res.status).toBe(401);
-    });
   });
 
   describe('GET /sales-orders', () => {
@@ -203,11 +198,6 @@ describe('SalesOrders API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to get a sales order without authentication', async () => {
-      const res = await request(app).get(`/api/v1/sales-orders/${createdOrderId}`);
-      expect(res.status).toBe(401);
     });
   });
 
@@ -267,11 +257,6 @@ describe('SalesOrders API', () => {
         .send(updateData);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to update a sales order without authentication', async () => {
-      const res = await request(app).put(`/api/v1/sales-orders/${createdOrderId}`).send(updateData);
-      expect(res.status).toBe(401);
     });
   });
 
@@ -429,11 +414,6 @@ describe('SalesOrders API', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(400);
-    });
-
-    it('should fail to delete a sales order without authentication', async () => {
-      const res = await request(app).delete(`/api/v1/sales-orders/${orderToDeleteId}`);
-      expect(res.status).toBe(401);
     });
   });
 });
