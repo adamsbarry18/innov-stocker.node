@@ -5,8 +5,7 @@
     {
       "description": "Automerge patch updates if CI passes",
       "matchUpdateTypes": ["patch"],
-      "automerge": true,
-      "automergeType": "squash",
+      "automerge": false,
       "ignoreTests": true,
       "labels": ["dependencies", "renovate", "automerge"]
     },
