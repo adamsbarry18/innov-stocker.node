@@ -6,15 +6,25 @@ import {
   type CompanyApiResponse,
   companyValidationInputErrors,
 } from '../index';
+import { AddressRepository } from '@/modules/addresses/data/address.repository';
+import { CurrencyRepository } from '@/modules/currencies/data/currency.repository';
 import logger from '@/lib/logger';
 
 let instance: CompanyService | null = null;
 
 export class CompanyService {
   private readonly companyRepository: CompanyRepository;
+  private readonly addressRepository: AddressRepository;
+  private readonly currencyRepository: CurrencyRepository;
 
-  constructor(companyRepository: CompanyRepository = new CompanyRepository()) {
+  constructor(
+    companyRepository: CompanyRepository = new CompanyRepository(),
+    addressRepository: AddressRepository = new AddressRepository(),
+    currencyRepository: CurrencyRepository = new CurrencyRepository(),
+  ) {
     this.companyRepository = companyRepository;
+    this.addressRepository = addressRepository;
+    this.currencyRepository = currencyRepository;
   }
 
   /**
@@ -77,23 +87,11 @@ export class CompanyService {
    */
   async updateCompanyDetails(id: number, input: UpdateCompanyInput): Promise<CompanyApiResponse> {
     // Validation des ID d'adresse et de devise (vérifier leur existence)
-    // Exemple :
-    // const addressExists = await this.addressRepository.exists({ where: { id: input.addressId }});
-    // if (!addressExists) throw new BadRequestError(`Address with ID ${input.addressId} not found.`);
-    // const currencyExists = await this.currencyRepository.exists({ where: { id: input.defaultCurrencyId }});
-    // if (!currencyExists) throw new BadRequestError(`Currency with ID ${input.defaultCurrencyId} not found.`);
+    const address = await this.addressRepository.findById(input.addressId);
+    if (!address) throw new BadRequestError(`Address with ID ${input.addressId} not found.`);
 
-    const companyInstance = new Company();
-    Object.assign(companyInstance, {
-      ...input,
-      id: id,
-    });
-
-    if (!companyInstance.isValid()) {
-      throw new BadRequestError(
-        `Company data is invalid. Errors: ${companyValidationInputErrors.join(', ')}`,
-      );
-    }
+    const currency = await this.currencyRepository.findById(input.defaultCurrencyId);
+    if (!currency) throw new BadRequestError(`Currency with ID ${input.defaultCurrencyId} not found.`);
 
     try {
       const companyToUpdate = await this.companyRepository.findCompanyById(id);
@@ -101,9 +99,40 @@ export class CompanyService {
         throw new NotFoundError(`Company with ID ${id} not found.`);
       }
 
+      // Ne mettre à jour que les champs scalaires autorisés, préserver les relations existantes
+      const updatableFields = {
+        name: input.name,
+        tradingName: input.tradingName,
+        addressId: input.addressId,
+        vatNumber: input.vatNumber,
+        siretNumber: input.siretNumber,
+        registrationNumber: input.registrationNumber,
+        email: input.email,
+        phoneNumber: input.phoneNumber,
+        website: input.website,
+        logoUrl: input.logoUrl,
+        defaultCurrencyId: input.defaultCurrencyId,
+        defaultVatRatePercentage: input.defaultVatRatePercentage,
+        fiscalYearStartMonth: input.fiscalYearStartMonth,
+        fiscalYearStartDay: input.fiscalYearStartDay,
+        timezone: input.timezone,
+        termsAndConditionsDefaultPurchase: input.termsAndConditionsDefaultPurchase,
+        termsAndConditionsDefaultSale: input.termsAndConditionsDefaultSale,
+        bankAccountDetailsForInvoices: input.bankAccountDetailsForInvoices,
+      };
+
+      const companyInstance = new Company();
+      Object.assign(companyInstance, updatableFields, { id });
+
+      if (!companyInstance.isValid()) {
+        throw new BadRequestError(
+          `Company data is invalid. Errors: ${companyValidationInputErrors.join(', ')}`,
+        );
+      }
+
       const savedCompany = await this.companyRepository.saveCompany({
         ...companyToUpdate,
-        ...input,
+        ...updatableFields,
         id: id,
       } as Partial<Company>);
 
